@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notificaciones - La Voz de Manaure</title>
+    <style>
+        body { background: #0c0c0c; color: white; font-family: sans-serif; margin: 0; padding: 0; }
+        
+        /* Barra Superior */
+        .header {
+            background: #000;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            border-bottom: 2px solid #ff0000;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .btn-volver {
+            color: #ff0000;
+            text-decoration: none;
+            font-weight: bold;
+            margin-right: 15px;
+            font-size: 1.2rem;
+        }
+
+        /* Lista de Notificaciones */
+        .lista-notificaciones { padding: 15px; }
+
+        .notificacion {
+            background: #1a1a1a;
+            border-left: 4px solid #ff0000;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            animation: fadeIn 0.5s ease;
+        }
+
+        .notificacion.urgente { border-left-color: #ffcc00; } /* Color amarillo para alertas */
+
+        .fecha { color: #666; font-size: 0.7rem; display: block; margin-bottom: 5px; }
+        .titulo { font-weight: bold; color: #fff; display: block; margin-bottom: 5px; font-size: 1rem; }
+        .mensaje { color: #bbb; font-size: 0.9rem; line-height: 1.4; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .limpiar-btn {
+            display: block;
+            width: 80%;
+            margin: 20px auto;
+            background: transparent;
+            border: 1px solid #333;
+            color: #666;
+            padding: 10px;
+            border-radius: 20px;
+            text-align: center;
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<div style="padding: 15px; background: #1a1a1a; border-bottom: 1px solid #333; display: flex; align-items: center; gap: 10px;">
+    <a href="index.html" style="text-decoration: none; color: #ff0000; font-size: 20px;">⬅</a>
+    <span style="color: white; font-weight: bold; font-family: sans-serif;">Notificaciones</span>
+</div>
+
+    <div class="header">
+        <a href="index.html" class="btn-volver">⬅</a>
+        <h2 style="margin: 0; font-size: 1.1rem;">CENTRO DE AVISOS</h2>
+    </div>
+
+    <div class="lista-notificaciones">
+        
+        <div class="notificacion urgente">
+            <span class="fecha">HACE 10 MINUTOS</span>
+            <span class="title">⚠️ INVITACIÓN</span>
+            <p class="mensaje">VISITA NUESTRA PÁGINA WEB PARA MÁS INFORMACIÓN - https://lavozdemanaure.ct.ws/?i=1</p>
+        </div>
+
+        <div class="notificacion">
+            <span class="fecha">ALERTA</span>
+            <span class="title">UTILIZA LA APLICACIÓN DE CAMBIO</span>
+            <p class="mensaje">Nuestra aplicación te calcula tus cambios de divisas a Bs</p>
+        </div>
+
+        <div class="notificacion">
+            <span class="fecha">AVISO</span>
+            <span class="title">COMENTARIOS</span>
+            <p class="mensaje">Envía tus comentarios sobre la programación, saluda a tus personas favoritas y solicita tus canciones</p>
+        </div>
+
+    </div>
+
+    <button class="limpiar-btn">Marcar todas como leídas</button>
+
+</body>
+</html>

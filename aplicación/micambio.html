@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora Multi-Cambio Pro</title>
+
+<link rel="manifest" href="manifest.json">
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f0f4f8; display: flex; justify-content: center; padding: 20px; margin: 0; }
+        .card { background: white; padding: 20px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 100%; max-width: 420px; }
+        h2 { text-align: center; color: #2c3e50; margin-bottom: 15px; font-size: 20px; }
+        
+        /* ACCESO BCV */
+        .bcv-access { background: #0c2461; color: white; padding: 15px; border-radius: 12px; margin-bottom: 20px; text-align: center; border: 2px solid #fab005; }
+        .btn-web { display: inline-block; background: #fab005; color: #0c2461; text-decoration: none; padding: 8px 15px; border-radius: 8px; font-size: 13px; font-weight: bold; margin-top: 5px; }
+
+        /* SECCIONES */
+        .section { background: #f8f9fa; border: 1px solid #e9ecef; padding: 12px; border-radius: 12px; margin-bottom: 12px; }
+        .section-title { font-weight: bold; color: #495057; margin-bottom: 8px; display: block; border-bottom: 2px solid #3498db; width: fit-content; font-size: 14px; }
+        
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        label { font-size: 11px; color: #6c757d; font-weight: bold; text-transform: uppercase; }
+        input { width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 8px; box-sizing: border-box; font-size: 16px; margin-top: 4px; }
+        .tasa-input { background: #fff9db; border-color: #fab005; font-weight: bold; text-align: center; }
+        
+        .btn-limpiar { width: 100%; padding: 12px; background: #e74c3c; color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; margin-top: 10px; font-size: 15px; }
+    </style>
+</head>
+<body>
+
+<div style="position: fixed; top: 0; left: 0; width: 100%; height: 60px; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: space-between; padding: 0 15px; box-sizing: border-box; z-index: 10001; border-bottom: 1px solid #333;">
+    
+    <div style="display: flex; align-items: center; gap: 12px;">
+        <div style="font-size: 24px; color: white; cursor: pointer;" onclick="toggleMenu()">☰</div>
+        <img src="logo.png" alt="Logo" style="height: 35px; width: 35px; border-radius: 50%; border: 1px solid #ff0000;">
+    </div>
+
+    <a href="notificaciones.html" style="text-decoration: none; font-size: 20px; color: white; cursor: pointer; position: relative;">
+    🔔
+    <span style="position: absolute; top: -2px; right: -2px; background: #ff0000; width: 8px; height: 8px; border-radius: 50%; border: 1px solid #000;"></span>
+</a>
+        
+        <a href="index.html" style="text-decoration: none; background: #ff0000; color: white; font-size: 11px; font-weight: bold; padding: 5px 10px; border-radius: 5px; font-family: sans-serif;">
+            SALIR
+        </a>
+    </div>
+</div>
+
+<div id="panel-menu-manaure" style="position: fixed; top: 0; left: -100%; width: 260px; height: 100%; background: #0c0c0c; z-index: 10002; transition: 0.4s; box-shadow: 5px 0 20px rgba(0,0,0,0.8); border-right: 2px solid #ff0000; display: flex; flex-direction: column; padding: 20px; box-sizing: border-box;">
+    <div style="text-align: center; margin-bottom: 30px; margin-top: 60px;">
+        <h2 style="color: #ff0000; font-family: sans-serif; font-size: 1.2rem; margin: 0;">LA VOZ DE MANAURE</h2>
+        <small style="color: #666;">92.3 FM - Táchira</small>
+    </div>
+    <nav style="display: flex; flex-direction: column; gap: 12px;">
+        <a href="index.html" style="text-decoration:none; color:white; font-family:sans-serif; padding: 12px; background: #1a1a1a; border-radius: 10px; display: flex; align-items: center; gap: 12px; border: 1px solid #333;"><span>📻</span> Radio</a>
+        <a href="micambio.html" style="text-decoration:none; color:white; font-family:sans-serif; padding: 12px; background: #1a1a1a; border-radius: 10px; display: flex; align-items: center; gap: 12px; border: 1px solid #333;"><span>💸</span> Mi Cambio</a>
+        <a href="canales.html" style="text-decoration:none; color:white; font-family:sans-serif; padding: 12px; background: #1a1a1a; border-radius: 10px; display: flex; align-items: center; gap: 12px; border: 1px solid #333;"><span>📺</span> TV Gratis</a>
+    </nav>
+</div>
+
+<div id="overlay-manaure" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:10000;" onclick="toggleMenu()"></div>
+
+<script>
+    function toggleMenu() {
+        const menu = document.getElementById('panel-menu-manaure');
+        const overlay = document.getElementById('overlay-manaure');
+        if (menu.style.left === '0px') {
+            menu.style.left = '-100%';
+            overlay.style.display = 'none';
+        } else {
+            menu.style.left = '0px';
+            overlay.style.display = 'block';
+        }
+    }
+</script>
+
+<div style="position: fixed; top: 0; left: 0; width: 100%; height: 60px; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: space-between; padding: 0 15px; box-sizing: border-box; z-index: 10001; border-bottom: 1px solid #333;">
+    
+    <div style="display: flex; align-items: center; gap: 12px;">
+        <div style="font-size: 24px; color: white; cursor: pointer;" onclick="toggleMenu()">☰</div>
+        <img src="logo.png" alt="Logo" style="height: 35px; width: 35px; border-radius: 50%; border: 1px solid #ff0000;">
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 18px;">
+        <div style="font-size: 20px; color: white; cursor: pointer; position: relative;">
+            🔔
+            <span style="position: absolute; top: -2px; right: -2px; background: #ff0000; width: 8px; height: 8px; border-radius: 50%; border: 1px solid #000;"></span>
+        </div>
+        
+        <a href="index.html" style="text-decoration: none; background: #ff0000; color: white; font-size: 11px; font-weight: bold; padding: 5px 10px; border-radius: 5px; font-family: sans-serif;">
+            SALIR
+        </a>
+    </div>
+</div>
+
+<div id="panel-menu-manaure" style="position: fixed; top: 0; left: -100%; width: 260px; height: 100%; background: #0c0c0c; z-index: 10002; transition: 0.4s; box-shadow: 5px 0 20px rgba(0,0,0,0.8); border-right: 2px solid #ff0000; display: flex; flex-direction: column; padding: 20px; box-sizing: border-box;">
+    <div style="text-align: center; margin-bottom: 30px; margin-top: 60px;">
+        <h2 style="color: #ff0000; font-family: sans-serif; font-size: 1.2rem; margin: 0;">LA VOZ DE MANAURE</h2>
+        <small style="color: #666;">92.3 FM - Táchira</small>
+    </div>
+    <nav style="display: flex; flex-direction: column; gap: 12px;">
+        <a href="radio.html" style="text-decoration:none; color:white; font-family:sans-serif; padding: 12px; background: #1a1a1a; border-radius: 10px; display: flex; align-items: center; gap: 12px; border: 1px solid #333;"><span>📻</span> Radio</a>
+        <a href="micambio.html" style="text-decoration:none; color:white; font-family:sans-serif; padding: 12px; background: #1a1a1a; border-radius: 10px; display: flex; align-items: center; gap: 12px; border: 1px solid #333;"><span>💸</span> Mi Cambio</a>
+        <a href="tv.html" style="text-decoration:none; color:white; font-family:sans-serif; padding: 12px; background: #1a1a1a; border-radius: 10px; display: flex; align-items: center; gap: 12px; border: 1px solid #333;"><span>📺</span> TV Gratis</a>
+    </nav>
+</div>
+
+<div id="overlay-manaure" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:10000;" onclick="toggleMenu()"></div>
+
+<script>
+    function toggleMenu() {
+        const menu = document.getElementById('panel-menu-manaure');
+        const overlay = document.getElementById('overlay-manaure');
+        if (menu.style.left === '0px') {
+            menu.style.left = '-100%';
+            overlay.style.display = 'none';
+        } else {
+            menu.style.left = '0px';
+            overlay.style.display = 'block';
+        }
+    }
+</script>
+
+
+<div class="card">
+    <h2>Mi Calculadora de Cambio</h2>
+
+    <div class="bcv-access">
+        <span style="font-size: 13px; font-weight: bold; display: block;">TASA OFICIAL BCV</span>
+        <a href="https://www.bcv.org.ve/" target="_blank" class="btn-web">VER PÁGINA DEL BCV</a>
+    </div>
+
+    <div class="section">
+        <span class="section-title">Pesos ↔ Bolívares</span>
+        <label>Tasa (Ej: 6)</label>
+        <input type="number" id="tasaPb" value="6" class="tasa-input" oninput="calcPb(1)">
+        <div class="grid">
+            <div><label>Pesos (COP)</label><input type="number" id="pb_pesos" placeholder="0" oninput="calcPb(1)"></div>
+            <div><label>Bolívares (Bs)</label><input type="number" id="pb_bs" placeholder="0" oninput="calcPb(2)"></div>
+        </div>
+    </div>
+
+    <div class="section">
+        <span class="section-title">Dólares ↔ Pesos</span>
+        <label>Tasa USD/COP (Ej: 3900)</label>
+        <input type="number" id="tasaDp" value="3900" class="tasa-input" oninput="calcDp(1)">
+        <div class="grid">
+            <div><label>Dólares ($)</label><input type="number" id="dp_usd" placeholder="0" oninput="calcDp(1)"></div>
+            <div><label>Pesos (COP)</label><input type="number" id="dp_pesos" placeholder="0" oninput="calcDp(2)"></div>
+        </div>
+    </div>
+
+    <div class="section">
+        <span class="section-title">Dólares ↔ Bolívares</span>
+        <label>Tasa USD/BS (BCV)</label>
+        <input type="number" id="tasaDb" value="36.50" class="tasa-input" oninput="calcDb(1)">
+        <div class="grid">
+            <div><label>Dólares ($)</label><input type="number" id="db_usd" placeholder="0" oninput="calcDb(1)"></div>
+            <div><label>Bolívares (Bs)</label><input type="number" id="db_bs" placeholder="0" oninput="calcDb(2)"></div>
+        </div>
+    </div>
+
+    <button class="btn-limpiar" onclick="limpiar()">Limpiar Todo</button>
+</div>
+
+<script>
+    // Lógica Pesos <-> Bs (Pesos / Tasa = Bs)
+    function calcPb(modo) {
+        const t = parseFloat(document.getElementById('tasaPb').value) || 0;
+        const p = document.getElementById('pb_pesos');
+        const b = document.getElementById('pb_bs');
+        if(t <= 0) return;
+        if(modo === 1) b.value = p.value ? (parseFloat(p.value) / t).toFixed(2) : "";
+        else p.value = b.value ? Math.round(parseFloat(b.value) * t) : "";
+    }
+
+    // Lógica Dólares <-> Pesos (Dólares * Tasa = Pesos)
+    function calcDp(modo) {
+        const t = parseFloat(document.getElementById('tasaDp').value) || 0;
+        const d = document.getElementById('dp_usd');
+        const p = document.getElementById('dp_pesos');
+        if(t <= 0) return;
+        if(modo === 1) p.value = d.value ? Math.round(parseFloat(d.value) * t) : "";
+        else d.value = p.value ? (parseFloat(p.value) / t).toFixed(2) : "";
+    }
+
+    // Lógica Dólares <-> Bs (Dólares * Tasa = Bs)
+    function calcDb(modo) {
+        const t = parseFloat(document.getElementById('tasaDb').value) || 0;
+        const d = document.getElementById('db_usd');
+        const b = document.getElementById('db_bs');
+        if(t <= 0) return;
+        if(modo === 1) b.value = d.value ? (parseFloat(d.value) * t).toFixed(2) : "";
+        else d.value = b.value ? (parseFloat(b.value) / t).toFixed(2) : "";
+    }
+
+    function limpiar() {
+        document.querySelectorAll('input:not(.tasa-input)').forEach(i => i.value = "");
+    }
+</script>
+
+</body>
+</html>
