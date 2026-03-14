@@ -1,16 +1,23 @@
 {
   "name": "La Voz de Manaure",
   "short_name": "Manaure",
-  "start_url": "index.html",
+  "start_url": "./index.html",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#000000",
-  "theme_color": "#ff0000",
+  "theme_color": "#000000",
   "icons": [
     {
-      "src": "logo.png",
+      "src": "logo_v2.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
+    },
+    {
+      "src": "logo_v2.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }
