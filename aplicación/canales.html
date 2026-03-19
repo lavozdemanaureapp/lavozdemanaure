@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>La Voz de Manaure - TV Gratis</title>
+    <title>Manaure App - TV Gratis</title>
     <link rel="manifest" href="manifest.json">
     <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet" />
     <style>
@@ -35,11 +35,6 @@
         #video-container { width: 100%; background: #000; position: relative; line-height: 0; }
         .video-js { width: 100% !important; height: auto !important; aspect-ratio: 16 / 9; }
 
-        /* AJUSTES PARA PANTALLA COMPLETA (CUADRITO) */
-        .video-js:fullscreen { width: 100vw !important; height: 100vh !important; }
-        .video-js:fullscreen video { object-fit: contain !important; }
-        .video-js:-webkit-full-screen video { object-fit: contain !important; }
-
         /* MODO HORIZONTAL AUTOMÁTICO */
         @media (orientation: landscape) and (max-height: 500px) {
             .navbar, header, #sidebar { display: none !important; }
@@ -48,7 +43,7 @@
             .video-js { width: 100vw !important; height: 100vh !important; }
         }
 
-        /* LISTA DE CANALES CON ANTENITAS */
+        /* LISTA DE CANALES */
         #sidebar { background: var(--panel-bg); min-height: 40vh; }
         #channel-list { list-style: none; margin: 0; padding: 0; }
         #channel-list li { 
@@ -75,7 +70,7 @@
 
     <div id="panel-menu-manaure">
         <div style="text-align: center; margin: 50px 0 20px 0;">
-            <h2 style="color: var(--primary-red); margin: 0;">LA VOZ DE MANAURE</h2>
+            <h2 style="color: var(--primary-red); margin: 0;">MANAURE APP</h2>
             <small style="color: #444;">Radio & TV</small>
         </div>
         <nav>
@@ -96,7 +91,7 @@
 
     <main>
         <div id="video-container">
-            <video id="iptv-player" class="video-js vjs-big-play-centered" controls preload="auto" playsinline>
+            <video id="iptv-player" class="video-js vjs-big-play-centered" controls preload="auto" playsinline loop>
                 <p class="vjs-no-js">JavaScript requerido.</p>
             </video>
         </div>
@@ -115,14 +110,10 @@
             fluid: true
         });
 
-        // --- DETECTAR CAMBIO A PANTALLA COMPLETA ---
         player.on('fullscreenchange', function() {
             if (player.isFullscreen()) {
-                // Intentar forzar rotación en dispositivos compatibles
                 if (screen.orientation && screen.orientation.lock) {
-                    screen.orientation.lock('landscape').catch(() => {
-                        console.log("Rotación manual requerida");
-                    });
+                    screen.orientation.lock('landscape').catch(() => {});
                 }
             } else {
                 if (screen.orientation && screen.orientation.unlock) {
@@ -182,7 +173,14 @@
             if(!el) return;
             document.querySelectorAll('#channel-list li').forEach(li => li.classList.remove('active'));
             el.classList.add('active');
-            player.src({ src: url, type: 'application/x-mpegURL' });
+            
+            // Detectar si es el video MP4 de eventos o un canal HLS
+            const isMP4 = url.toLowerCase().includes('.mp4');
+            player.src({ 
+                src: url, 
+                type: isMP4 ? 'video/mp4' : 'application/x-mpegURL' 
+            });
+            
             player.play();
             window.scrollTo({top: 0, behavior: 'smooth'});
         }
