@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>La Voz de Manaure - TV Gratis</title>
     <link rel="manifest" href="manifest.json">
     <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet" />
@@ -14,7 +14,9 @@
             color: white; 
             font-family: 'Segoe UI', sans-serif; 
             margin: 0; 
-            padding-top: 60px; /* Espacio para la navbar fija */
+            padding-top: 60px; /* Espacio para la navbar */
+            min-height: 100vh;
+            overflow-x: hidden;
         }
 
         /* NAVBAR FIJA */
@@ -24,35 +26,51 @@
             justify-content: space-between; padding: 0 15px; 
             box-sizing: border-box; z-index: 1000; border-bottom: 1px solid #333; 
         }
-        .logo-img { height: 35px; width: 35px; border-radius: 50%; border: 1px solid var(--primary-red); }
+        .logo-img { height: 35px; width: 35px; border-radius: 50%; border: 1px solid var(--primary-red); object-fit: cover; }
 
-        /* BUSCADOR */
         header { background: var(--panel-bg); padding: 10px; display: flex; gap: 10px; border-bottom: 1px solid #333; }
-        select, input { background: #333; color: white; border: 1px solid #444; padding: 8px; border-radius: 4px; flex: 1; min-width: 0; }
+        select, input { background: #333; color: white; border: 1px solid #444; padding: 8px; border-radius: 4px; flex: 1; min-width: 0; font-size: 14px; }
 
-        /* REPRODUCTOR */
-        #video-container { width: 100%; background: #000; line-height: 0; }
-        .video-js { width: 100% !important; height: auto !important; aspect-ratio: 16 / 9; }
-
-        /* LISTA DE CANALES (SIMPLE Y EFECTIVA) */
-        #sidebar { background: var(--panel-bg); min-height: 50vh; }
-        #channel-list { list-style: none; margin: 0; padding: 0; }
-        #channel-list li { 
-            padding: 18px 15px; border-bottom: 1px solid #252525; 
-            cursor: pointer; font-size: 15px; display: flex; align-items: center; gap: 10px;
+        /* CONTENEDOR DE VIDEO */
+        #video-container { 
+            width: 100%; 
+            background: #000; 
+            position: relative;
+            line-height: 0;
         }
-        #channel-list li.active { border-left: 5px solid var(--primary-red); background: #222; color: var(--primary-red); font-weight: bold; }
 
-        /* --- EL TRUCO PARA EL MODO HORIZONTAL --- */
+        .video-js { 
+            width: 100% !important; 
+            height: auto !important; 
+            aspect-ratio: 16 / 9; 
+        }
+
+        /* --- FUERZA BRUTA PARA PANTALLA COMPLETA --- */
+        /* Estas reglas obligan al video a estirarse al usar el botón del cuadrito */
+        .video-js:fullscreen, .video-js:-webkit-full-screen, .video-js:-ms-fullscreen {
+            width: 100vw !important;
+            height: 100vh !important;
+        }
+
+        /* MODO HORIZONTAL AUTOMÁTICO (Solo al girar) */
         @media (orientation: landscape) and (max-height: 500px) {
             .navbar, header, #sidebar { display: none !important; }
-            body { padding-top: 0; }
+            body { padding-top: 0; overflow: hidden; }
             #video-container { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 9999; }
             .video-js { width: 100vw !important; height: 100vh !important; }
         }
 
+        /* LISTA DE CANALES */
+        #sidebar { background: var(--panel-bg); min-height: 40vh; }
+        #channel-list { list-style: none; margin: 0; padding: 0; }
+        #channel-list li { 
+            padding: 15px; border-bottom: 1px solid #252525; 
+            cursor: pointer; font-size: 15px; display: flex; align-items: center; gap: 10px;
+        }
+        #channel-list li.active { border-left: 5px solid var(--primary-red); background: #222; color: var(--primary-red); font-weight: bold; }
+
         /* MENU LATERAL */
-        #panel-menu-manaure { position: fixed; top: 0; left: -100%; width: 260px; height: 100%; background: #0c0c0c; z-index: 2000; transition: 0.4s; padding: 20px; border-right: 2px solid var(--primary-red); }
+        #panel-menu-manaure { position: fixed; top: 0; left: -100%; width: 260px; height: 100%; background: #0c0c0c; z-index: 2000; transition: 0.4s; padding: 20px; border-right: 2px solid var(--primary-red); box-sizing: border-box; }
         .menu-link { text-decoration: none; color: white; padding: 12px; background: #1a1a1a; border-radius: 10px; display: flex; align-items: center; gap: 12px; margin-bottom: 10px; border: 1px solid #333; }
     </style>
 </head>
@@ -62,15 +80,15 @@
         <div style="display: flex; align-items: center; gap: 12px;">
             <div style="font-size: 26px; color: white; cursor: pointer;" onclick="toggleMenu()">☰</div>
             <img src="logo_v2.png" alt="Logo" class="logo-img" onerror="this.src='https://via.placeholder.com/35'">
-            <span style="font-weight: bold;">TV GRATIS</span>
+            <span style="font-weight: bold; font-size: 14px;">TV GRATIS</span>
         </div>
         <a href="index.html" style="text-decoration: none; background: var(--primary-red); color: white; font-size: 11px; padding: 6px 12px; border-radius: 5px; font-weight: bold;">VOLVER</a>
     </div>
 
     <div id="panel-menu-manaure">
         <div style="text-align: center; margin: 50px 0 20px 0;">
-            <h2 style="color: var(--primary-red); margin-bottom: 5px;">MANAURE</h2>
-            <hr style="border: 0; border-top: 1px solid #333;">
+            <h2 style="color: var(--primary-red); margin: 0;">LA VOZ DE MANAURE</h2>
+            <small style="color: #444;">Radio & TV</small>
         </div>
         <nav>
             <a href="index.html" class="menu-link"><span>📻</span> Radio en Vivo</a>
@@ -97,14 +115,17 @@
 
         <div id="sidebar">
             <ul id="channel-list">
-                <li style="text-align: center; padding: 30px;">Cargando canales...</li>
+                <li style="text-align: center; padding: 30px; color: #666;">Cargando canales...</li>
             </ul>
         </div>
     </main>
 
     <script src="https://vjs.zencdn.net/8.10.0/video.min.js"></script>
     <script>
-        const player = videojs('iptv-player');
+        const player = videojs('iptv-player', {
+            responsive: true,
+            fluid: true
+        });
         let allChannels = [];
 
         window.onload = async () => {
@@ -113,7 +134,7 @@
                 const data = await response.text();
                 parseM3U(data);
             } catch (err) {
-                document.getElementById('channel-list').innerHTML = `<li style="color:red">Error m3u</li>`;
+                document.getElementById('channel-list').innerHTML = `<li style="color:red">Error al cargar lista</li>`;
             }
         };
 
@@ -158,7 +179,8 @@
             el.classList.add('active');
             player.src({ src: url, type: 'application/x-mpegURL' });
             player.play();
-            window.scrollTo({top: 0, behavior: 'smooth'}); // Sube al video al cambiar canal
+            // Subir suavemente al video al cambiar de canal (útil en vertical)
+            window.scrollTo({top: 0, behavior: 'smooth'});
         }
 
         function filterByCategory() {
