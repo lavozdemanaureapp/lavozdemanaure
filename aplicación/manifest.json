@@ -1,16 +1,24 @@
 {
-  "name": "La Voz de Manaure",
+  "name": "La Voz de Manaure 92.3 FM",
   "short_name": "Manaure",
+  "description": "Radio en vivo y archivo de programas de San Cristóbal",
   "start_url": "./index.html",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#000000",
-  "theme_color": "#000000",
+  "theme_color": "#ff0000",
   "icons": [
+    {
+      "src": "logo_v2.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
     {
       "src": "logo_v2.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any"
+      "purpose": "any maskable"
     }
   ]
 }

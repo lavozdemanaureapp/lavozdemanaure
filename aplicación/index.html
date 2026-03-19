@@ -5,8 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>La Voz de Manaure 92.3 FM</title>
 
-    <link rel="manifest" href="manifest.json?v=2">
+    <link rel="manifest" href="manifest.json?v=5">
     <meta name="theme-color" content="#000000"> 
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
     <style>
         :root { --red-m: #ff0000; --bg: #0c0c0c; --card: #1a1a1a; }
@@ -14,7 +16,7 @@
         /* --- ANIMACIONES --- */
         @keyframes pulse-red {
             0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.7); }
-            70% { transform: scale(1.05); box-shadow: 0 0 20px 10px rgba(255, 0, 0, 0); }
+            70% { transform: scale(1.05); box-shadow: 0 0 10px 5px rgba(255, 0, 0, 0); }
             100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 0, 0, 0); }
         }
 
@@ -30,7 +32,7 @@
             100% { width: 0; opacity: 0; }
         }
 
-        body { background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; }
+        body { background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; overflow-x: hidden; }
 
         /* PANTALLA DE INICIO (SPLASH) */
         #splash-screen { 
@@ -40,13 +42,13 @@
             transition: opacity 0.8s ease; 
         }
 
-        /* NAVBAR */
+        /* NAVBAR REFINADA: RAYITAS + LOGO + RADIO */
         .navbar { position: fixed; top: 0; left: 0; width: 100%; height: 60px; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: space-between; padding: 0 15px; box-sizing: border-box; z-index: 10001; border-bottom: 1px solid #333; }
         
         header { width: 100%; background: #000; padding: 15px 0; text-align: center; border-bottom: 1px solid #222; margin-top: 60px; }
         header h1 { margin: 0; font-size: 1.1rem; color: var(--red-m); letter-spacing: 2px; }
 
-        .logo-nav { height: 38px; width: 38px; border-radius: 50%; border: 2px solid var(--red-m); animation: pulse-red 2s infinite; object-fit: cover; }
+        .logo-nav { height: 35px; width: 35px; border-radius: 50%; border: 1px solid var(--red-m); object-fit: cover; animation: pulse-red 2s infinite; }
 
         /* CONTENIDO */
         .scroll-container { width: 100%; max-width: 600px; padding: 20px; box-sizing: border-box; padding-bottom: 140px; }
@@ -76,11 +78,12 @@
             letter-spacing: 1px;
         }
 
-        .play-btn { width: 55px; height: 55px; background: var(--red-m); border: none; border-radius: 50%; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 22px; box-shadow: 0 0 20px rgba(255, 0, 0, 0.4); }
+        .play-btn { width: 55px; height: 55px; background: var(--red-m); border: none; border-radius: 50%; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 22px; box-shadow: 0 0 20px rgba(255, 0, 0, 0.4); transition: 0.3s; }
 
-        /* MENÚ LATERAL */
-        #panel-menu-manaure { position: fixed; top: 0; left: -100%; width: 260px; height: 100%; background: #0c0c0c; z-index: 10002; transition: 0.4s; border-right: 2px solid var(--red-m); padding: 20px; box-sizing: border-box; }
-        .menu-link { text-decoration:none; color:white; padding: 12px; background: #1a1a1a; border-radius: 10px; display: flex; align-items: center; gap: 12px; border: 1px solid #333; margin-bottom: 10px; }
+        /* MENÚ LATERAL (4 OPCIONES) */
+        #panel-menu-manaure { position: fixed; top: 0; left: -100%; width: 280px; height: 100%; background: #0c0c0c; z-index: 10002; transition: 0.4s; border-right: 2px solid var(--red-m); padding: 20px; box-sizing: border-box; }
+        .menu-link { text-decoration:none; color:white; padding: 14px; background: #1a1a1a; border-radius: 10px; display: flex; align-items: center; gap: 12px; border: 1px solid #333; margin-bottom: 12px; transition: 0.3s; font-size: 0.95rem; }
+        .menu-link:hover { border-color: var(--red-m); background: #222; transform: translateX(5px); }
     </style>
 </head>
 
@@ -95,29 +98,31 @@
     </div>
 
     <div class="navbar">
-        <div style="display: flex; align-items: center; gap: 12px;">
-            <div style="font-size: 24px; color: white; cursor: pointer;" onclick="toggleMenu()">☰</div>
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <div style="font-size: 28px; color: white; cursor: pointer; padding: 5px;" onclick="toggleMenu()">☰</div>
             <img src="logo_v2.png" alt="Logo" class="logo-nav">
+            <span style="color: white; font-weight: bold; letter-spacing: 2px; font-size: 13px; margin-left: 5px;">RADIO</span>
         </div>
-        <div style="display: flex; align-items: center; gap: 15px;">
-            <a href="notificaciones.html" style="text-decoration: none; font-size: 18px;">🔔</a>
-            <a href="index.html" style="text-decoration: none; background: var(--red-m); color: white; font-size: 11px; font-weight: bold; padding: 6px 12px; border-radius: 5px;">SALIR</a>
+        <div>
+            <a href="notificaciones.html" style="text-decoration: none; font-size: 20px; color: white; padding-right: 10px;">🔔</a>
         </div>
     </div>
 
     <div id="panel-menu-manaure">
         <div style="text-align: center; margin: 60px 0 30px 0;">
-            <h2 style="color: var(--red-m); border: none;">LA VOZ DE MANAURE</h2>
+            <img src="logo_v2.png" style="height: 80px; width: 80px; border-radius: 50%; border: 2px solid var(--red-m); margin-bottom: 10px;">
+            <h2 style="color: var(--red-m); border: none; margin: 0; font-size: 1rem;">LA VOZ DE MANAURE</h2>
             <small style="color: #666;">92.3 FM - Táchira</small>
         </div>
         <nav>
-            <a href="index.html" class="menu-link" style="border-color: var(--red-m);"><span>📻</span> Radio</a>
+            <a href="index.html" class="menu-link" style="border-left: 4px solid var(--red-m);"><span>📻</span> Radio en Vivo</a>
+            <a href="programas.html" class="menu-link"><span>🎙️</span> Archivo de Programas</a>
             <a href="micambio.html" class="menu-link"><span>💸</span> Mi Cambio</a>
             <a href="canales.html" class="menu-link"><span>📺</span> TV Gratis</a>
-           </nav>
+        </nav>
     </div>
 
-    <div id="overlay-manaure" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:10000;" onclick="toggleMenu()"></div>
+    <div id="overlay-manaure" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:10000;" onclick="toggleMenu()"></div>
 
     <header>
         <h1>LA VOZ DE MANAURE 92.3 FM</h1>
@@ -153,10 +158,20 @@
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js')
-                .then(reg => console.log('PWA Lista'))
-                .catch(err => console.log('Error PWA', err));
+                navigator.serviceWorker.register('./sw.js?v=6')
+                .then(reg => {
+                    console.log('SW Actualizado');
+                    reg.update(); 
+                });
             });
+        }
+
+        window.toggleMenu = function() {
+            const menu = document.getElementById('panel-menu-manaure');
+            const overlay = document.getElementById('overlay-manaure');
+            const isOpen = menu.style.left === '0px';
+            menu.style.left = isOpen ? '-100%' : '0px';
+            overlay.style.display = isOpen ? 'none' : 'block';
         }
     </script>
 
@@ -171,8 +186,7 @@
             projectId: "radiomanaure",
             storageBucket: "radiomanaure.firebasestorage.app",
             messagingSenderId: "302935331677",
-            appId: "1:302935331677:web:73419d363115ad1ff7ceb4",
-            measurementId: "G-ZE8ZT71YWB"
+            appId: "1:302935331677:web:73419d363115ad1ff7ceb4"
         };
 
         const app = initializeApp(firebaseConfig);
@@ -184,7 +198,7 @@
                 const splash = document.getElementById('splash-screen');
                 splash.style.opacity = '0';
                 setTimeout(() => splash.style.display = 'none', 800);
-            }, 3000);
+            }, 2500);
         });
 
         document.getElementById('btn-enviar').onclick = function() {
@@ -206,12 +220,12 @@
 
         const programming = {
             0: [{t: "06:00", n: "AMANECER LLANERO"}, {t: "07:00", n: "PROGRAMACION GENERAL"}, {t: "08:00", n: "LOCOMOTORA CAMPESINA - JORGE GAMBOA"}, {t: "10:00", n: "BAILABLES DE AYER, HOY Y SIEMPRE - RUFINO SEGOVIA Y LUIS PARADA"}, {t: "12:00", n: "PROGRAMACIÓN GENERAL"}, {t: "16:00", n: "MIENTRAS PASA EL TIEMPO - MAYRA OMAÑA"}, {t: "18:00", n: "PROGRAMACIÓN GENERAL"}],
-            1: [{t: "06:00", n: "AMANECER LLANERO"}, {t: "07:00", n: "CELEBRANDO CON TU MÚSICA - JOSÉ COLMENARES"}, {t: "09:00", n: "PROGRAMACIÓN GENERAL"}, {t: "12:00", n: "LOS PAVOS ROMÁNTICOS - PLÁCIDO GUTIÉRREZ"}, {t: "13:00", n: "PALABRAS DE VIDA ETERNA - RAÚL RUBIO"}, {t: "14:00", n: "ENTRE LÍNEAS Y MÚSICA - KATERLÍN MALDONADO"}, {t: "16:00", n: "RANCHENATO - ALEXANDER RAMÍREZ"}, {t: "18:00", n: "SALSA, SON Y TAMBOR - NESTOR ESCALANTE EL FÉNIX"}, {t: "20:00", n: "PROGRAMACIÓN GENERAL"}],
-            2: [{t: "06:00", n: "AMANECER LLANERO"}, {t: "07:00", n: "CELEBRANDO CON TU MÚSICA - JOSÉ COLMENARES"}, {t: "09:00", n: "PROGRAMACIÓN GENERAL"}, {t: "12:00", n: "LOS PAVOS ROMÁNTICOS - PLÁCIDO GUTIÉRREZ"}, {t: "13:00", n: "CLÁSICOS CRISTIANOS"}, {t: "14:00", n: "ENTRE LÍNEAS Y MÚSICA - KATERLÍN MALDONADO"}, {t: "16:00", n: "RANCHENATO - ALEXANDER RAMÍREZ"}, {t: "18:00", n: "SALSA, SON Y TAMBOR - NESTOR ESCALANTE EL FÉNIX"}, {t: "20:00", n: "SENTIR ANDINO - LEONARDO VARGAS"}, {t: "21:00", n: "PROGRAMACION GENERAL"}],
-            3: [{t: "06:00", n: "AMANECER LLANERO"}, {t: "07:00", n: "CELEBRANDO CON TU MÚSICA - JOSÉ COLMENARES"}, {t: "09:00", n: "PROGRAMACIÓN GENERAL"}, {t: "12:00", n: "LOS PAVOS ROMÁNTICOS - PLÁCIDO GUTIÉRREZ"}, {t: "13:00", n: "PALABRAS DE VIDA ETERNA - RAÚL RUBIO"}, {t: "14:00", n: "ENTRE LÍNEAS Y MÚSICA - KATERLÍN MALDONADO"}, {t: "16:00", n: "RANCHENATO - ALEXANDER RAMÍREZ"}, {t: "18:00", n: "SALSA, SON Y TAMBOR - NESTOR ESCALANTE EL FÉNIX"}, {t: "20:00", n: "CON EL MAZO DANDO"}, {t: "0:00", n: "PROGRAMACIÓN GENERAL"}],
-            4: [{t: "06:00", n: "AMANECER LLANERO"}, {t: "07:00", n: "CELEBRANDO CON TU MÚSICA - JOSÉ COLMENARES"}, {t: "09:00", n: "PROGRAMACIÓN GENERAL"}, {t: "12:00", n: "LOS PAVOS ROMÁNTICOS - PLÁCIDO GUTIÉRREZ"}, {t: "13:00", n: "CLÁSICOS CRISTIANOS"}, {t: "14:00", n: "ENTRE LÍNEAS Y MÚSICA - KATERLÍN MALDONADO"}, {t: "16:00", n: "RANCHENATO - ALEXANDER RAMÍREZ"}, {t: "18:00", n: "SALSA, SON Y TAMBOR - NESTOR ESCALANTE EL FÉNIX"}, {t: "20:00", n: "PROGRAMACION GENERAL"}],
-            5: [{t: "06:00", n: "AMANECER LLANERO"}, {t: "07:00", n: "CELEBRANDO CON TU MÚSICA - JOSÉ COLMENARES"}, {t: "09:00", n: "PROGRAMACIÓN GENERAL"}, {t: "12:00", n: "EL INQUISIDOR ILUSTRADO - PLÁCIDO GUTIÉRREZ"}, {t: "13:00", n: "PALABRAS DE VIDA ETERNA - RAÚL RUBIO"}, {t: "14:00", n: "ENTRE LÍNEAS Y MÚSICA - KATERLÍN MALDONADO"}, {t: "16:00", n: "RANCHENATO - ALEXANDER RAMÍREZ"}, {t: "18:00", n: "SALSA, SON Y TAMBOR - NESTOR ESCALANTE EL FÉNIX"}, {t: "20:00", n: "PROGRAMACIÓN GENERAL"}],
-            6: [{t: "06:00", n: "AMANECER LLANERO"}, {t: "07:00", n: "PROGRAMACION GENERAL"}, {t: "08:00", n: "LOCOMOTORA CAMPESINA - JORGE GAMBOA"}, {t: "10:00", n: "BAILABLES DE AYER, HOY Y SIEMPRE - RUFINO SEGOVIA Y LUIS PARADA"}, {t: "12:00", n: "PROGRAMACIÓN GENERAL"}, {t: "16:00", n: "MIENTRAS PASA EL TIEMPO - MAYRA OMAÑA"}, {t: "18:00", n: "PROGRAMACIÓN GENERAL"}],
+            1: [{t: "06:00", n: "AMANECER LLANERO"}, {t: "07:00", n: "CELEBRANDO CON TU MÚSICA - JOSÉ COLMENARES"}, {t: "09:00", n: "PROGRAMACION GENERAL"}, {t: "12:00", n: "LOS PAVOS ROMÁNTICOS - PLÁCIDO GUTIÉRREZ"}, {t: "13:00", n: "PALABRAS DE VIDA ETERNA - RAÚL RUBIO"}, {t: "14:00", n: "ENTRE LÍNEAS Y MÚSICA - KATERLIN MALDONADO"}, {t: "16:00", n: "RANCHENATO - ALEXANDER RAMÍREZ"}, {t: "18:00", n: "SALSA, SON Y TAMBOR - GIOVANNY ESCALANTE"}],
+            2: [{t: "06:00", n: "AMANECER LLANERO"}, {t: "07:00", n: "CELEBRANDO CON TU MÚSICA - JOSÉ COLMENARES"}, {t: "09:00", n: "PROGRAMACION GENERAL"}, {t: "12:00", n: "LOS PAVOS ROMÁNTICOS - PLÁCIDO GUTIÉRREZ"}, {t: "13:00", n: "CLÁSICOS CRISTIANOS"}, {t: "14:00", n: "ENTRE LÍNEAS Y MÚSICA - KATERLIN MALDONADO"}, {t: "16:00", n: "RANCHENATO - ALEXANDER RAMÍREZ"}, {t: "18:00", n: "SALSA, SON Y TAMBOR - GIOVANNY ESCALANTE"}, {t: "20:00", n: "SENTIR ANDINO - LEONARDO VARGAS"}],
+            3: [{t: "06:00", n: "AMANECER LLANERO"}, {t: "07:00", n: "CELEBRANDO CON TU MÚSICA - JOSÉ COLMENARES"}, {t: "09:00", n: "PROGRAMACION GENERAL"}, {t: "12:00", n: "LOS PAVOS ROMÁNTICOS - PLÁCIDO GUTIÉRREZ"}, {t: "13:00", n: "PALABRAS DE VIDA ETERNA - RAÚL RUBIO"}, {t: "14:00", n: "ENTRE LÍNEAS Y MÚSICA - KATERLIN MALDONADO"},  {t: "16:00", n: "RANCHENATO - ALEXANDER RAMÍREZ"}, {t: "18:00", n: "SALSA, SON Y TAMBOR - GIOVANNY ESCALANTE"}, {t: "20:00", n: "PROGRAMACIÓN GENERAL"}],
+            4: [{t: "06:00", n: "AMANECER LLANERO"}, {t: "07:00", n: "CELEBRANDO CON TU MÚSICA - JOSÉ COLMENARES"}, {t: "09:00", n: "PROGRAMACION GENERAL"}, {t: "12:00", n: "LOS PAVOS ROMÁNTICOS - PLÁCIDO GUTIÉRREZ"}, {t: "13:00", n: "CLÁSICOS CRISTIANOS"}, {t: "14:00", n: "ENTRE LÍNEAS Y MÚSICA - KATERLIN MALDONADO"}, {t: "16:00", n: "RANCHENATO - ALEXANDER RAMÍREZ"}, {t: "18:00", n: "SALSA, SON Y TAMBOR - GIOVANNY ESCALANTE"}, {t: "20:00", n: "PROGRAMACIÓN GENERAL"}],
+            5: [{t: "06:00", n: "AMANECER LLANERO"}, {t: "07:00", n: "CELEBRANDO CON TU MÚSICA - JOSÉ COLMENARES"}, {t: "09:00", n: "PROGRAMACION GENERAL"}, {t: "10:00", n: "REPORTE BERNAL"},{t: "12:00", n: "EL INQUISIDOR ILUSTRADO - PLÁCIDO GUTIÉRREZ"}, {t: "13:00", n: "PALABRAS DE VIDA ETERNA - RAÚL RUBIO"}, {t: "14:00", n: "ENTRE LÍNEAS Y MÚSICA - KATERLIN MALDONADO"},  {t: "16:00", n: "RANCHENATO - ALEXANDER RAMÍREZ"}, {t: "18:00", n: "SALSA, SON Y TAMBOR- GIOVANNY ESCALANTE"}, {t: "20:00", n: "PROGRAMACION GENERAL"}],
+            6: [{t: "06:00", n: "AMANECER LLANERO"}, {t: "07:00", n: "PROGRAMACION GENERAL"}, {t: "08:00", n: "LOCOMOTORA CAMPESINA - JORGE GAMBOA"}, {t: "10:00", n: "BAILABLES DE AYER, HOY Y SIEMPRE - RUFINO SEGOVIA Y LUIS PARADA"}, {t: "12:00", n: "PROGRAMACIÓN GENERAL"}, {t: "16:00", n: "MIENTRAS PASA EL TIEMPO - MAYRA OMAÑA"}, {t: "18:00", n: "PROGRAMACIÓN GENERAL"}]
         };
 
         const audio = document.getElementById('audio-player');
@@ -225,20 +239,12 @@
                 playBtn.style.color = "#000";
             } else {
                 audio.pause();
-                audio.src = audio.src;
+                audio.src = audio.src; 
                 playBtn.innerHTML = "▶";
                 playBtn.style.background = "var(--red-m)";
                 playBtn.style.color = "#fff";
             }
         };
-
-        window.toggleMenu = function() {
-            const menu = document.getElementById('panel-menu-manaure');
-            const overlay = document.getElementById('overlay-manaure');
-            const isOpen = menu.style.left === '0px';
-            menu.style.left = isOpen ? '-100%' : '0px';
-            overlay.style.display = isOpen ? 'none' : 'block';
-        }
 
         function syncRadio() {
             const now = new Date();
