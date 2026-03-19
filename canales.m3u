@@ -8,10 +8,6 @@ https://raw.githubusercontent.com/lavozdemanaureapp/lavozdemanaure/refs/heads/ma
 #EXTINF:-1 tvg-id="Venevision" tvg-logo="" group-title="NACIONALES",Venevisión Plus
 https://vod2live.univtec.com/manifest/4c41c0d8-e2e4-43cc-bd43-79afe715e1b3.m3u8
 
-
-#EXTINF:-1 tvg-id="Venevision" tvg-logo="" group-title="NACIONALES", Manaure TV
-https://dwamdstream104.akamaized.net/hls/live/2015530/dwstream104/index.m3u8
-
 #EXTINF:-1 tvg-id="Venevision" tvg-logo="" group-title="NACIONALES", Novelas Venezuela
 https://jmp2.uk/plu-6474a86917f5e100089a0c1c.m3u8
 
