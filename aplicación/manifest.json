@@ -1,7 +1,7 @@
 {
   "name": "La Voz de Manaure 92.3 FM",
-  "short_name": "Manaure",
-  "description": "Radio en vivo y archivo de programas de San Cristóbal",
+  "short_name": "Manaure App",
+  "description": "Radio en vivo y archivo de programas de Santa Ana del Táchira",
   "start_url": "./index.html",
   "display": "standalone",
   "orientation": "portrait",
