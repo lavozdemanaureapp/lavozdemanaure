@@ -14,7 +14,7 @@
             color: white; 
             font-family: 'Segoe UI', sans-serif; 
             margin: 0; 
-            padding-top: 60px; /* Espacio para la navbar */
+            padding-top: 60px;
             min-height: 100vh;
             overflow-x: hidden;
         }
@@ -32,27 +32,15 @@
         select, input { background: #333; color: white; border: 1px solid #444; padding: 8px; border-radius: 4px; flex: 1; min-width: 0; font-size: 14px; }
 
         /* CONTENEDOR DE VIDEO */
-        #video-container { 
-            width: 100%; 
-            background: #000; 
-            position: relative;
-            line-height: 0;
-        }
+        #video-container { width: 100%; background: #000; position: relative; line-height: 0; }
+        .video-js { width: 100% !important; height: auto !important; aspect-ratio: 16 / 9; }
 
-        .video-js { 
-            width: 100% !important; 
-            height: auto !important; 
-            aspect-ratio: 16 / 9; 
-        }
+        /* AJUSTES PARA PANTALLA COMPLETA (CUADRITO) */
+        .video-js:fullscreen { width: 100vw !important; height: 100vh !important; }
+        .video-js:fullscreen video { object-fit: contain !important; }
+        .video-js:-webkit-full-screen video { object-fit: contain !important; }
 
-        /* --- FUERZA BRUTA PARA PANTALLA COMPLETA --- */
-        /* Estas reglas obligan al video a estirarse al usar el botón del cuadrito */
-        .video-js:fullscreen, .video-js:-webkit-full-screen, .video-js:-ms-fullscreen {
-            width: 100vw !important;
-            height: 100vh !important;
-        }
-
-        /* MODO HORIZONTAL AUTOMÁTICO (Solo al girar) */
+        /* MODO HORIZONTAL AUTOMÁTICO */
         @media (orientation: landscape) and (max-height: 500px) {
             .navbar, header, #sidebar { display: none !important; }
             body { padding-top: 0; overflow: hidden; }
@@ -60,12 +48,12 @@
             .video-js { width: 100vw !important; height: 100vh !important; }
         }
 
-        /* LISTA DE CANALES */
+        /* LISTA DE CANALES CON ANTENITAS */
         #sidebar { background: var(--panel-bg); min-height: 40vh; }
         #channel-list { list-style: none; margin: 0; padding: 0; }
         #channel-list li { 
-            padding: 15px; border-bottom: 1px solid #252525; 
-            cursor: pointer; font-size: 15px; display: flex; align-items: center; gap: 10px;
+            padding: 16px 15px; border-bottom: 1px solid #252525; 
+            cursor: pointer; font-size: 15px; display: flex; align-items: center; gap: 12px;
         }
         #channel-list li.active { border-left: 5px solid var(--primary-red); background: #222; color: var(--primary-red); font-weight: bold; }
 
@@ -103,7 +91,7 @@
         <select id="category-select" onchange="filterByCategory()">
             <option value="all">Categorías</option>
         </select>
-        <input type="text" id="search-input" placeholder="Buscar..." onkeyup="filterBySearch()">
+        <input type="text" id="search-input" placeholder="Buscar canal..." onkeyup="filterBySearch()">
     </header>
 
     <main>
@@ -115,7 +103,7 @@
 
         <div id="sidebar">
             <ul id="channel-list">
-                <li style="text-align: center; padding: 30px; color: #666;">Cargando canales...</li>
+                <li style="text-align: center; padding: 30px; color: #666;">Cargando lista de canales...</li>
             </ul>
         </div>
     </main>
@@ -126,6 +114,23 @@
             responsive: true,
             fluid: true
         });
+
+        // --- DETECTAR CAMBIO A PANTALLA COMPLETA ---
+        player.on('fullscreenchange', function() {
+            if (player.isFullscreen()) {
+                // Intentar forzar rotación en dispositivos compatibles
+                if (screen.orientation && screen.orientation.lock) {
+                    screen.orientation.lock('landscape').catch(() => {
+                        console.log("Rotación manual requerida");
+                    });
+                }
+            } else {
+                if (screen.orientation && screen.orientation.unlock) {
+                    screen.orientation.unlock();
+                }
+            }
+        });
+
         let allChannels = [];
 
         window.onload = async () => {
@@ -134,7 +139,7 @@
                 const data = await response.text();
                 parseM3U(data);
             } catch (err) {
-                document.getElementById('channel-list').innerHTML = `<li style="color:red">Error al cargar lista</li>`;
+                document.getElementById('channel-list').innerHTML = `<li style="color:red">Error: No se encontró canales.m3u</li>`;
             }
         };
 
@@ -179,7 +184,6 @@
             el.classList.add('active');
             player.src({ src: url, type: 'application/x-mpegURL' });
             player.play();
-            // Subir suavemente al video al cambiar de canal (útil en vertical)
             window.scrollTo({top: 0, behavior: 'smooth'});
         }
 
