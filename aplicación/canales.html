@@ -135,7 +135,7 @@
 
         window.onload = async () => {
             try {
-                const response = await fetch('canales.m3u');
+                const response = await fetch('https://raw.githubusercontent.com/lavozdemanaureapp/lavozdemanaure/refs/heads/main/canales.m3u?v=' + new Date().getTime());
                 const data = await response.text();
                 parseM3U(data);
             } catch (err) {
