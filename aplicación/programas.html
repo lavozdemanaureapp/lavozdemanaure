@@ -68,7 +68,7 @@
             margin-bottom: 10px; 
         }
 
-        .container { max-width: 1200px; margin: auto; padding: 10px 20px; }
+        .container { max-width: 1200px; margin: auto; padding: 10px 15px; } /* Ajustado padding */
         .seccion-titulo { 
             text-align: left; 
             color: var(--blanco); 
@@ -81,12 +81,12 @@
             letter-spacing: 1px; 
         }
 
-        /* --- CARRUSEL ALIADOS (640 X 360) --- */
+        /* --- AJUSTE CARRUSEL ALIADOS (RESPONSIVO) --- */
         .carrusel-aliados {
             position: relative;
             width: 100%;
-            max-width: 640px; /* Ancho solicitado */
-            height: 360px;    /* Alto solicitado */
+            max-width: 640px; 
+            aspect-ratio: 16 / 9; /* Mantiene la proporción 640x360 siempre */
             margin: 0 auto 30px auto;
             overflow: hidden;
             border-radius: 15px;
@@ -107,18 +107,20 @@
         .slide img {
             width: 100%;
             height: 100%;
-            object-fit: cover; /* Para que llene los 640x360 perfectamente */
+            object-fit: contain; /* Cambiado a contain para que no se corte el flyer */
+            background: #000;
         }
 
-        /* --- PROGRAMAS (300 X 200) --- */
+        /* --- AJUSTE PROGRAMAS (RESPONSIVO) --- */
         .programs-grid { 
             display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Se ajusta solo */
             gap: 20px; 
             justify-items: center;
         }
         .prog-card { 
-            width: 300px; /* Ancho fijo solicitado */
+            width: 100%; /* Ocupa el ancho del grid */
+            max-width: 300px; /* Pero no más de 300px */
             background: var(--gris-card); 
             border-radius: 12px; 
             overflow: hidden; 
@@ -126,8 +128,9 @@
         }
         
         .prog-img { 
-            width: 300px; 
-            height: 200px; /* Alto solicitado */
+            width: 100%; 
+            height: auto; 
+            aspect-ratio: 3 / 2; /* Mantiene la proporción 300x200 */
             object-fit: cover; 
             background: #222; 
             display: block;
@@ -167,11 +170,17 @@
         audio.active { display: block; }
 
         /* EQUIPO */
-        .admin-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 50px; }
+        .admin-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 50px; }
         .admin-card { background: #1a1a1a; padding: 20px; border-radius: 10px; text-align: center; border: 1px solid #333; }
         .admin-card i { color: var(--red-m); font-size: 1.8rem; margin-bottom: 10px; }
 
         #overlay-manaure { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:10000; }
+        
+        /* Ajuste para pantallas muy pequeñas */
+        @media (max-width: 400px) {
+            .seccion-titulo { font-size: 0.9rem; }
+            .nav-header span { display: none; } /* Oculta texto largo en el header */
+        }
     </style>
 </head>
 <body>
@@ -204,7 +213,7 @@
     <h2 class="seccion-titulo">Nuestros Aliados Comerciales</h2>
     
     <div class="carrusel-aliados">
-                <div class="slide active"><img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhJSKA11sGXvqGdW8RchQpadmeg46hWF40YDPk_6m9MLTXAg6f5R6aWbVOvfepNIE3VqUDCdAMGtfAmGtS8mZZ-Ph8Bs-9FIkPZm-dVJVJ4qAterjC2AamBBPwJ4a9V_hkB8xMxFIsdVlPWtDDaAh8hG4OdCYeLcE2_22QqzlvvSTDLr33jHl21qBxrmlo/w640-h360/market.jpg"></div>
+        <div class="slide active"><img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhJSKA11sGXvqGdW8RchQpadmeg46hWF40YDPk_6m9MLTXAg6f5R6aWbVOvfepNIE3VqUDCdAMGtfAmGtS8mZZ-Ph8Bs-9FIkPZm-dVJVJ4qAterjC2AamBBPwJ4a9V_hkB8xMxFIsdVlPWtDDaAh8hG4OdCYeLcE2_22QqzlvvSTDLr33jHl21qBxrmlo/w640-h360/market.jpg"></div>
         <div class="slide"><img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiJbQdc5W9yxb8xjtOfYXaKI7U71niDTImylo2DAdYGSwUOE72EnW3PQxShI-_9oQ79OoqCEKRlg9x1B6AJ8Bq8gzZngxJG-itW3qkkWRPCo2hsqhHJml0h5Jceaw_yZz3msQZpFtAhIOOHSFa_-RkSmGH7k721kH1lEu1wYXivAXYQliisO5snFTZqM6A/w640-h360/arenero.jpg"></div>
         <div class="slide"><img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgoCYje9nWciRpPE1i8k0nbsF7muosjLyL_Jgtsat6Ci3KpP2EkB0mnwH9JV7ANLxEV7baeOHH2aFEdUWP9uL4UuYSb71x5ETdIYrstpeI33Bgx1naRTROJm0NDqvHZfhnfBs6bYMK-79RtEo9i-xwwO1bfDR3RBnimOIGhb54TCF-TkJWDqN8bcI5wjsg/w640-h360/multiservicio%20gemelos.jpg"></div>
         <div class="slide"><img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEha7p9pErsM8oce-_Ya5R1dBAs7tgpZv19ssmzIbBAZHaRrizvN4Q3gmEGsiCM_7NRgdaEyuPhGP2MxoMf4HE0Asjk6iixjiy4MbcB-DVe9CqJ6Zge_HKAMrCsBm9kWJ0coxAxKaKdGp472P7NRXlN2GEe0A3i6RtfznxdY_ZDUYUfH3vApHWhbqmtU-iM/w640-h360/1000185952.jpg"></div>
@@ -254,28 +263,24 @@
             flyer: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhpyyG7bL_aZN2bN4eyskbFs1F5SJ8hHEtgDNbHlvCawUkN__au84lGpKbt47pdX6htPRCfYSiXQX3LOqic9YHytQN56CP_tHwKA2sg2UbB5GordMBhkoBPUxTbuD46YuS3UDstbPEjBTtcu6q0fWVDqTaLojpjWadGr7tVxM3kcKG1RXETmKQfloA_iiM/s1600/AMANECER%20LLANERO%20(1).png",
             grabaciones: []
         },
-
         {
             titulo: "Celebrando con tu música",
             locutor: "José Colmenares",
             flyer: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhRDGhyJViaZEdoMJSc0gKiLCfzYowz1Mv9R8mR3rD3CIqv5sFs6kNSta-7i5mXcn6IFmItesUKKyhPqMfbxstIUeucpa_xuGIdkN6GGCEvcpgW8A-l4jdhUhGKbksEVfGCrnj-OCH7lwuBQZWfy1j0iC-l0so-8-SlhGUmhyaOdceR_ZQWVQz4Vwxujk8/s1600/cELEBRANDO%20(1).png",
             grabaciones: []
         },
-
         {
             titulo: "Los pavos de otoño",
             locutor: "Plácido Gutiérrez",
             flyer: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgAKmO76s4SUapN6oHtKqn3tBtP0RwNeB3Fl9k2NGBv7ohXFTSfTRHTMu152aFVW-74T15yxi9pg8T1Zk_HpkoP7un0OMLfSm_NxKCWuB5sR5t6-J6vqAFDdnU591mGvOfJTXIUwZmi9zhiFpb6lmsK9njXUO3Sc_eZTyHbvWzvUnNGCrd2ys5B-lu_6M1P/s320/pAVOS%20ROMANTICOS.png",
             grabaciones: [{ id: "a1", fecha: "9 de Marzo", link: "https://ia902800.us.archive.org/11/items/programa-del-9-de-marzo/programa%20del%209%20de%20marzo.mp3" }]
         },
-
         {
             titulo: "Palabras de vida eterna",
             locutor: "Raúl Rubio",
             flyer: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiprY8FfHHc-SKxAg4o-yJ63o9yx1jzhI8cl_NQfe3h1YAZLGj2Jq8POqiXet8gzfBNNOewn2KcMf3hzufmOGQ6FwdpFn05cGt_U3esV8bv1shPUat3vK9VHoTEqvsq3eQxl_07yA-z8zG9CG4oAanmRCBBzKr0jTSiKrvVoDT4POs_M52aIBpjyrCLP0E/s1600/palabras%20de%20vida%20eterna%20(1).png",
             grabaciones: []
         },
-
         {
             titulo: "Entre líneas y música",
             locutor: "Katerlin Maldonado",
@@ -288,35 +293,30 @@
             flyer: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhT9bzA3W7Y4tdEjBBi2ewxi-RUZxcUZ5wrb04Q_B4nmAKuxfBNg5RVPp2b3Bq7UahBuuRKkToITjgGskRGcpAb3lqa3w-SOz7HMh-qwwq0PrnGNy_JYWGrXAcOUA32CPyDCI7GI9Co6oN5EFRVIpt0DDOrID9A3Ys16Hvr9pi0Lpybkmpw21geLWBzvVk/s1600/RANCHENATO%20(1).png",
             grabaciones: []
         },
-
         {
             titulo: "Salsa, son y tambor",
             locutor: "Giovanny Escalante - El Fénix",
             flyer: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhCkKfS-ePTwjTjBvbYG1f4xLTWy8EZzLiC2xZtg9pMRovtecLoSgw6hLjbEIB03fENSbLmzuJLcgwNkusq3erM_6J66rlxxwzsQNL9A13e1h1urqAVlayQ3V0b20HRp8RdWGJkYwla_mvloNl6J2W_5I5W95btXpwgrvvb7-UNrfcNA1kvEmgDAlsaWAA/s1600/FLAYER%20SALSA.png",
             grabaciones: []
         },
-
         {
             titulo: "Sentir andino",
             locutor: "Leonardo Vargas",
             flyer: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgzkL79pyFDhl_9zmXsHL9hVIWOiWYr4E02JMcqNkBM6Rg-qgl8vpR_VMrKrLJMea8Y8Dtw_GKKoiQn-po6YoFo8NBWr0rqyX-y7mdPn9chuyW7DbACU85gU0IhnnrjPlxPxbr5Z1QpPyi5Dyohz16cBjVE6WXb8MW4lbbHwfn-bmbGNNedcYYvMiJCsss/s1600/FLAYER%20SENTIR.png",
             grabaciones: []
         },
-
         {
             titulo: "Locomotora Campesina",
             locutor: "Jorge Gamboa",
             flyer: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjhdXWuNJFnD0GgUW9uUwFgfUqlznBh_nhon2eAqbp90N4j0lL0mKl4u1zRm6zTcxa3ShpCmrNKtXW94vXAobjlELQmA3qOM4Aq4vuNTaCNmY_fadL-quAGEli7Psymw2fNaqKSrJuFjXsZpxLS2TYBVHiW4606mudEZT_dqBU4FMtQ-S7RVRksq0y69q-i/s320/LOCOMOTORA%20FLAYER%20PAGINA.png",
             grabaciones: []
         },
-
         {
             titulo: "Bailables de ayer, hoy y siempre",
             locutor: "Rufino Segovia y Luis Parada",
             flyer: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhwzeuYFPdt5PyxOtbL4dMGxNNPguY9xEboE1X7PDEN3bd-bqDyjWhuyOmWkqrdQ4DZrVROu3A1JX26NoyIsC3YnMHaeOORqMdlkV3si2Cqcdo6BbS2T4E0p5XPM1G2OYA7CPQVQ0U5_aioLzsB6MhyMU7g38A6oXH2VWPuJQr7sA1fCLzKTv-qapc5fV0/s1600/FLAYER%20BAILABLE.png",
             grabaciones: []
         },
-
         {
             titulo: "Golazo",
             locutor: "Alexis Meza",
@@ -329,7 +329,6 @@
             flyer: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhG-bhuiuK8A9Jkw6-8G3YeMU6fYFTGBIS2rO1xyLAXFQK4TcmpU2zKgOHpaocM8dCGCU56by7lv0VKTjrb1sX6YAldESNawVhEC5XGtqLxU1j7s_Yy98DJ7L85FnAd_849BC08lk4mmQdqnGRBKqC3_jj41yzx-iqQwA4RiTA0BEohZGk96v2iqW4gGSk/s1600/FLAYER%20TIEMPO.png",
             grabaciones: []
         },
-
     ];
 
     function toggleAudio(id) {
