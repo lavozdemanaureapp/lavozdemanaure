@@ -2,8 +2,8 @@
 
 # --- CATEGORÍA: NACIONALES ---
 
-#EXTINF:-1 group-title="EVENTOS" tvg-logo="https://raw.githubusercontent.com/lavozdemanaureapp/lavozdemanaure/main/logo_v2.png", 🚨 EVENTO EN VIVO PRÓXIMAMENTE
-https://tremendous-freeware-smtp-cms.trycloudflare.com/live/manaure/index.m3u8
+#EXTINF:-1 group-title="EVENTOS" tvg-logo="https://raw.githubusercontent.com/lavozdemanaureapp/lavozdemanaure/main/logo_v2.png", ⚾ EN VIVO: BÉISBOL - MANAURE TV
+https://tremendous-freeware-smtp-cms.trycloudflare.com/beisbol/index.m3u8
 
 #EXTINF:-1 group-title="EVENTOS" tvg-logo="https://raw.githubusercontent.com/lavozdemanaureapp/lavozdemanaure/main/logo_v2.png", 🚨 EVENTO EN VIVO PRÓXIMAMENTE
 https://raw.githubusercontent.com/lavozdemanaureapp/lavozdemanaure/refs/heads/main/evento.mp4
