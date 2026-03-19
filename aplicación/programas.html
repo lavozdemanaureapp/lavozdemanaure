@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Programas - La Voz de Manaure 92.3 FM</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --red-m: #ff0000;
+            --negro-puro: #000000;
+            --negro-suave: #0c0c0c;
+            --gris-card: #1a1a1a;
+            --blanco: #edf2f4;
+            --gris-texto: #8d99ae;
+        }
+
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: var(--negro-puro); 
+            color: var(--blanco); 
+            margin: 0; 
+            padding-top: 70px; 
+            overflow-x: hidden;
+        }
+        
+        .nav-header { 
+            position: fixed; 
+            top: 0; 
+            width: 100%; 
+            height: 60px; 
+            background: rgba(0,0,0,0.9); 
+            backdrop-filter: blur(10px); 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+            padding: 0 15px; 
+            box-sizing: border-box; 
+            z-index: 10001; 
+            border-bottom: 1px solid #333; 
+        }
+        .logo-nav { height: 35px; width: 35px; border-radius: 50%; border: 1px solid var(--red-m); object-fit: cover; }
+
+        /* MENÚ LATERAL */
+        #panel-menu-manaure { 
+            position: fixed; 
+            top: 0; 
+            left: -100%; 
+            width: 260px; 
+            height: 100%; 
+            background: #0c0c0c; 
+            z-index: 10002; 
+            transition: 0.4s; 
+            border-right: 2px solid var(--red-m); 
+            padding: 20px; 
+            box-sizing: border-box; 
+        }
+        .menu-link { 
+            text-decoration:none; 
+            color:white; 
+            padding: 12px; 
+            background: #1a1a1a; 
+            border-radius: 10px; 
+            display: flex; 
+            align-items: center; 
+            gap: 12px; 
+            border: 1px solid #333; 
+            margin-bottom: 10px; 
+        }
+
+        .container { max-width: 1200px; margin: auto; padding: 10px 20px; }
+        .seccion-titulo { 
+            text-align: left; 
+            color: var(--blanco); 
+            text-transform: uppercase; 
+            font-weight: 900; 
+            border-left: 4px solid var(--red-m); 
+            padding-left: 15px; 
+            margin: 40px 0 20px; 
+            font-size: 1.1rem; 
+            letter-spacing: 1px; 
+        }
+
+        /* --- CARRUSEL ALIADOS (640 X 360) --- */
+        .carrusel-aliados {
+            position: relative;
+            width: 100%;
+            max-width: 640px; /* Ancho solicitado */
+            height: 360px;    /* Alto solicitado */
+            margin: 0 auto 30px auto;
+            overflow: hidden;
+            border-radius: 15px;
+            border: 1px solid #333;
+            background: #080808;
+        }
+        .slide {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .slide.active { opacity: 1; z-index: 1; }
+        .slide img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Para que llene los 640x360 perfectamente */
+        }
+
+        /* --- PROGRAMAS (300 X 200) --- */
+        .programs-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
+            gap: 20px; 
+            justify-items: center;
+        }
+        .prog-card { 
+            width: 300px; /* Ancho fijo solicitado */
+            background: var(--gris-card); 
+            border-radius: 12px; 
+            overflow: hidden; 
+            border: 1px solid #333; 
+        }
+        
+        .prog-img { 
+            width: 300px; 
+            height: 200px; /* Alto solicitado */
+            object-fit: cover; 
+            background: #222; 
+            display: block;
+        }
+
+        .prog-info { padding: 15px; }
+        .dl-item { background: #000; padding: 10px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #222; }
+        .dl-controls { display: flex; justify-content: space-between; align-items: center; }
+        .btn-group { display: flex; gap: 8px; }
+        
+        .btn-action { 
+            text-decoration: none; 
+            padding: 8px 12px; 
+            border-radius: 5px; 
+            font-weight: bold; 
+            font-size: 0.7rem; 
+            cursor: pointer; 
+            border: none; 
+            display: flex; 
+            align-items: center; 
+            gap: 5px; 
+        }
+        .btn-play { background: #2ecc71; color: white; }
+        .btn-download { background: var(--red-m); color: white; }
+
+        .no-downloads { 
+            background: #111; 
+            padding: 10px; 
+            border-radius: 8px; 
+            border: 1px dashed #444; 
+            text-align: center; 
+            color: var(--gris-texto); 
+            font-size: 0.75rem; 
+        }
+
+        audio { width: 100%; height: 35px; margin-top: 10px; display: none; }
+        audio.active { display: block; }
+
+        /* EQUIPO */
+        .admin-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 50px; }
+        .admin-card { background: #1a1a1a; padding: 20px; border-radius: 10px; text-align: center; border: 1px solid #333; }
+        .admin-card i { color: var(--red-m); font-size: 1.8rem; margin-bottom: 10px; }
+
+        #overlay-manaure { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:10000; }
+    </style>
+</head>
+<body>
+
+<div class="nav-header">
+    <div style="display: flex; align-items: center; gap: 12px;">
+        <div style="font-size: 24px; color: white; cursor: pointer;" onclick="toggleMenu()">☰</div>
+        <img src="logo_v2.png" class="logo-nav">
+        <span style="font-size: 0.8rem; font-weight: bold; letter-spacing: 1px;">PROGRAMACIÓN</span>
+    </div>
+    <a href="index.html" style="text-decoration: none; background: var(--red-m); color: white; font-size: 11px; font-weight: bold; padding: 6px 12px; border-radius: 5px;">VOLVER</a>
+</div>
+
+<div id="panel-menu-manaure">
+    <div style="text-align: center; margin: 60px 0 30px 0;">
+        <h2 style="color: var(--red-m); font-size: 1.2rem; margin: 0;">LA VOZ DE MANAURE</h2>
+        <small style="color: #666;">92.3 FM - Táchira</small>
+    </div>
+    <nav>
+        <a href="index.html" class="menu-link"><span>📻</span> Radio en Vivo</a>
+        <a href="programas.html" class="menu-link" style="border-color: var(--red-m);"><span>🎙️</span> Archivo de Programas</a>
+        <a href="micambio.html" class="menu-link"><span>💸</span> Mi Cambio</a>
+        <a href="canales.html" class="menu-link"><span>📺</span> TV Gratis</a>
+    </nav>
+</div>
+
+<div id="overlay-manaure" onclick="toggleMenu()"></div>
+
+<div class="container">
+    <h2 class="seccion-titulo">Nuestros Aliados Comerciales</h2>
+    
+    <div class="carrusel-aliados">
+                <div class="slide active"><img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhJSKA11sGXvqGdW8RchQpadmeg46hWF40YDPk_6m9MLTXAg6f5R6aWbVOvfepNIE3VqUDCdAMGtfAmGtS8mZZ-Ph8Bs-9FIkPZm-dVJVJ4qAterjC2AamBBPwJ4a9V_hkB8xMxFIsdVlPWtDDaAh8hG4OdCYeLcE2_22QqzlvvSTDLr33jHl21qBxrmlo/w640-h360/market.jpg"></div>
+        <div class="slide"><img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiJbQdc5W9yxb8xjtOfYXaKI7U71niDTImylo2DAdYGSwUOE72EnW3PQxShI-_9oQ79OoqCEKRlg9x1B6AJ8Bq8gzZngxJG-itW3qkkWRPCo2hsqhHJml0h5Jceaw_yZz3msQZpFtAhIOOHSFa_-RkSmGH7k721kH1lEu1wYXivAXYQliisO5snFTZqM6A/w640-h360/arenero.jpg"></div>
+        <div class="slide"><img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgoCYje9nWciRpPE1i8k0nbsF7muosjLyL_Jgtsat6Ci3KpP2EkB0mnwH9JV7ANLxEV7baeOHH2aFEdUWP9uL4UuYSb71x5ETdIYrstpeI33Bgx1naRTROJm0NDqvHZfhnfBs6bYMK-79RtEo9i-xwwO1bfDR3RBnimOIGhb54TCF-TkJWDqN8bcI5wjsg/w640-h360/multiservicio%20gemelos.jpg"></div>
+        <div class="slide"><img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEha7p9pErsM8oce-_Ya5R1dBAs7tgpZv19ssmzIbBAZHaRrizvN4Q3gmEGsiCM_7NRgdaEyuPhGP2MxoMf4HE0Asjk6iixjiy4MbcB-DVe9CqJ6Zge_HKAMrCsBm9kWJ0coxAxKaKdGp472P7NRXlN2GEe0A3i6RtfznxdY_ZDUYUfH3vApHWhbqmtU-iM/w640-h360/1000185952.jpg"></div>
+        <div class="slide"><img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjOR8YynLvbOJBHYwVM9h9btgXdkzLT01rrPPbrj84ciPwpgHfdC62CkD2sZv47reailQecBs9qyKBRigt-vDNCjAvkArhvGY3B8XzSGxHyIpqhsBYx83_wV5xgTpgsofJeChAmhiaoB8wN34BVT5a8IblHfC90WlqH7vyYTxs1pzrEBrG1b-XjV5P2VlU/w640-h360/1000186095.png"></div>
+        <div class="slide"><img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiEPESuD4UfKwyf4ECMid0LB5OzByGfAcThMUcJS4xDHp5GG36FUhqqI7YG5OznFPOlzOgyzoqgfO_dNAnWfhHPTwNVlOpg0MqRpCyVcM3V62hR4ir5UXuk6REngMkMLjoRCd2qbQfmMS88arUdddFkrE1DpMY49EaRIGOMB2dALPXh5RhGcGj7j3-w9Jc/w640-h360/1000214294.png"></div>
+        <div class="slide"><img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiTCqWK2cPQEorKUJHvlUQlgTWmwe19zu78uY7MB3mF36bD_FZafmjwAhDFIMjdPp0PCNa_22TsrvY3w8E0x1HvG8J19XSyIqKRglB57j6Ro5gXLqmIlvTUooc2ITLeS4ChBt_1nuXAAIKGWWPtk76rz0zlvEnrHFkGFyI0EQR__d4ayPbqS1QTAggvr-w/w640-h360/Black%20and%20yellow%20Modern%20Beauty%20Hair%20Salon%20Flyer%20(1).png"></div>
+        <div class="slide"><img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjD3FSEqYvZJAu047XZzYESUPrYlw0jhZzkjTW5mOiEMCmMyPSiXerFyMkpo_kqCzN0SXUsXPP-bNcQBzSpPb7VvtiO8LKYw-puNnzQKjbmwSNHIgo_8Sp5l2Z6H3I2Ovx9tUugv-JBWOAks1GINY43DmMM-6Z6AA8rZxvest5_Anr2_VJMNGlQHRAPBWM/w640-h360/1000178557.png"></div>
+        <div class="slide"><img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEibJ_lSiwi-tsTwNk257hTjHMCoyEv5I7JR8ptq3AQZ1Rh7_us3rFdWqKl3ad4XQL5etqmD8TGuaefSqOJdQYUXnBsf4Eko5ba7IRK7DVCXnP1YD9IazQAE_YM9gZPZRbUzcMG-wnniJ6TiIxDtMP4QttR4knLLPlJwckgcuVJG7oeg2CwIHUH4vAALZN4/w640-h360/Polish_20250502_132200249.jpg"></div>
+        <div class="slide"><img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhsk3uE_qdMoVZfJoG6LNp3Ykr3zWOC2sJ6sOsne0plzMk1h6HUyI5nkf3N-ICzP-0enT3SFS1hWdUbHbdjtzrGKMcYpfrbTd2id7dBNi20NbfGBLhhw1LMeIqSOcPSriS0KZPoeOgiEM8QkWSKLJ0z5YJ82_DKhT4wpMZxFdLyvL5MS_SLTLYjQ5ob9DQ/w640-h360/1000170417.png"></div> 
+        <div class="slide"><img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhlBYz_Lh7_QQArm69dsj7-c85mIVPz6DX9-cExwo1syPRFo-TkYNVTRNbfSYZUmMDAsk3DBMeMkSfSD_ecP-0brUZgSGV9ToIrUbqGB9kMR0BtbPHiKZtKK-AnzmkGDoIhrRRnVn76fF1fhey_MIVU8-B65uZQP9RjnOJo13hjrq7yCJEhsDRh8fQ14Kw/w640-h360/Entretenimiento.png"></div>
+    </div>
+
+    <h2 class="seccion-titulo">Archivo de Programas</h2>
+    <div class="programs-grid" id="grid-programas"></div>
+
+    <h2 class="seccion-titulo">Equipo de Gestión</h2>
+    <div class="admin-grid">
+        <div class="admin-card"><i class="fas fa-user-tie"></i><h4>Director General</h4><p>Leonardo Vargas</p></div>
+        <div class="admin-card"><i class="fas fa-broadcast-tower"></i><h4>Coordinación</h4><p>Alexis Meza</p></div>
+        <div class="admin-card"><i class="fas fa-users-cog"></i><h4>Administración</h4><p>María de Salas</p></div>
+    </div>
+</div>
+
+<script>
+    function toggleMenu() {
+        const menu = document.getElementById('panel-menu-manaure');
+        const overlay = document.getElementById('overlay-manaure');
+        const isOpen = menu.style.left === '0px';
+        menu.style.left = isOpen ? '-100%' : '0px';
+        overlay.style.display = isOpen ? 'none' : 'block';
+    }
+
+    let currentSlide = 0;
+    const slides = document.querySelectorAll('.slide');
+    function nextSlide() {
+        if (slides.length === 0) return;
+        slides[currentSlide].classList.remove('active');
+        currentSlide = (currentSlide + 1) % slides.length;
+        slides[currentSlide].classList.add('active');
+    }
+    setInterval(nextSlide, 5000);
+
+    const programas = [
+        {
+            titulo: "Amanecer llanero",
+            locutor: "María de Salas",
+            flyer: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhpyyG7bL_aZN2bN4eyskbFs1F5SJ8hHEtgDNbHlvCawUkN__au84lGpKbt47pdX6htPRCfYSiXQX3LOqic9YHytQN56CP_tHwKA2sg2UbB5GordMBhkoBPUxTbuD46YuS3UDstbPEjBTtcu6q0fWVDqTaLojpjWadGr7tVxM3kcKG1RXETmKQfloA_iiM/s1600/AMANECER%20LLANERO%20(1).png",
+            grabaciones: []
+        },
+
+        {
+            titulo: "Celebrando con tu música",
+            locutor: "José Colmenares",
+            flyer: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhRDGhyJViaZEdoMJSc0gKiLCfzYowz1Mv9R8mR3rD3CIqv5sFs6kNSta-7i5mXcn6IFmItesUKKyhPqMfbxstIUeucpa_xuGIdkN6GGCEvcpgW8A-l4jdhUhGKbksEVfGCrnj-OCH7lwuBQZWfy1j0iC-l0so-8-SlhGUmhyaOdceR_ZQWVQz4Vwxujk8/s1600/cELEBRANDO%20(1).png",
+            grabaciones: []
+        },
+
+        {
+            titulo: "Los pavos de otoño",
+            locutor: "Plácido Gutiérrez",
+            flyer: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgAKmO76s4SUapN6oHtKqn3tBtP0RwNeB3Fl9k2NGBv7ohXFTSfTRHTMu152aFVW-74T15yxi9pg8T1Zk_HpkoP7un0OMLfSm_NxKCWuB5sR5t6-J6vqAFDdnU591mGvOfJTXIUwZmi9zhiFpb6lmsK9njXUO3Sc_eZTyHbvWzvUnNGCrd2ys5B-lu_6M1P/s320/pAVOS%20ROMANTICOS.png",
+            grabaciones: [{ id: "a1", fecha: "9 de Marzo", link: "https://ia902800.us.archive.org/11/items/programa-del-9-de-marzo/programa%20del%209%20de%20marzo.mp3" }]
+        },
+
+        {
+            titulo: "Palabras de vida eterna",
+            locutor: "Raúl Rubio",
+            flyer: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiprY8FfHHc-SKxAg4o-yJ63o9yx1jzhI8cl_NQfe3h1YAZLGj2Jq8POqiXet8gzfBNNOewn2KcMf3hzufmOGQ6FwdpFn05cGt_U3esV8bv1shPUat3vK9VHoTEqvsq3eQxl_07yA-z8zG9CG4oAanmRCBBzKr0jTSiKrvVoDT4POs_M52aIBpjyrCLP0E/s1600/palabras%20de%20vida%20eterna%20(1).png",
+            grabaciones: []
+        },
+
+        {
+            titulo: "Entre líneas y música",
+            locutor: "Katerlin Maldonado",
+            flyer: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjpin9qh3sEeI3W-pCZsp5pxPNVmAXT_nZgZyBvfRTNZ2l3GGqd15ozpiHGlnyGRTMVYnabFJKq3i522_oqtZE-4afoqno6iUKiABQvNxGnMp9EVe_i39jD_1VEgl_0djHyRg42eJcJh2RHrrhP65twhjZ2i3-MiU2lNcDVhh-sV1CYmw8WYkI5PvAXsPA/s1600/ENTRE%20LINEAS%20(1).png",
+            grabaciones: []
+        },
+        {
+            titulo: "Ranchenato",
+            locutor: "Alexander Ramírez",
+            flyer: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhT9bzA3W7Y4tdEjBBi2ewxi-RUZxcUZ5wrb04Q_B4nmAKuxfBNg5RVPp2b3Bq7UahBuuRKkToITjgGskRGcpAb3lqa3w-SOz7HMh-qwwq0PrnGNy_JYWGrXAcOUA32CPyDCI7GI9Co6oN5EFRVIpt0DDOrID9A3Ys16Hvr9pi0Lpybkmpw21geLWBzvVk/s1600/RANCHENATO%20(1).png",
+            grabaciones: []
+        },
+
+        {
+            titulo: "Salsa, son y tambor",
+            locutor: "Giovanny Escalante - El Fénix",
+            flyer: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhCkKfS-ePTwjTjBvbYG1f4xLTWy8EZzLiC2xZtg9pMRovtecLoSgw6hLjbEIB03fENSbLmzuJLcgwNkusq3erM_6J66rlxxwzsQNL9A13e1h1urqAVlayQ3V0b20HRp8RdWGJkYwla_mvloNl6J2W_5I5W95btXpwgrvvb7-UNrfcNA1kvEmgDAlsaWAA/s1600/FLAYER%20SALSA.png",
+            grabaciones: []
+        },
+
+        {
+            titulo: "Sentir andino",
+            locutor: "Leonardo Vargas",
+            flyer: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgzkL79pyFDhl_9zmXsHL9hVIWOiWYr4E02JMcqNkBM6Rg-qgl8vpR_VMrKrLJMea8Y8Dtw_GKKoiQn-po6YoFo8NBWr0rqyX-y7mdPn9chuyW7DbACU85gU0IhnnrjPlxPxbr5Z1QpPyi5Dyohz16cBjVE6WXb8MW4lbbHwfn-bmbGNNedcYYvMiJCsss/s1600/FLAYER%20SENTIR.png",
+            grabaciones: []
+        },
+
+        {
+            titulo: "Locomotora Campesina",
+            locutor: "Jorge Gamboa",
+            flyer: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjhdXWuNJFnD0GgUW9uUwFgfUqlznBh_nhon2eAqbp90N4j0lL0mKl4u1zRm6zTcxa3ShpCmrNKtXW94vXAobjlELQmA3qOM4Aq4vuNTaCNmY_fadL-quAGEli7Psymw2fNaqKSrJuFjXsZpxLS2TYBVHiW4606mudEZT_dqBU4FMtQ-S7RVRksq0y69q-i/s320/LOCOMOTORA%20FLAYER%20PAGINA.png",
+            grabaciones: []
+        },
+
+        {
+            titulo: "Bailables de ayer, hoy y siempre",
+            locutor: "Rufino Segovia y Luis Parada",
+            flyer: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhwzeuYFPdt5PyxOtbL4dMGxNNPguY9xEboE1X7PDEN3bd-bqDyjWhuyOmWkqrdQ4DZrVROu3A1JX26NoyIsC3YnMHaeOORqMdlkV3si2Cqcdo6BbS2T4E0p5XPM1G2OYA7CPQVQ0U5_aioLzsB6MhyMU7g38A6oXH2VWPuJQr7sA1fCLzKTv-qapc5fV0/s1600/FLAYER%20BAILABLE.png",
+            grabaciones: []
+        },
+
+        {
+            titulo: "Golazo",
+            locutor: "Alexis Meza",
+            flyer: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEj47FoNqOLxkbXjXriG35Kg6CKqRKcPpoHhJQroPMwI6lTsUUpN44ATTcqJQwvmj2SGLGitZ-0Ww6YLzySHmsK-ZRmeV_akOiwTOrL86cX6iy0GtZcdcT6qjLMUvmYzcipG6OfTSDXKTouv4dhGbqO_Zu1H1s6cw5Y1yKuEIkhAwfOvlOv3OlN0SzsF0Kg/s1600/FLAYER%20GOLAZO.png",
+            grabaciones: []
+        },
+        {
+            titulo: "Mientras pasa el tiempo",
+            locutor: "Mayra Omaña",
+            flyer: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhG-bhuiuK8A9Jkw6-8G3YeMU6fYFTGBIS2rO1xyLAXFQK4TcmpU2zKgOHpaocM8dCGCU56by7lv0VKTjrb1sX6YAldESNawVhEC5XGtqLxU1j7s_Yy98DJ7L85FnAd_849BC08lk4mmQdqnGRBKqC3_jj41yzx-iqQwA4RiTA0BEohZGk96v2iqW4gGSk/s1600/FLAYER%20TIEMPO.png",
+            grabaciones: []
+        },
+
+    ];
+
+    function toggleAudio(id) {
+        const player = document.getElementById('player-' + id);
+        document.querySelectorAll('audio').forEach(a => {
+            if(a.id !== 'player-' + id) { a.pause(); a.classList.remove('active'); }
+        });
+        player.classList.toggle('active');
+        if (player.paused) player.play(); else player.pause();
+    }
+
+    function render() {
+        const grid = document.getElementById('grid-programas');
+        if (!grid) return;
+        grid.innerHTML = programas.map(p => `
+            <div class="prog-card">
+                <img src="${p.flyer}" class="prog-img">
+                <div class="prog-info">
+                    <h3 style="color:var(--red-m); margin:0; text-transform:uppercase; font-size:1.1rem;">${p.titulo}</h3>
+                    <small style="color:var(--gris-texto)">Con ${p.locutor}</small>
+                    <div style="margin-top:15px;">
+                        ${p.grabaciones.length > 0 ? p.grabaciones.map(g => `
+                            <div class="dl-item">
+                                <div class="dl-controls">
+                                    <span style="font-size:0.8rem;">${g.fecha}</span>
+                                    <div class="btn-group">
+                                        <button class="btn-action btn-play" onclick="toggleAudio('${g.id}')"><i class="fas fa-play"></i></button>
+                                        <a href="${g.link}" download class="btn-action btn-download"><i class="fas fa-download"></i></a>
+                                    </div>
+                                </div>
+                                <audio id="player-${g.id}" src="${g.link}" controls></audio>
+                            </div>
+                        `).join('') : '<div class="no-downloads">Aún no disponible para descarga</div>'}
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+    document.addEventListener('DOMContentLoaded', render);
+</script>
+</body>
+</html>
