@@ -2,63 +2,77 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>La Voz de Manaure - TV Gratis</title>
     <link rel="manifest" href="manifest.json">
     <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet" />
     <style>
         :root { --primary-red: #ff0000; --dark-bg: #0f0f0f; --panel-bg: #1a1a1a; }
         
-        @keyframes pulse-live {
-            0% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.3); opacity: 0.5; }
-            100% { transform: scale(1); opacity: 1; }
+        body { 
+            background: var(--dark-bg); 
+            color: white; 
+            font-family: 'Segoe UI', sans-serif; 
+            margin: 0; 
+            display: flex; 
+            flex-direction: column; 
+            min-height: 100vh;
+            overflow-x: hidden;
         }
 
-        body { background: var(--dark-bg); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
-        
-        /* NAVBAR UNIFICADA */
+        /* NAVBAR */
         .navbar { position: fixed; top: 0; left: 0; width: 100%; height: 60px; background: rgba(0,0,0,0.9); backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: space-between; padding: 0 15px; box-sizing: border-box; z-index: 10001; border-bottom: 1px solid #333; }
-        .nav-left { display: flex; align-items: center; gap: 12px; }
+        .logo-img { height: 35px; width: 35px; border-radius: 50%; border: 1px solid var(--primary-red); object-fit: cover; }
+
+        header { background: var(--panel-bg); margin-top: 60px; padding: 10px 20px; display: flex; gap: 10px; align-items: center; border-bottom: 1px solid #333; }
+        select, input { background: #333; color: white; border: 1px solid #444; padding: 8px; border-radius: 4px; flex: 1; }
+
+        main { display: flex; flex: 1; flex-direction: column; }
+
+        /* CONTENEDOR DE VIDEO OPTIMIZADO PARA ROTACIÓN */
+        #video-container { 
+            width: 100%; 
+            background: #000; 
+            position: sticky; 
+            top: 60px; 
+            z-index: 100; 
+        }
         
-        /* LOGO ACTUALIZADO CON BORDE ROJO */
-        .logo-img { height: 35px; width: 35px; border-radius: 50%; border: 1px solid var(--primary-red); object-fit: cover; background: #222; }
-
-        header { background: var(--panel-bg); margin-top: 60px; padding: 10px 20px; display: flex; gap: 10px; align-items: center; border-bottom: 1px solid #333; flex-shrink: 0; }
-        select, input { background: #333; color: white; border: 1px solid #444; padding: 8px; border-radius: 4px; outline: none; font-size: 14px; }
-        select { flex: 1; }
-        input { flex: 2; }
-
-        main { display: flex; flex: 1; overflow: hidden; flex-direction: column; }
-        @media (min-width: 768px) { main { flex-direction: row; } }
-
-        #video-container { flex-shrink: 0; background: #000; display: flex; flex-direction: column; }
-        .video-js { width: 100% !important; height: 210px !important; }
-        
-        @media (min-width: 768px) { 
-            #video-container { flex: 2; }
-            .video-js { height: 100% !important; } 
+        .video-js { 
+            width: 100% !important; 
+            height: auto !important; 
+            aspect-ratio: 16 / 9; 
         }
 
-        .dot-live { height: 8px; width: 8px; background: var(--primary-red); border-radius: 50%; box-shadow: 0 0 8px var(--primary-red); animation: pulse-live 1s infinite; }
+        /* AJUSTE PARA PANTALLA HORIZONTAL (LANDSCAPE) */
+        @media (orientation: landscape) and (max-height: 500px) {
+            .navbar, header { display: none; } /* Ocultamos barras para dar espacio */
+            #video-container { top: 0; }
+            .video-js { height: 100vh !important; }
+        }
 
-        #sidebar { flex: 1; background: var(--panel-bg); display: flex; flex-direction: column; overflow: hidden; border-left: 1px solid #333; }
-        #channel-list { flex: 1; overflow-y: auto; list-style: none; margin: 0; padding: 0; -webkit-overflow-scrolling: touch; }
-        #channel-list li { padding: 15px; border-bottom: 1px solid #252525; cursor: pointer; font-size: 14px; transition: 0.2s; }
+        @media (min-width: 768px) { 
+            main { flex-direction: row; height: calc(100vh - 120px); }
+            #video-container { flex: 2; position: relative; top: 0; }
+            .video-js { height: 100% !important; aspect-ratio: auto; }
+            #sidebar { flex: 1; border-left: 1px solid #333; }
+        }
+
+        #channel-list { list-style: none; margin: 0; padding: 0; }
+        #channel-list li { padding: 15px; border-bottom: 1px solid #252525; cursor: pointer; font-size: 14px; }
         #channel-list li.active { border-left: 4px solid var(--primary-red); background: #252525; color: var(--primary-red); font-weight: bold; }
 
-        #panel-menu-manaure { position: fixed; top: 0; left: -100%; width: 260px; height: 100%; background: #0c0c0c; z-index: 10002; transition: 0.4s; padding: 20px; box-sizing: border-box; border-right: 2px solid var(--primary-red); }
-        .menu-link { text-decoration: none; color: white; padding: 12px; background: #1a1a1a; border-radius: 10px; display: flex; align-items: center; gap: 12px; margin-bottom: 10px; border: 1px solid #333; transition: 0.3s; }
-        .menu-link:hover { border-color: var(--primary-red); }
+        #panel-menu-manaure { position: fixed; top: 0; left: -100%; width: 260px; height: 100%; background: #0c0c0c; z-index: 10002; transition: 0.4s; padding: 20px; border-right: 2px solid var(--primary-red); }
+        .menu-link { text-decoration: none; color: white; padding: 12px; background: #1a1a1a; border-radius: 10px; display: flex; align-items: center; gap: 12px; margin-bottom: 10px; border: 1px solid #333; }
     </style>
 </head>
 <body>
 
     <div class="navbar">
-        <div class="nav-left">
+        <div style="display: flex; align-items: center; gap: 12px;">
             <div style="font-size: 24px; color: white; cursor: pointer;" onclick="toggleMenu()">☰</div>
-            <img src="logo_v2.png" alt="Logo Manaure" class="logo-img" onerror="this.src='https://via.placeholder.com/35?text=92.3'">
-            <span style="font-weight: bold; font-size: 14px; letter-spacing: 1px;">TV GRATIS</span>
+            <img src="logo_v2.png" alt="Logo" class="logo-img" onerror="this.src='https://via.placeholder.com/35'">
+            <span style="font-weight: bold; font-size: 14px;">TV GRATIS</span>
         </div>
         <a href="index.html" style="text-decoration: none; background: var(--primary-red); color: white; font-size: 11px; font-weight: bold; padding: 5px 10px; border-radius: 5px;">VOLVER</a>
     </div>
@@ -66,11 +80,10 @@
     <div id="panel-menu-manaure">
         <div style="text-align: center; margin: 60px 0 30px 0;">
             <h2 style="color: var(--primary-red); font-size: 1.2rem; margin: 0;">LA VOZ DE MANAURE</h2>
-            <small style="color: #666;">92.3 FM - Táchira</small>
         </div>
         <nav>
             <a href="index.html" class="menu-link"><span>📻</span> Radio en Vivo</a>
-            <a href="programas.html" class="menu-link"><span>🎙️</span> Archivo de Programas</a>
+            <a href="programas.html" class="menu-link"><span>🎙️</span> Programas</a>
             <a href="micambio.html" class="menu-link"><span>💸</span> Mi Cambio</a>
             <a href="canales.html" class="menu-link" style="border-color: var(--primary-red);"><span>📺</span> TV Gratis</a>
         </nav>
@@ -82,26 +95,29 @@
         <select id="category-select" onchange="filterByCategory()">
             <option value="all">Categorías</option>
         </select>
-        <input type="text" id="search-input" placeholder="Buscar canal..." onkeyup="filterBySearch()">
+        <input type="text" id="search-input" placeholder="Buscar..." onkeyup="filterBySearch()">
     </header>
 
     <main>
         <div id="video-container">
-            <video id="iptv-player" class="video-js vjs-big-play-centered" controls preload="auto" crossorigin="anonymous">
+            <video id="iptv-player" class="video-js vjs-big-play-centered" controls preload="auto" playsinline>
                 <p class="vjs-no-js">JavaScript desactivado.</p>
             </video>
         </div>
 
         <div id="sidebar">
             <ul id="channel-list">
-                <li style="text-align: center; padding: 20px; color: #666;">Cargando canales...</li>
+                <li style="text-align: center; padding: 20px; color: #666;">Cargando...</li>
             </ul>
         </div>
     </main>
 
     <script src="https://vjs.zencdn.net/8.10.0/video.min.js"></script>
     <script>
-        const player = videojs('iptv-player');
+        const player = videojs('iptv-player', {
+            fluid: true, // Esto hace que el video sea "líquido" y se adapte al contenedor
+            responsive: true
+        });
         let allChannels = [];
         let categories = new Set();
 
@@ -111,7 +127,7 @@
                 const data = await response.text();
                 parseM3U(data);
             } catch (err) {
-                document.getElementById('channel-list').innerHTML = `<li style="color:red">Error: No se encontró canales.m3u</li>`;
+                document.getElementById('channel-list').innerHTML = `<li style="color:red">Error al cargar canales.m3u</li>`;
             }
         };
 
@@ -133,21 +149,15 @@
                 }
             });
 
-            populateCategories();
-            renderChannels(allChannels);
-            
-            if(allChannels.length > 0) {
-                playChannel(allChannels[0].url, document.querySelector('#channel-list li'));
-            }
-        }
-
-        function populateCategories() {
             const select = document.getElementById('category-select');
             [...categories].sort().forEach(cat => {
                 const opt = document.createElement('option');
                 opt.value = cat; opt.textContent = cat;
                 select.appendChild(opt);
             });
+
+            renderChannels(allChannels);
+            if(allChannels.length > 0) playChannel(allChannels[0].url, document.querySelector('#channel-list li'));
         }
 
         function renderChannels(list) {
@@ -160,7 +170,7 @@
             document.querySelectorAll('#channel-list li').forEach(li => li.classList.remove('active'));
             el.classList.add('active');
             player.src({ src: url, type: 'application/x-mpegURL' });
-            player.play().catch(e => console.log("Play prevenido"));
+            player.play();
         }
 
         function filterByCategory() {
