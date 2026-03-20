@@ -28,8 +28,12 @@
         }
         .logo-img { height: 35px; width: 35px; border-radius: 50%; border: 1px solid var(--primary-red); object-fit: cover; }
 
-        header { background: var(--panel-bg); padding: 10px; display: flex; gap: 10px; border-bottom: 1px solid #333; }
+        header { background: var(--panel-bg); padding: 10px; display: flex; gap: 8px; border-bottom: 1px solid #333; align-items: center; }
         select, input { background: #333; color: white; border: 1px solid #444; padding: 8px; border-radius: 4px; flex: 1; min-width: 0; font-size: 14px; }
+        
+        /* BOTÓN REFRESCAR */
+        .btn-refresh { background: #444; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 18px; transition: 0.3s; }
+        .btn-refresh:active { background: var(--primary-red); transform: rotate(90deg); }
 
         /* CONTENEDOR DE VIDEO */
         #video-container { width: 100%; background: #000; position: relative; line-height: 0; }
@@ -87,11 +91,12 @@
             <option value="all">Categorías</option>
         </select>
         <input type="text" id="search-input" placeholder="Buscar canal..." onkeyup="filterBySearch()">
+        <button class="btn-refresh" onclick="loadChannels()" title="Recargar lista">🔄</button>
     </header>
 
     <main>
         <div id="video-container">
-            <video id="iptv-player" class="video-js vjs-big-play-centered" controls preload="auto" playsinline loop>
+            <video id="iptv-player" class="video-js vjs-big-play-centered" controls preload="auto" playsinline>
                 <p class="vjs-no-js">JavaScript requerido.</p>
             </video>
         </div>
@@ -124,15 +129,22 @@
 
         let allChannels = [];
 
-        window.onload = async () => {
+        // FUNCIÓN PRINCIPAL DE CARGA
+        async function loadChannels() {
+            const listElement = document.getElementById('channel-list');
+            listElement.innerHTML = `<li style="text-align: center; padding: 30px; color: #666;">Actualizando lista...</li>`;
+            
             try {
+                // Añadimos un timestamp para evitar el caché del navegador
                 const response = await fetch('https://raw.githubusercontent.com/lavozdemanaureapp/lavozdemanaure/refs/heads/main/canales.m3u?v=' + new Date().getTime());
                 const data = await response.text();
                 parseM3U(data);
             } catch (err) {
-                document.getElementById('channel-list').innerHTML = `<li style="color:red">Error: No se encontró canales.m3u</li>`;
+                listElement.innerHTML = `<li style="color:red">Error: No se encontró canales.m3u</li>`;
             }
-        };
+        }
+
+        window.onload = loadChannels;
 
         function parseM3U(content) {
             const lines = content.split('\n');
@@ -144,7 +156,7 @@
             lines.forEach(line => {
                 line = line.trim();
                 if (line.startsWith('#EXTINF:')) {
-                    currentName = line.split(',').pop();
+                    currentName = line.split(',').pop().trim();
                     const groupMatch = line.match(/group-title="([^"]+)"/);
                     currentGroup = groupMatch ? groupMatch[1] : "General";
                     categories.add(currentGroup);
@@ -153,7 +165,9 @@
                 }
             });
 
+            // Actualizar selector de categorías
             const select = document.getElementById('category-select');
+            select.innerHTML = '<option value="all">Categorías</option>';
             [...categories].sort().forEach(cat => {
                 const opt = document.createElement('option');
                 opt.value = cat; opt.textContent = cat;
@@ -161,6 +175,7 @@
             });
 
             renderChannels(allChannels);
+            // Autoreproducir el primero si la lista no estaba vacía
             if(allChannels.length > 0) playChannel(allChannels[0].url, document.querySelector('#channel-list li'));
         }
 
@@ -171,17 +186,22 @@
 
         function playChannel(url, el) {
             if(!el) return;
+            
+            // Limpieza de URL por si tiene espacios accidentales
+            const cleanUrl = url.trim();
+            
             document.querySelectorAll('#channel-list li').forEach(li => li.classList.remove('active'));
             el.classList.add('active');
             
-            // Detectar si es el video MP4 de eventos o un canal HLS
-            const isMP4 = url.toLowerCase().includes('.mp4');
+            // LÓGICA MEJORADA: Detectar si es un video fijo (MP4) o señal en vivo (M3U8)
+            const isMP4 = cleanUrl.toLowerCase().includes('.mp4');
+            
             player.src({ 
-                src: url, 
+                src: cleanUrl, 
                 type: isMP4 ? 'video/mp4' : 'application/x-mpegURL' 
             });
             
-            player.play();
+            player.play().catch(e => console.log("Esperando interacción para reproducir..."));
             window.scrollTo({top: 0, behavior: 'smooth'});
         }
 
