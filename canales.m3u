@@ -212,8 +212,9 @@ http://livestreamcdn.net:1935/ExtremaTV/ExtremaTV/playlist.m3u8
 
 # --- CATEGORÍA: PELICULAS ---
 
-#EXTINF:-1 group-title="CINE", A Sacrifice (2024)
-http://15.235.51.60/contenido/peliculas/A%20Sacrifice/A.Sacrifice.2024.720p.WEBRip.SUB.mp4
+#EXTINF:-1, A Sacrifice (2024)
+https://images1-focus-opensocial.googleusercontent.com/gadgets/proxy?container=focus&refresh=604800&url=http://15.235.51.60/contenido/peliculas/A%20Sacrifice/A.Sacrifice.2024.720p.WEBRip.SUB.mp4
+
 
 #EXTINF:-1 tvg-id="EXTREMA" tvg-logo="" group-title="PELICULAS",JHON WICK 
 http://15.235.51.60/contenido/peliculas/John%20Wick%201/4798.John.lat.mp4
