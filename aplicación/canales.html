@@ -2,216 +2,134 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Manaure App - TV Gratis</title>
     <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet" />
     <style>
-        :root { --primary-red: #ff0000; --dark-bg: #0f0f0f; --panel-bg: #1a1a1a; }
+        :root { --primary-red: #ff0000; --dark-bg: #000000; }
         
-        body { 
+        body, html { 
             background: var(--dark-bg); 
             color: white; 
-            font-family: 'Segoe UI', sans-serif; 
             margin: 0; padding: 0;
-            display: flex; flex-direction: column;
-            height: 100vh; overflow: hidden;
+            width: 100%; height: 100%;
+            overflow: hidden; /* Evita cualquier margen fantasma */
         }
 
-        /* BARRA SUPERIOR */
+        /* BARRA SUPERIOR FIJA */
         .navbar { 
-            background: #000; height: 55px; display: flex; align-items: center; 
-            justify-content: space-between; padding: 0 15px; border-bottom: 1px solid #333;
-            z-index: 1001;
+            background: #000; height: 50px; display: flex; align-items: center; 
+            justify-content: space-between; padding: 0 10px; border-bottom: 1px solid #222;
         }
-        .logo-img { height: 35px; width: 35px; border-radius: 50%; border: 1px solid var(--primary-red); }
 
-        /* --- CONTENEDOR DE VIDEO REFORZADO PARA EXTENDER --- */
+        /* CONTENEDOR FORZADO AL ANCHO DE PANTALLA (VW = Viewport Width) */
         #video-container { 
-            width: 100% !important; 
+            width: 100vw !important; 
+            height: 56.25vw !important; /* Proporción exacta 16:9 */
+            background: #000;
             position: relative;
-            background: #000; 
-            /* Esta técnica obliga al contenedor a mantener la forma 16:9 y estirarse al ancho total */
-            height: 0;
-            padding-bottom: 56.25%; 
-            z-index: 1000;
+            overflow: hidden;
         }
 
         .video-js { 
-            position: absolute !important;
-            top: 0; left: 0;
             width: 100% !important; 
-            height: 100% !important; 
+            height: 100% !important;
         }
 
-        /* Si el usuario gira el celular a horizontal, el video ocupa TODO */
-        @media (orientation: landscape) and (max-height: 500px) {
-            .navbar, header { display: none; } 
-            #video-container { padding-bottom: 0; height: 100vh; position: fixed; top: 0; left: 0; }
-        }
+        /* SECCIÓN DE LISTA */
+        header { background: #111; padding: 8px; display: flex; gap: 5px; }
+        input, select { background: #222; color: white; border: 1px solid #444; padding: 8px; border-radius: 4px; flex-grow: 1; }
 
-        /* BUSCADOR Y CATEGORÍAS */
-        header { 
-            background: var(--panel-bg); padding: 10px; display: flex; gap: 8px; 
-            border-bottom: 1px solid #333; justify-content: center;
+        main { 
+            height: calc(100vh - 56.25vw - 110px); /* Resto del espacio para la lista */
+            overflow-y: auto; 
         }
-        select, input { 
-            background: #333; color: white; border: 1px solid #444; 
-            padding: 8px; border-radius: 4px; font-size: 14px;
-        }
-        #search-input { flex-grow: 1; }
+        
+        ul { list-style: none; margin: 0; padding: 0; }
+        li { padding: 15px; border-bottom: 1px solid #222; display: flex; align-items: center; gap: 10px; }
+        li.active { background: #111; border-left: 4px solid var(--primary-red); color: var(--primary-red); }
 
-        /* LISTA DE CANALES */
-        main { flex: 1; overflow-y: auto; background: var(--panel-bg); }
-        #channel-list { list-style: none; margin: 0; padding: 0; }
-        #channel-list li { 
-            padding: 15px; border-bottom: 1px solid #252525; cursor: pointer; 
-            display: flex; align-items: center; gap: 15px; 
-        }
-        #channel-list li.active { border-left: 5px solid var(--primary-red); background: #111; color: var(--primary-red); }
-
-        .ch-title { font-size: 14px; font-weight: bold; display: block; }
-        .ch-category { font-size: 11px; color: #777; text-transform: uppercase; }
-
-        /* MENÚ LATERAL */
-        #panel-menu-manaure { position: fixed; top: 0; left: -100%; width: 260px; height: 100%; background: #0c0c0c; z-index: 2000; transition: 0.4s; padding: 20px; border-right: 2px solid var(--primary-red); }
-        .menu-link { text-decoration: none; color: white; padding: 12px; background: #1a1a1a; border-radius: 10px; display: flex; align-items: center; gap: 12px; margin-bottom: 10px; border: 1px solid #333; }
-        #overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:1500; }
+        /* MENU LATERAL */
+        #menu { position: fixed; top: 0; left: -100%; width: 250px; height: 100%; background: #050505; z-index: 2000; transition: 0.3s; padding: 20px; border-right: 2px solid var(--primary-red); }
+        .m-link { text-decoration: none; color: white; display: block; padding: 15px; background: #111; margin-bottom: 10px; border-radius: 8px; }
     </style>
 </head>
 <body>
 
     <div class="navbar">
-        <div style="display: flex; align-items: center; gap: 12px;">
-            <div style="font-size: 24px; cursor: pointer;" onclick="toggleMenu()">☰</div>
-            <img src="logo_v2.png" alt="Logo" class="logo-img" onerror="this.src='https://via.placeholder.com/35'">
-            <span style="font-weight: bold;">TV GRATIS</span>
-        </div>
-        <a href="index.html" style="text-decoration: none; background: var(--primary-red); color: white; font-size: 12px; padding: 6px 12px; border-radius: 5px;">VOLVER</a>
+        <div onclick="toggleM()" style="font-size: 25px;">☰ TV GRATIS</div>
+        <a href="index.html" style="color: white; text-decoration: none; background: var(--primary-red); padding: 5px 10px; border-radius: 4px; font-size: 12px;">VOLVER</a>
     </div>
 
     <div id="video-container">
-        <video id="iptv-player" class="video-js vjs-big-play-centered" controls preload="auto" playsinline></video>
+        <video id="player" class="video-js vjs-big-play-centered" controls preload="auto" playsinline></video>
     </div>
 
     <header>
-        <select id="category-select" onchange="filterByCategory()">
-            <option value="all">CATEGORÍAS</option>
-        </select>
-        <input type="text" id="search-input" placeholder="Buscar canal..." onkeyup="filterBySearch()">
-        <button onclick="loadChannels()" style="background:none; border:none; color:white; cursor:pointer; font-size:20px;">🔄</button>
+        <input type="text" id="search" placeholder="Buscar..." onkeyup="doSearch()">
+        <button onclick="load()" style="background: none; border: none; font-size: 20px;">🔄</button>
     </header>
 
-    <main>
-        <ul id="channel-list">
-            <li style="text-align: center; padding: 40px; color: #666;">Cargando TV Gratis...</li>
-        </ul>
-    </main>
+    <main><ul id="list"><li>Cargando...</li></ul></main>
 
-    <div id="panel-menu-manaure">
-        <h2 style="color: var(--primary-red); text-align: center;">MANAURE APP</h2>
-        <nav>
-            <a href="index.html" class="menu-link">📻 Radio</a>
-            <a href="canales.html" class="menu-link" style="border-color: var(--primary-red);">📺 TV Gratis</a>
-        </nav>
+    <div id="menu">
+        <h2 style="color: var(--primary-red);">MANAURE</h2>
+        <a href="index.html" class="m-link">📻 Radio</a>
+        <a href="canales.html" class="m-link">📺 TV Gratis</a>
     </div>
-    <div id="overlay" onclick="toggleMenu()"></div>
 
     <script src="https://vjs.zencdn.net/8.10.0/video.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/videojs-youtube/3.0.1/Youtube.min.js"></script>
 
     <script>
-        const player = videojs('iptv-player', {
-            responsive: true,
-            fluid: false // Desactivamos fluid porque ya controlamos el tamaño con CSS absoluto
-        });
-        
-        let allChannels = [];
+        const p = videojs('player', { responsive: true, fluid: false });
+        let data = [];
 
-        async function loadChannels() {
-            const listEl = document.getElementById('channel-list');
+        async function load() {
             const url = 'https://raw.githubusercontent.com/lavozdemanaureapp/lavozdemanaure/main/canales.m3u?v=' + Date.now();
-            
             try {
-                const resp = await fetch(url);
-                const data = await resp.text();
-                processM3U(data);
-            } catch (e) {
-                listEl.innerHTML = `<li style="color:red; text-align:center;">Error al cargar la lista.</li>`;
-            }
+                const r = await fetch(url);
+                const t = await r.text();
+                parse(t);
+            } catch (e) { document.getElementById('list').innerHTML = "Error al cargar."; }
         }
 
-        function processM3U(content) {
-            const lines = content.split('\n');
-            allChannels = [];
-            let name = "", group = "General", cats = new Set();
-
-            lines.forEach(line => {
-                line = line.trim();
-                if (line.startsWith('#EXTINF:')) {
-                    name = line.split(',').pop();
-                    const g = line.match(/group-title="([^"]+)"/);
-                    group = g ? g[1] : "General";
-                    cats.add(group);
-                } else if (line.startsWith('http')) {
-                    allChannels.push({ name, url: line, category: group });
-                }
+        function parse(t) {
+            const lines = t.split('\n');
+            data = [];
+            let n = "";
+            lines.forEach(l => {
+                if (l.startsWith('#EXTINF:')) n = l.split(',').pop();
+                else if (l.startsWith('http')) data.push({ n, u: l });
             });
-
-            const sel = document.getElementById('category-select');
-            sel.innerHTML = '<option value="all">TV GRATIS</option>';
-            [...cats].sort().forEach(c => sel.innerHTML += `<option value="${c}">${c}</option>`);
-            
-            displayChannels(allChannels);
+            render(data);
         }
 
-        function displayChannels(list) {
-            const listEl = document.getElementById('channel-list');
-            listEl.innerHTML = list.map(ch => {
-                let icon = '📺';
-                if(ch.category.toLowerCase().includes('cine')) icon = '🎬';
-                return `<li onclick="play('${ch.url}', this)">
-                    <span style="font-size:22px">${icon}</span>
-                    <div>
-                        <span class="ch-title">${ch.name}</span>
-                        <span class="ch-category">${ch.category}</span>
-                    </div>
-                </li>`;
-            }).join('');
+        function render(l) {
+            document.getElementById('list').innerHTML = l.map(i => 
+                `<li onclick="play('${i.u}', this)">📺 ${i.n}</li>`).join('');
         }
 
-        function play(url, el) {
-            document.querySelectorAll('li').forEach(l => l.classList.remove('active'));
-            if(el) el.classList.add('active');
-            
-            let type = 'application/x-mpegURL';
-            if (url.includes('.mp4')) type = 'video/mp4';
-            if (url.includes('youtube.com') || url.includes('youtu.be')) type = 'video/youtube';
-
-            player.src({ src: url, type: type });
-            player.play();
-            
-            if(window.innerWidth < 768) window.scrollTo({top: 0, behavior: 'smooth'});
+        function play(u, el) {
+            document.querySelectorAll('li').forEach(x => x.classList.remove('active'));
+            el.classList.add('active');
+            let t = 'application/x-mpegURL';
+            if (u.includes('youtube.com') || u.includes('youtu.be')) t = 'video/youtube';
+            p.src({ src: u, type: t });
+            p.play();
         }
 
-        function filterByCategory() {
-            const val = document.getElementById('category-select').value;
-            displayChannels(val === 'all' ? allChannels : allChannels.filter(c => c.category === val));
+        function doSearch() {
+            const s = document.getElementById('search').value.toLowerCase();
+            render(data.filter(i => i.n.toLowerCase().includes(s)));
         }
 
-        function filterBySearch() {
-            const val = document.getElementById('search-input').value.toLowerCase();
-            displayChannels(allChannels.filter(c => c.name.toLowerCase().includes(val)));
+        function toggleM() {
+            const m = document.getElementById('menu');
+            m.style.left = m.style.left === '0px' ? '-100%' : '0px';
         }
 
-        function toggleMenu() {
-            const m = document.getElementById('panel-menu-manaure');
-            const o = document.getElementById('overlay');
-            const open = m.style.left === '0px';
-            m.style.left = open ? '-100%' : '0px';
-            o.style.display = open ? 'none' : 'block';
-        }
-
-        window.onload = loadChannels;
+        window.onload = load;
     </script>
 </body>
 </html>
