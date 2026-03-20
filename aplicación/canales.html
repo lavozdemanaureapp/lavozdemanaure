@@ -3,8 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Manaure App - Cine y TV</title>
+    <title>Manaure App - TV Gratis</title>
     <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/videojs-youtube/3.0.1/videojs-youtube.css" rel="stylesheet">
+
     <style>
         :root { --primary-red: #ff0000; --dark-bg: #0f0f0f; --panel-bg: #1a1a1a; }
         
@@ -17,42 +19,63 @@
             display: flex;
             flex-direction: column;
             height: 100vh;
+            overflow: hidden; /* Evita scroll doble */
         }
 
         /* BARRA SUPERIOR */
         .navbar { 
             background: #000; height: 55px; display: flex; align-items: center; 
             justify-content: space-between; padding: 0 15px; border-bottom: 1px solid #333;
+            position: relative; z-index: 1001; /* Por encima del video sticky */
         }
-        .logo-img { height: 35px; width: 35px; border-radius: 50%; border: 1px solid var(--primary-red); }
+        .logo-img { height: 35px; width: 35px; border-radius: 50%; border: 1px solid var(--primary-red); object-fit: cover; }
 
-        /* CONTENEDOR DE VIDEO: Tamaño controlado para que no tape todo */
+        /* CONTENEDOR DE VIDEO: Fluido y adaptable */
         #video-container { 
             width: 100%; 
-            max-width: 800px; /* Evita que en PC se vea gigante */
+            max-width: 100%; /* Ocupa todo el ancho en móviles */
             margin: 0 auto;
             background: #000; 
-            aspect-ratio: 16 / 9;
+            position: sticky; /* Se queda arriba al hacer scroll */
+            top: 0;
+            z-index: 1000;
+            aspect-ratio: 16 / 9; /* Mantiene proporción */
+            overflow: hidden;
         }
+
+        /* Ajuste para PC: Limitamos el tamaño en pantallas grandes */
+        @media (min-width: 800px) {
+            #video-container { max-width: 800px; border-radius: 0 0 8px 8px; }
+        }
+
+        /* Video.js Ajustes para llenar contenedor */
         .video-js { width: 100% !important; height: 100% !important; }
+        .vjs-tech { object-fit: contain; } /* Evita estiramiento estirado */
+        
+        /* Centrar botón de Play */
+        .vjs-big-play-centered .vjs-big-play-button {
+            top: 50%; left: 50%; margin-top: -0.8em; margin-left: -1.5em;
+        }
 
         /* BUSCADOR Y CATEGORÍAS */
         header { 
             background: var(--panel-bg); padding: 10px; display: flex; gap: 8px; 
             border-bottom: 1px solid #333; justify-content: center;
+            position: relative; z-index: 999;
         }
         select, input { 
             background: #333; color: white; border: 1px solid #444; 
             padding: 8px; border-radius: 4px; font-size: 14px;
         }
         #search-input { flex-grow: 1; }
+        .refresh-btn { background:none; border:none; cursor:pointer; font-size:20px; color: white; padding: 0 5px; }
 
         /* LISTA DE CANALES */
         main { flex: 1; overflow-y: auto; background: var(--panel-bg); }
         #channel-list { list-style: none; margin: 0; padding: 0; }
         #channel-list li { 
             padding: 15px; border-bottom: 1px solid #252525; cursor: pointer; 
-            display: flex; align-items: center; gap: 15px; 
+            display: flex; align-items: center; gap: 15px; transition: background 0.2s;
         }
         #channel-list li:hover { background: #222; }
         #channel-list li.active { border-left: 5px solid var(--primary-red); background: #111; color: var(--primary-red); }
@@ -61,68 +84,93 @@
         .ch-category { font-size: 11px; color: #777; text-transform: uppercase; }
 
         /* MENÚ LATERAL */
-        #panel-menu-manaure { position: fixed; top: 0; left: -100%; width: 260px; height: 100%; background: #0c0c0c; z-index: 2000; transition: 0.4s; padding: 20px; border-right: 2px solid var(--primary-red); }
-        .menu-link { text-decoration: none; color: white; padding: 12px; background: #1a1a1a; border-radius: 10px; display: flex; align-items: center; gap: 12px; margin-bottom: 10px; border: 1px solid #333; }
+        #panel-menu-manaure { position: fixed; top: 0; left: -100%; width: 260px; height: 100%; background: #0c0c0c; z-index: 2000; transition: 0.4s; padding: 20px; border-right: 2px solid var(--primary-red); box-sizing: border-box; }
+        .menu-link { text-decoration: none; color: white; padding: 12px; background: #1a1a1a; border-radius: 10px; display: flex; align-items: center; gap: 12px; margin-bottom: 10px; border: 1px solid #333; transition: border-color 0.3s; }
+        .menu-link:hover { border-color: var(--primary-red); }
+        
+        /* Overlay del menú */
+        #overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:1500; }
     </style>
 </head>
 <body>
 
     <div class="navbar">
         <div style="display: flex; align-items: center; gap: 12px;">
-            <div style="font-size: 24px; cursor: pointer;" onclick="toggleMenu()">☰</div>
-            <img src="logo_v2.png" alt="Logo" class="logo-img" onerror="this.src='https://via.placeholder.com/35'">
-            <span style="font-weight: bold;">MANAURE TV</span>
+            <div style="font-size: 24px; cursor: pointer; color: white;" onclick="toggleMenu()">☰</div>
+            <img src="logo_v2.png" alt="Logo" class="logo-img" onerror="this.src='https://via.placeholder.com/35/ff0000/ffffff?text=M'">
+            <span style="font-weight: bold; text-transform: uppercase; letter-spacing: 1px;">TV Gratis</span>
         </div>
-        <a href="index.html" style="text-decoration: none; background: var(--primary-red); color: white; font-size: 12px; padding: 6px 12px; border-radius: 5px;">VOLVER</a>
+        <a href="index.html" style="text-decoration: none; background: var(--primary-red); color: white; font-size: 12px; padding: 6px 12px; border-radius: 5px; font-weight: bold;">VOLVER</a>
     </div>
 
     <div id="video-container">
-        <video id="iptv-player" class="video-js vjs-big-play-centered" controls preload="auto" playsinline></video>
+        <video id="iptv-player" class="video-js vjs-big-play-centered vjs-theme-city" controls preload="auto" playsinline></video>
     </div>
 
     <header>
         <select id="category-select" onchange="filterByCategory()">
-            <option value="all">TODOS</option>
+            <option value="all">CATEGORÍAS</option>
         </select>
-        <input type="text" id="search-input" placeholder="Buscar canal o peli..." onkeyup="filterBySearch()">
-        <button onclick="loadChannels()" style="background:none; border:none; cursor:pointer; font-size:20px;">🔄</button>
+        <input type="text" id="search-input" placeholder="Buscar canal..." onkeyup="filterBySearch()">
+        <button onclick="loadChannels()" class="refresh-btn" title="Actualizar Lista">🔄</button>
     </header>
 
     <main>
         <ul id="channel-list">
-            <li style="text-align: center; padding: 40px; color: #666;">Cargando contenido...</li>
+            <li style="text-align: center; padding: 40px; color: #666; justify-content: center;">
+                <i>Cargando canales de TV Gratis...</i>
+            </li>
         </ul>
     </main>
 
     <div id="panel-menu-manaure">
-        <h2 style="color: var(--primary-red); text-align: center;">MANAURE APP</h2>
+        <h2 style="color: var(--primary-red); text-align: center; margin-top: 0;">MANAURE APP</h2>
+        <p style="text-align: center; color: #777; font-size: 12px; margin-bottom: 25px;">Radio Manaure 92.3 FM</p>
         <nav>
-            <a href="index.html" class="menu-link">📻 Radio</a>
-            <a href="canales.html" class="menu-link" style="border-color: var(--primary-red);">📺 TV & Cine</a>
+            <a href="index.html" class="menu-link">📻 Radio En Vivo</a>
+            <a href="canales.html" class="menu-link" style="border-color: var(--primary-red); background: #111;">📺 TV Gratis</a>
         </nav>
     </div>
-    <div id="overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:1500;" onclick="toggleMenu()"></div>
+    
+    <div id="overlay" onclick="toggleMenu()"></div>
 
     <script src="https://vjs.zencdn.net/8.10.0/video.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/videojs-youtube/3.0.1/Youtube.min.js"></script>
+
     <script>
-        const player = videojs('iptv-player');
+        // Inicializamos el reproductor con opciones de fluidez
+        const player = videojs('iptv-player', {
+            fluid: true, // Se adapta al contenedor
+            responsive: true, // Se adapta a la pantalla
+            liveui: true, // Interfaz optimizada para EN VIVO
+            playbackRates: [0.5, 1, 1.5, 2] // Opciones de velocidad
+        });
+
         let allChannels = [];
 
+        // Función para cargar la lista desde GitHub
         async function loadChannels() {
             const listEl = document.getElementById('channel-list');
-            // Cambia 'main' por 'master' si ves que no carga
+            listEl.innerHTML = `<li style="justify-content:center; color:#999;">🔄 Actualizando guía...</li>`;
+            
+            // URL RAW correcta de tu GitHub
             const url = 'https://raw.githubusercontent.com/lavozdemanaureapp/lavozdemanaure/main/canales.m3u?v=' + Date.now();
             
             try {
                 const resp = await fetch(url);
-                if(!resp.ok) throw new Error();
+                if(!resp.ok) throw new Error('Error de red');
                 const data = await resp.text();
                 processM3U(data);
             } catch (e) {
-                listEl.innerHTML = `<li style="color:red; text-align:center;">No se pudo cargar la lista. Revisa canales.m3u en GitHub.</li>`;
+                listEl.innerHTML = `<li style="color:#ff6b6b; text-align:center; justify-content:center; flex-direction:column; gap:10px; padding:30px;">
+                    <span style="font-size:30px;">⚠️</span>
+                    <span>No se pudo conectar con la lista de TV.<br>Verifica tu conexión a internet.</span>
+                    <button onclick="loadChannels()" style="background:var(--primary-red); color:white; border:none; padding:8px 15px; border-radius:5px; margin-top:10px; cursor:pointer;">Reintentar</button>
+                </li>`;
             }
         }
 
+        // Procesa el texto M3U y extrae canales
         function processM3U(content) {
             const lines = content.split('\n');
             allChannels = [];
@@ -131,31 +179,56 @@
             lines.forEach(line => {
                 line = line.trim();
                 if (line.startsWith('#EXTINF:')) {
-                    name = line.split(',').pop();
+                    // Extrae el nombre (después de la última coma)
+                    name = line.split(',').pop() || "Canal sin nombre";
+                    // Extrae el grupo (group-title)
                     const g = line.match(/group-title="([^"]+)"/);
                     group = g ? g[1] : "General";
                     cats.add(group);
                 } else if (line.startsWith('http')) {
+                    // Si es una línea de URL, guarda el canal
                     allChannels.push({ name, url: line, category: group });
+                    // Resetea para el próximo canal
+                    name = ""; group = "General"; 
                 }
             });
 
+            // Si la lista está vacía
+            if(allChannels.length === 0) {
+                 document.getElementById('channel-list').innerHTML = `<li style="justify-content:center; color:#999;">La lista de TV Gratis está vacía actualmente.</li>`;
+                 return;
+            }
+
+            // Llena el selector de categorías
             const sel = document.getElementById('category-select');
-            sel.innerHTML = '<option value="all">CATEGORÍAS</option>';
+            sel.innerHTML = '<option value="all">TV GRATIS</option>';
             [...cats].sort().forEach(c => sel.innerHTML += `<option value="${c}">${c}</option>`);
             
             displayChannels(allChannels);
         }
 
+        // Muestra la lista de canales en el HTML
         function displayChannels(list) {
             const listEl = document.getElementById('channel-list');
+            
+            if(list.length === 0) {
+                listEl.innerHTML = `<li style="justify-content:center; color:#999; padding:20px;">No se encontraron canales.</li>`;
+                return;
+            }
+
             listEl.innerHTML = list.map(ch => {
+                // Iconos automáticos según categoría
                 let icon = '📡';
-                if(ch.category.toLowerCase().includes('cine')) icon = '🎬';
-                if(ch.category.toLowerCase().includes('serie')) icon = '📺';
+                const catLower = ch.category.toLowerCase();
+                if(catLower.includes('cine') || catLower.includes('pelicula')) icon = '🎬';
+                if(catLower.includes('serie')) icon = '📺';
+                if(catLower.includes('deporte') || catLower.includes('futbol')) icon = '⚽';
+                if(catLower.includes('noticia')) icon = '📰';
+                if(catLower.includes('musica')) icon = '🎵';
+                if(catLower.includes('youtube')) icon = '📹';
                 
                 return `<li onclick="play('${ch.url}', this)">
-                    <span style="font-size:22px">${icon}</span>
+                    <span style="font-size:22px; width:30px; text-align:center;">${icon}</span>
                     <div>
                         <span class="ch-title">${ch.name}</span>
                         <span class="ch-category">${ch.category}</span>
@@ -164,16 +237,44 @@
             }).join('');
         }
 
+        // Función principal de reproducción
         function play(url, el) {
-            document.querySelectorAll('li').forEach(l => l.classList.remove('active'));
-            el.classList.add('active');
-            const type = url.includes('.mp4') ? 'video/mp4' : 'application/x-mpegURL';
-            player.src({ src: url, type: type });
-            player.play();
-            // En PC no hacemos scroll automático para no perder de vista la lista
-            if(window.innerWidth < 768) window.scrollTo({top: 0, behavior: 'smooth'});
+            // Gestión de clase activa en la lista
+            document.querySelectorAll('#channel-list li').forEach(l => l.classList.remove('active'));
+            if(el) el.classList.add('active');
+            
+            // Detectar el tipo de stream
+            let type = 'application/x-mpegURL'; // Por defecto HLS (.m3u8)
+            
+            if (url.includes('.mp4')) {
+                type = 'video/mp4';
+            } else if (url.includes('youtube.com') || url.includes('youtu.be')) {
+                type = 'video/youtube'; // Gracias al plugin de YouTube
+            } else if (url.includes('.mp3')) {
+                type = 'audio/mpeg';
+            }
+
+            // Cargar y reproducir
+            try {
+                player.src({ src: url, type: type });
+                player.play().catch(error => {
+                    console.log("Autoplay bloqueado o error de carga:", error);
+                    // Video.js mostrará su propia pantalla de error si no puede cargar
+                });
+            } catch (e) {
+                console.error("Error al intentar reproducir:", e);
+            }
+            
+            // En móvil, subimos al reproductor automáticamente con suavidad
+            if(window.innerWidth < 768) {
+                // Pequeño delay para dejar que cargue el layout
+                setTimeout(() => {
+                    window.scrollTo({top: 0, behavior: 'smooth'});
+                }, 100);
+            }
         }
 
+        // Filtros
         function filterByCategory() {
             const val = document.getElementById('category-select').value;
             displayChannels(val === 'all' ? allChannels : allChannels.filter(c => c.category === val));
@@ -181,17 +282,28 @@
 
         function filterBySearch() {
             const val = document.getElementById('search-input').value.toLowerCase();
-            displayChannels(allChannels.filter(c => c.name.toLowerCase().includes(val)));
+            const category = document.getElementById('category-select').value;
+            
+            let filtered = allChannels;
+            if(category !== 'all') {
+                filtered = filtered.filter(c => c.category === category);
+            }
+            
+            displayChannels(filtered.filter(c => c.name.toLowerCase().includes(val)));
         }
 
+        // Menú Lateral
         function toggleMenu() {
             const m = document.getElementById('panel-menu-manaure');
             const o = document.getElementById('overlay');
-            const open = m.style.left === '0px';
-            m.style.left = open ? '-100%' : '0px';
-            o.style.display = open ? 'none' : 'block';
+            // Comprobamos si está abierto basándonos en la clase o el estilo computado
+            const isOpen = window.getComputedStyle(m).left === '0px';
+            
+            m.style.left = isOpen ? '-100%' : '0px';
+            o.style.display = isOpen ? 'none' : 'block';
         }
 
+        // Carga inicial
         window.onload = loadChannels;
     </script>
 </body>
