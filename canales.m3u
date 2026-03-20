@@ -2,17 +2,11 @@
 
 # --- CATEGORÍA: NACIONALES ---
 
-#EXTINF:-1 group-title="EVENTOS" tvg-logo="https://raw.githubusercontent.com/lavozdemanaureapp/lavozdemanaure/main/logo_v2.png", ⚾ EN VIVO: BÉISBOL - MANAURE TV
-https://imperial-sectors-suddenly-mixing.trycloudflare.com/live/radio/index.m3u8
-
 #EXTINF:-1 group-title="EVENTOS" tvg-logo="https://raw.githubusercontent.com/lavozdemanaureapp/lavozdemanaure/main/logo_v2.png", 🚨 EVENTO EN VIVO PRÓXIMAMENTE
 https://raw.githubusercontent.com/lavozdemanaureapp/lavozdemanaure/refs/heads/main/evento.mp4
 
 #EXTINF:-1 tvg-id="Venevision" tvg-logo="" group-title="NACIONALES",Venevisión Plus
 https://vod2live.univtec.com/manifest/4c41c0d8-e2e4-43cc-bd43-79afe715e1b3.m3u8
-
-#EXTINF:-1 tvg-id="Venevision" tvg-logo="" group-title="NACIONALES", Novelas Venezuela
-https://jmp2.uk/plu-6474a86917f5e100089a0c1c.m3u8
 
 #EXTINF:-1 tvg-id="Venevision" tvg-logo="" group-title="NACIONALES", TVFANB
 https://vcp2.myplaytv.com/tvfanb/tvfanb/playlist.m3u8?PlaylistM3UCL
@@ -22,9 +16,6 @@ https://vcp12.myplaytv.com/trt/trt/playlist.m3u8?PlaylistM3UCL
 
 #EXTINF:-1 tvg-id="TRT" tvg-logo="" group-title="NACIONALES",NET CHANNEL
 https://media.streambrothers.com:19360/8158/8158.m3u8?PlaylistM3UCL
-
-#EXTINF:-1 tvg-id="TRT" tvg-logo="" group-title="NACIONALES",VTV
-https://live.eu-north-1a.cf.dmcdn.net/sec2(LDvUZz8HfBy2QsTl7lAeLwuixsOk6A1NrcJz1PAfQqaDN8LRZEYxlQmE-IXstZmS4OHNbND2-C5hMJFoMdGHLnbtvHJnKeB67H0WvxInN870ymbZj0NFi367-NK2B7Qz)/dm/3/x930kre/d/live-480@60.m3u8
 
 #EXTINF:-1 tvg-id="TRT" tvg-logo="" group-title="NACIONALES",CANAL I
 https://streaming.canal-i.com/master.m3u8
@@ -42,17 +33,41 @@ https://rcntv-rcnmas-1-us.plex.wurl.tv/playlist.m3u8
 #EXTINF:-1 tvg-id="SEÑAL COLOMBIA" tvg-logo="" group-title="INTERNACIONALES",SEÑAL COLOMBIA
 https://streaming.rtvc.gov.co/TV_Senal_Colombia_live/smil:live.smil/playlist.m3u8
 
+#EXTINF:-1 tvg-id="SEÑAL COLOMBIA" tvg-logo="" group-title="INTERNACIONALES",NORTE TV
+https://live.arnoproducciones.com/hls/norte.m3u8
+
+#EXTINF:-1 tvg-id="SEÑAL COLOMBIA" tvg-logo="" group-title="INTERNACIONALES",CANAL TRO
+https://liveingesta118.cdnmedia.tv/canaltro2live/smil:live.smil/playlist.m3u8
+
+#EXTINF:-1 tvg-id="SEÑAL COLOMBIA" tvg-logo="" group-title="INTERNACIONALES",PARRANDA VALLENATA
+https://backupmaxmedia.hvmultiplay.com/hls/stream3/parrandavallenata.m3u8
+
 #EXTINF:-1 tvg-id="SEÑAL COLOMBIA" tvg-logo="" group-title="INTERNACIONALES",REWIND TV
 https://media.streambrothers.com:19360/adxwrggswc/adxwrggswc.m3u8?PlaylistM3UCL
 
 #EXTINF:-1 tvg-id="VISION DORADA" tvg-logo="" group-title="INTERNACIONALES",VISION DORADA
 https://movil.ejeserver.com/live/visiondorada.m3u8?PlaylistM3UCL
 
+#EXTINF:-1 tvg-id="VISION DORADA" tvg-logo="" group-title="INTERNACIONALES",TELE REBELDE
+https://tv.picta.cu/telerebelde/telerebelde_1.m3u8
+
 #EXTINF:-1 tvg-id="LATINA" tvg-logo="" group-title="INTERNACIONALES",LATINA
 https://redirector.rudo.video/hls-video/567ffde3fa319fadf3419efda25619456231dfea/latina/latina.smil/playlist.m3u8
 
-#EXTINF:-1 tvg-id="PANAMERICANA" tvg-logo="" group-title="INTERNACIONALES",PANAMERICANA
-https://live-stream.iblups.com/live/cde7c1935927ca1cf540d70c835deb58aca3fd15.m3u8
+#EXTINF:-1 tvg-id="LATINA" tvg-logo="" group-title="INTERNACIONALES",VTV PERU
+https://d3q93l5bumjyoq.cloudfront.net/index.m3u8
+
+#EXTINF:-1 tvg-id="LATINA" tvg-logo="" group-title="INTERNACIONALES",TELE UNO
+http://tv.teleunotv.cr:1935/TVUNO/TVUNO/playlist.m3u8
+
+#EXTINF:-1 tvg-id="LATINA" tvg-logo="" group-title="INTERNACIONALES",TELEMAX
+https://mlb.essastream.com:8081/telemax/tracks-v1a1/mono.m3u8
+
+#EXTINF:-1 tvg-id="PANAMERICANA" tvg-logo="" group-title="INTERNACIONALES",TELESUR CR
+https://s1.tvdatta.com:3582/live/telesurlive.m3u8
+
+#EXTINF:-1 tvg-id="PANAMERICANA" tvg-logo="" group-title="INTERNACIONALES",TEN CANAL 10
+https://raw.githubusercontent.com/BellezaEmporium/IPTV_Exception/master/channels/hn/tentv.m3u8
 
 #EXTINF:-1 tvg-id="MICROVISION" tvg-logo="" group-title="INTERNACIONALES",MICROVISION
 https://streaming.telecablecentral.com.do/live/MicroHD/playlist.m3u8?PlaylistM3UCL
@@ -72,22 +87,39 @@ https://5eaccbab48461.streamlock.net:1936/8222/8222/playlist.m3u8?PlaylistM3UCL
 #EXTINF:-1 tvg-id="NET TV" tvg-logo="" group-title="INTERNACIONALES",TVN3
 https://mdstrm.com/live-stream-playlist/5653641561b4eba30a7e4929.m3u8?PlaylistM3UCL
 
-#EXTINF:-1 tvg-id="NET TV" tvg-logo="" group-title="INTERNACIONALES",CANAL 13 CHILE
-https://redirector.rudo.video/hls-video/ey6283je82983je9823je8jowowiekldk9838274/13popup/13popup.smil/playlist.m3u8?PlaylistM3UCL
+#EXTINF:-1 tvg-id="NET TV" tvg-logo="" group-title="INTERNACIONALES",IMPACTO TV
+https://cloudvideo.servers10.com:8081/impactotv/index.m3u8
 
 #EXTINF:-1 tvg-id="NET TV" tvg-logo="" group-title="INTERNACIONALES",ECUAVISA
 https://origin.dpsgo.com/ssai/event/GyPkTVDZSXGhpOvxPK7m2g/master.m3u8?PlaylistM3UCL
 
+#EXTINF:-1 tvg-id="NET TV" tvg-logo="" group-title="INTERNACIONALES",ECUADOR TV
+https://samson.streamerr.co:8081/shogun/index.m3u8
+
+#EXTINF:-1 tvg-id="NET TV" tvg-logo="" group-title="INTERNACIONALES",TECONOLOGIA TV
+https://streamunoapp.com:3616/live/juniorrodrigueztvlive.m3u8
+
 #EXTINF:-1 tvg-id="NET TV" tvg-logo="" group-title="INTERNACIONALES",TV5 ARG
 https://617c5175c970b.streamlock.net:4444/tvcinco/live1/playlist.m3u8?PlaylistM3UCL
 
+#EXTINF:-1 tvg-id="NET TV" tvg-logo="" group-title="INTERNACIONALES",TELERITMO
+http://mdstrm.com/live-stream-playlist/57b4dc126338448314449d0c.m3u8
 
+#EXTINF:-1 tvg-id="NET TV" tvg-logo="" group-title="INTERNACIONALES",AMERICA TV
+https://prepublish.f.qaotic.net/a07/americahls-100056/playlist_720p.m3u8
 
+#EXTINF:-1 tvg-id="NET TV" tvg-logo="" group-title="INTERNACIONALES",SUPER5
+http://191.102.39.254:5000/live/5up3r5/playlist.m3u8
+
+#EXTINF:-1 tvg-id="NET TV" tvg-logo="" group-title="INTERNACIONALES",FRECUENCIA M
+https://s2.tvdatta.com:3307/hybrid/play.m3u8
+
+#EXTINF:-1 tvg-id="NET TV" tvg-logo="" group-title="INTERNACIONALES",GAMAVISION
+https://stream.esradioecuador.com/hls/stream.m3u8
 
 # --- CATEGORÍA: DEPORTES ---
 #EXTINF:-1 tvg-id="FIFA" tvg-logo="" group-title="DEPORTES",FIFA
 https://6c849fb3.wurl.com/master/f36d25e7e52f1ba8d7e56eb859c636563214f541/TEctbXhfRklGQVBsdXNTcGFuaXNoLTFfSExT/playlist.m3u8
-
 
 #EXTINF:-1 tvg-id="BEIN SPORTS XTRA" tvg-logo="" group-title="DEPORTES",BEIN SPORTS XTRA
 https://dc1644a9jazgj.cloudfront.net/beIN_Sports_Xtra_Espanol.m3u8
@@ -110,6 +142,9 @@ https://e1.viginet.vectormax.com:5210/quickstart/114-934-21/index.m3u8
 
 #EXTINF:-1 tvg-id="MERIDIANO TV" tvg-logo="" group-title="DEPORTES",VINXTV
 https://live.astreaming.es:5443/live/streams/vinxtv.m3u8
+
+#EXTINF:-1 tvg-id="MERIDIANO TV" tvg-logo="" group-title="DEPORTES",GARAGE TV
+https://stream1.sersat.com/hls/garagetv.m3u8
 
 # --- CATEGORÍA: NOTICIAS ---
 
@@ -154,7 +189,13 @@ https://stmv6.voxtvhd.com.br/xtremacartoons/xtremacartoons/playlist.m3u8
 http://canadaremar2.todostreaming.es/live/peque-pequetv.m3u8?PlaylistM3UCL
 
 #EXTINF:-1 tvg-id="PEQUE TV" tvg-logo="" group-title="INFANTIL",LOCOMOTION
-http://51.222.85.85:81/hls/loco/index.m3u8?PlaylistM3UCL
+http://51.222.85.85:81/hls/loco/index.m3u8
+
+#EXTINF:-1 tvg-id="PEQUE TV" tvg-logo="" group-title="INFANTIL",TVPARATI 
+https://streamtv.intervenhosting.net:3529/live/tvmparatilive.m3u8
+
+#EXTINF:-1 tvg-id="PEQUE TV" tvg-logo="" group-title="INFANTIL",EXTREMA KIDS
+https://627bb251f23c7.streamlock.net:444/ExtremaKids/ExtremaKids/playlist.m3u8
 
 # --- CATEGORÍA: RELIGIOSO ---
 
