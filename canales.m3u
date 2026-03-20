@@ -3,7 +3,7 @@
 # --- CATEGORÍA: NACIONALES ---
 
 #EXTINF:-1 group-title="EVENTOS" tvg-logo="https://raw.githubusercontent.com/lavozdemanaureapp/lavozdemanaure/main/logo_v2.png", ⚾ EN VIVO: BÉISBOL - MANAURE TV
-https://imperial-sectors-suddenly-mixing.trycloudflare.com/playlist.m3u8
+https://imperial-sectors-suddenly-mixing.trycloudflare.com/live/radio/index.m3u8
 
 #EXTINF:-1 group-title="EVENTOS" tvg-logo="https://raw.githubusercontent.com/lavozdemanaureapp/lavozdemanaure/main/logo_v2.png", 🚨 EVENTO EN VIVO PRÓXIMAMENTE
 https://raw.githubusercontent.com/lavozdemanaureapp/lavozdemanaure/refs/heads/main/evento.mp4
