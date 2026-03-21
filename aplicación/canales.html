@@ -2,8 +2,8 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TV digital gratis</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TV Digital Gratis - La Voz de Manaure</title>
     
     <link rel="manifest" href="manifest.json?v=7">
     <meta name="theme-color" content="#ff0000">
@@ -14,7 +14,7 @@
 
     <style>
         :root { --red-m: #ff0000; --bg: #0c0c0c; --card: #1a1a1a; }
-        body { background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; overflow-x: hidden; }
+        body { background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
 
         /* NAVBAR */
         .navbar { position: fixed; top: 0; width: 100%; height: 60px; background: rgba(0,0,0,0.9); backdrop-filter: blur(10px); display: flex; align-items: center; padding: 0 15px; box-sizing: border-box; z-index: 10001; border-bottom: 1px solid #333; }
@@ -23,27 +23,33 @@
 
         /* REPRODUCTOR FIJO ARRIBA */
         .video-wrapper { margin-top: 60px; width: 100%; max-width: 1000px; margin-left: auto; margin-right: auto; }
-        .video-container { width: 100%; aspect-ratio: 16/9; background: #000; position: relative; border-bottom: 2px solid var(--red-m); }
-        video, #yt-player { width: 100%; height: 100%; border: none; }
-        .fullscreen-btn { position: absolute; bottom: 10px; right: 10px; z-index: 10; background: rgba(0,0,0,0.7); border: none; color: white; padding: 10px; cursor: pointer; border-radius: 5px; }
+        .video-container { width: 100%; aspect-ratio: 16/9; background: #000; position: relative; border-bottom: 2px solid var(--red-m); overflow: hidden; }
+        video, #yt-player { width: 100%; height: 100%; border: none; position: absolute; top: 0; left: 0; }
+        
+        /* Botón Fullscreen - Optimizado para Móvil */
+        .fullscreen-btn { position: absolute; bottom: 10px; right: 10px; z-index: 100; background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.5); color: white; padding: 12px; cursor: pointer; border-radius: 50%; font-size: 1.2rem; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(3px); }
+        .fullscreen-btn:active { background: rgba(255,0,0,0.8); }
 
         /* LISTA DE CANALES */
-        .content-area { max-width: 1000px; margin: 0 auto; padding: 15px; }
-        .playlist { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; height: 160px; overflow-y: auto; background: #111; padding: 10px; border-radius: 8px; margin-bottom: 20px; }
-        .channel-card { background: var(--card); padding: 12px; border-radius: 8px; text-align: center; cursor: pointer; border: 1px solid #222; font-size: 0.8rem; transition: 0.2s; }
-        .channel-card:hover { border-color: var(--red-m); background: #222; }
+        .content-area { max-width: 1000px; margin: 0 auto; padding: 15px; padding-bottom: 30px; }
+        .playlist { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; height: 160px; overflow-y: auto; background: #111; padding: 10px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #222; }
+        .channel-card { background: var(--card); padding: 12px; border-radius: 8px; text-align: center; cursor: pointer; border: 1px solid #222; font-size: 0.8rem; transition: 0.2s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .channel-card:hover, .channel-card.active { border-color: var(--red-m); background: #222; }
 
         /* CHAT */
-        .chat-box { background: var(--card); border-radius: 12px; display: flex; flex-direction: column; height: 320px; border: 1px solid #222; }
-        .messages { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 8px; }
-        .msg { background: #2a2a2a; padding: 8px 12px; border-radius: 12px; font-size: 0.85rem; border: 1px solid #333; align-self: flex-start; }
-        .chat-input { padding: 10px; display: flex; gap: 8px; background: #222; border-bottom-radius: 12px; }
-        input#chat-in { flex: 1; background: #333; border: none; color: white; padding: 10px; border-radius: 20px; outline: none; }
-
+        .chat-box { background: var(--card); border-radius: 12px; display: flex; flex-direction: column; height: 320px; border: 1px solid #222; overflow: hidden; }
+        .messages { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 8px; background: #141414; }
+        .msg { background: #2a2a2a; padding: 8px 12px; border-radius: 12px; font-size: 0.85rem; border: 1px solid #333; align-self: flex-start; max-width: 85%; }
+        .chat-input { padding: 10px; display: flex; gap: 8px; background: #1a1a1a; border-top: 1px solid #333; }
+        input#chat-in { flex: 1; background: #333; border: none; color: white; padding: 12px; border-radius: 20px; outline: none; font-size: 16px; /* Evita zoom en iOS */ }
+        
         /* MENÚ LATERAL */
-        #panel-menu { position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background: #0c0c0c; z-index: 10002; transition: 0.4s; border-right: 2px solid var(--red-m); padding: 20px; box-sizing: border-box; }
-        .menu-link { text-decoration:none; color:white; padding: 14px; background: #1a1a1a; border-radius: 10px; display: flex; align-items: center; gap: 12px; margin-bottom: 10px; font-size: 0.9rem; }
-        #overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:10000; }
+        #panel-menu { position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background: #0c0c0c; z-index: 10002; transition: 0.4s; border-right: 2px solid var(--red-m); padding: 20px; box-sizing: border-box; overflow-y: auto; }
+        .menu-link { text-decoration:none; color:white; padding: 14px; background: #1a1a1a; border-radius: 10px; display: flex; align-items: center; gap: 12px; margin-bottom: 10px; font-size: 0.9rem; border: 1px solid #222; }
+        .menu-link i { width: 20px; text-align: center; color: #666; }
+        .menu-link.active { border-color: var(--red-m); background: #251212; }
+        .menu-link.active i { color: var(--red-m); }
+        #overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:10000; backdrop-filter: blur(4px); }
     </style>
 </head>
 <body>
@@ -51,41 +57,46 @@
     <div class="navbar">
         <i class="fas fa-bars menu-icon" onclick="toggleMenu()"></i>
         <img src="logo_v2.png" class="logo-nav">
-        <span style="margin-left: 10px; font-weight: bold; letter-spacing: 1px;">TV digital gratis</span>
+        <span style="margin-left: 10px; font-weight: bold; letter-spacing: 1px; font-size: 14px;">TV DIGITAL GRATIS</span>
     </div>
 
     <div id="panel-menu">
         <div style="text-align: center; margin-bottom: 30px; margin-top: 20px;">
-            <img src="logo_v2.png" style="height: 70px; border-radius: 50%; border: 2px solid var(--red-m);">
-            <h3 style="color: var(--red-m); margin: 10px 0 0;">LA VOZ DE MANAURE</h3>
+            <img src="logo_v2.png" style="height: 70px; border-radius: 50%; border: 2px solid var(--red-m); box-shadow: 0 0 15px rgba(255,0,0,0.3);">
+            <h3 style="color: var(--red-m); margin: 15px 0 0; font-size: 1.1rem; letter-spacing: 1px;">LA VOZ DE MANAURE</h3>
+            <small style="color: #666;">Santa Ana del Táchira</small>
         </div>
         <nav>
             <a href="index.html" class="menu-link"><i class="fas fa-radio"></i> Radio en Vivo</a>
             <a href="programas.html" class="menu-link"><i class="fas fa-microphone"></i> Archivo Programas</a>
             <a href="micambio.html" class="menu-link"><i class="fas fa-dollar-sign"></i> Mi Cambio</a>
-            <a href="canales.html" class="menu-link" style="border-left: 4px solid var(--red-m);"><i class="fas fa-tv"></i> TV Gratis</a>
+            <a href="canales.html" class="menu-link active"><i class="fas fa-tv"></i> TV Digital Gratis</a>
         </nav>
     </div>
     <div id="overlay" onclick="toggleMenu()"></div>
 
     <div class="video-wrapper">
         <div class="video-container" id="player-wrapper">
-            <video id="video-player" controls style="display: none;"></video>
+            <video id="video-player" controls playsinline style="display: none;"></video>
+            
             <div id="yt-player" style="display: none;"></div>
+            
             <button class="fullscreen-btn" onclick="goFullScreen()"><i class="fas fa-expand"></i></button>
         </div>
     </div>
 
     <div class="content-area">
-        <h2 style="font-size: 0.8rem; color: #666; text-transform: uppercase;">Canales Disponibles</h2>
-        <div class="playlist" id="channel-list"></div>
+        <h2 style="font-size: 0.8rem; color: #666; text-transform: uppercase; letter-spacing: 1px;">Canales Disponibles</h2>
+        <div class="playlist" id="channel-list">
+            <p style="text-align: center; color: #444; grid-column: 1/-1; padding-top: 20px;">Cargando lista...</p>
+        </div>
 
-        <h2 style="font-size: 0.8rem; color: #666; text-transform: uppercase; margin-top: 20px;">Chat en Vivo</h2>
+        <h2 style="font-size: 0.8rem; color: #666; text-transform: uppercase; margin-top: 20px; letter-spacing: 1px;">Chat en Vivo</h2>
         <div class="chat-box">
             <div id="msg-container" class="messages"></div>
             <div class="chat-input">
                 <input type="text" id="chat-in" placeholder="Escribe un comentario...">
-                <button id="btn-enviar" style="background:var(--red-m); border:none; color:white; padding:8px 15px; border-radius:20px; cursor:pointer;"><i class="fas fa-paper-plane"></i></button>
+                <button id="btn-enviar" style="background:var(--red-m); border:none; color:white; padding:10px 20px; border-radius:20px; cursor:pointer;"><i class="fas fa-paper-plane"></i></button>
             </div>
         </div>
     </div>
@@ -119,6 +130,7 @@
         onChildAdded(chatRef, (snapshot) => {
             const data = snapshot.val();
             const container = document.getElementById('msg-container');
+            if(!container) return;
             const div = document.createElement('div');
             div.className = 'msg';
             div.innerHTML = `<b>Oyente:</b> ${data.texto}`;
@@ -128,9 +140,11 @@
     </script>
 
     <script>
-        let ytPlayer;
+        let ytPlayer = null;
+        let currentMode = 'none'; // 'native' o 'youtube'
         const videoTag = document.getElementById('video-player');
         const ytTag = document.getElementById('yt-player');
+        let hls = null;
 
         function toggleMenu() {
             const m = document.getElementById('panel-menu');
@@ -141,63 +155,145 @@
         }
 
         async function loadChannels() {
-            const m3uUrl = "https://raw.githubusercontent.com/lavozdemanaureapp/lavozdemanaure/refs/heads/main/canales.m3u";
-            const res = await fetch(m3uUrl);
-            const text = await res.text();
-            const lines = text.split('\n');
-            const list = document.getElementById('channel-list');
+            try {
+                const m3uUrl = "https://raw.githubusercontent.com/lavozdemanaureapp/lavozdemanaure/refs/heads/main/canales.m3u";
+                const res = await fetch(m3uUrl);
+                const text = await res.text();
+                const lines = text.split('\n');
+                const list = document.getElementById('channel-list');
+                list.innerHTML = ""; // Limpiar cargando
 
-            for (let i = 0; i < lines.length; i++) {
-                if (lines[i].startsWith('#EXTINF')) {
-                    const name = lines[i].split(',')[1];
-                    const url = lines[i+1]?.trim();
-                    if(url) {
-                        const d = document.createElement('div');
-                        d.className = 'channel-card';
-                        d.innerText = name;
-                        d.onclick = () => play(url);
-                        list.appendChild(d);
+                let firstUrl = null;
+
+                for (let i = 0; i < lines.length; i++) {
+                    if (lines[i].startsWith('#EXTINF')) {
+                        const name = lines[i].split(',')[1] || "Canal";
+                        const url = lines[i+1]?.trim();
+                        if(url) {
+                            const d = document.createElement('div');
+                            d.className = 'channel-card';
+                            d.innerText = name;
+                            if(!firstUrl) firstUrl = url; // Guardar el primero
+                            d.onclick = function() {
+                                // Desactivar otros
+                                document.querySelectorAll('.channel-card').forEach(c => c.classList.remove('active'));
+                                this.classList.add('active');
+                                play(url);
+                            };
+                            list.appendChild(d);
+                        }
                     }
                 }
+                
+                // Autoreproducir el primero
+                if(firstUrl) {
+                    const firstCard = list.querySelector('.channel-card');
+                    if(firstCard) firstCard.classList.add('active');
+                    play(firstUrl);
+                }
+
+            } catch(e) {
+                console.error("Error M3U:", e);
+                document.getElementById('channel-list').innerHTML = "<p style='text-align:center;color:red;'>Error al cargar canales.</p>";
             }
         }
 
         function play(url) {
+            // Limpieza previa
+            if (hls) { hls.destroy(); hls = null; }
+            videoTag.pause();
+            videoTag.src = "";
+            if(ytPlayer && ytPlayer.stopVideo) ytPlayer.stopVideo();
+
             if (url.includes('youtube.com') || url.includes('youtu.be')) {
+                currentMode = 'youtube';
                 const id = url.split('v=')[1]?.split('&')[0] || url.split('/').pop().split('?')[0];
                 showYT(id);
             } else {
+                currentMode = 'native';
                 showVid();
-                if (Hls.isSupported() && url.includes('m3u8')) {
-                    const hls = new Hls();
-                    hls.loadSource(url);
-                    hls.attachMedia(videoTag);
-                    videoTag.play();
+                if (url.includes('m3u8')) {
+                    if (Hls.isSupported()) {
+                        hls = new Hls();
+                        hls.loadSource(url);
+                        hls.attachMedia(videoTag);
+                        videoTag.play().catch(e => console.log("Autoplay block"));
+                    } else if (videoTag.canPlayType('application/vnd.apple.mpegurl')) {
+                        // Safari Nativo
+                        videoTag.src = url;
+                        videoTag.play().catch(e => console.log("Autoplay block"));
+                    }
                 } else {
+                    // MP4 directo
                     videoTag.src = url;
-                    videoTag.play();
+                    videoTag.play().catch(e => console.log("Autoplay block"));
                 }
             }
         }
 
         function showYT(id) {
-            videoTag.style.display='none'; ytTag.style.display='block';
-            if(!ytPlayer) ytPlayer = new YT.Player('yt-player', { videoId: id });
-            else ytPlayer.loadVideoById(id);
+            videoTag.style.display='none'; 
+            ytTag.style.display='block';
+            
+            if(!ytPlayer) {
+                // Crear el reproductor por primera vez
+                ytPlayer = new YT.Player('yt-player', {
+                    videoId: id,
+                    playerVars: { 
+                        'playsinline': 1,
+                        'modestbranding': 1,
+                        'rel': 0
+                    },
+                    events: {
+                        'onReady': (event) => event.target.playVideo()
+                    }
+                });
+            } else {
+                ytPlayer.loadVideoById(id);
+            }
         }
 
         function showVid() {
-            ytTag.style.display='none'; videoTag.style.display='block';
-            if(ytPlayer) ytPlayer.stopVideo();
+            ytTag.style.display='none'; 
+            videoTag.style.display='block';
         }
 
-        function goFullScreen() {
-            const w = document.getElementById('player-wrapper');
-            if (w.requestFullscreen) w.requestFullscreen();
-            else if (w.webkitRequestFullscreen) w.webkitRequestFullscreen();
+        // --- SOLUCIÓN DEFINITIVA FULLSCREEN MÓVIL ---
+        window.goFullScreen = function() {
+            if (currentMode === 'native') {
+                // Para m3u8/mp4: Usamos la pantalla completa NATIVA del elemento <video>
+                if (videoTag.requestFullscreen) {
+                    videoTag.requestFullscreen();
+                } else if (videoTag.webkitRequestFullscreen) { /* Safari / iOS */
+                    videoTag.webkitRequestFullscreen();
+                } else if (videoTag.msRequestFullscreen) { /* IE11 */
+                    videoTag.msRequestFullscreen();
+                } else if (videoTag.webkitEnterFullscreen) { /* iOS antiguo */
+                    videoTag.webkitEnterFullscreen();
+                }
+            } else if (currentMode === 'youtube' && ytPlayer) {
+                // Para YouTube: No podemos forzar el iframe en móvil fácilmente,
+                // pero la API de YouTube maneja su propio botón de fullscreen.
+                // Intentamos forzar la API nativa sobre el iframe de YT.
+                const ytIframe = document.getElementById('yt-player');
+                if (ytIframe.requestFullscreen) {
+                    ytIframe.requestFullscreen();
+                } else if (ytIframe.webkitRequestFullscreen) {
+                    ytIframe.webkitRequestFullscreen();
+                }
+            }
         }
 
-        loadChannels();
+        // Cargar YouTube API
+        var tag = document.createElement('script');
+        tag.src = "https://www.youtube.com/iframe_api";
+        var firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+        // Esperar a que la API esté lista para cargar canales
+        function onYouTubeIframeAPIReady() {
+            loadChannels();
+        }
 
         // Registro de SW
         if ('serviceWorker' in navigator) {
