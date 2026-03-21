@@ -3,101 +3,96 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Manaure App - TV Gratis</title>
+    <title>TV Digital</title>
     <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet" />
     <style>
-        :root { --primary-red: #ff0000; --dark-bg: #000000; --card-bg: #111111; }
+        :root { --primary-red: #ff0000; --dark-bg: #000000; --panel-bg: #111111; }
         
         body, html { 
-            background: var(--dark-bg); 
-            color: white; 
-            margin: 0; padding: 0;
-            width: 100%; height: 100%;
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: var(--dark-bg); color: white; margin: 0; padding: 0;
+            width: 100%; height: 100%; font-family: 'Segoe UI', sans-serif;
             overflow: hidden; 
         }
 
-        /* BARRA SUPERIOR */
+        /* NAVBAR */
         .navbar { 
-            background: #000; height: 60px; display: flex; align-items: center; 
+            background: #000; height: 55px; display: flex; align-items: center; 
             justify-content: space-between; padding: 0 15px; border-bottom: 1px solid #222;
-            box-sizing: border-box;
+            z-index: 100;
         }
 
-        .nav-title { font-weight: bold; font-size: 18px; display: flex; align-items: center; gap: 10px; cursor: pointer; }
+        .nav-brand { font-weight: 900; font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; gap: 8px; }
 
-        /* CONTENEDOR DE VIDEO 16:9 */
+        /* CONTENEDOR DE VIDEO DINÁMICO (MODO CINE) */
         #video-container { 
-            width: 100vw !important; 
-            height: 56.25vw !important; 
+            width: 100% !important; 
             background: #000;
             position: relative;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            /* Forza la proporción 16:9 pero permite que el video se estire */
+            aspect-ratio: 16 / 9;
         }
 
-        .video-js { width: 100% !important; height: 100% !important; }
+        .video-js { 
+            width: 100% !important; 
+            height: 100% !important; 
+        }
 
-        /* BUSCADOR Y HERRAMIENTAS */
-        .controls-row { 
-            background: #111; padding: 10px; display: flex; gap: 10px; 
+        /* Ajuste para que el video llene el cuadro sin bordes extraños */
+        .vjs-tech { object-fit: contain; }
+
+        /* BUSCADOR */
+        .search-box { 
+            background: var(--panel-bg); padding: 12px; display: flex; gap: 10px; 
             border-bottom: 1px solid #222; align-items: center;
         }
         
         input#search { 
             background: #222; color: white; border: 1px solid #444; 
-            padding: 10px; border-radius: 8px; flex-grow: 1; outline: none;
+            padding: 10px 15px; border-radius: 8px; flex-grow: 1; outline: none;
+            font-size: 14px;
         }
 
-        .btn-refresh { background: #333; border: none; color: white; padding: 10px; border-radius: 8px; cursor: pointer; }
+        .refresh-btn { background: #222; border: 1px solid #444; color: white; padding: 10px; border-radius: 8px; }
 
         /* LISTA DE CANALES */
         main { 
-            height: calc(100vh - 56.25vw - 125px); 
+            height: calc(100vh - 56.25vw - 120px); 
             overflow-y: auto; 
             background: var(--dark-bg);
+            -webkit-overflow-scrolling: touch;
         }
         
         ul#list { list-style: none; margin: 0; padding: 0; }
         
         li { 
-            padding: 15px 20px; 
-            border-bottom: 1px solid #1a1a1a; 
-            display: flex; 
-            align-items: center; 
-            gap: 15px; 
-            cursor: pointer;
-            transition: 0.2s;
+            padding: 18px 20px; border-bottom: 1px solid #151515; 
+            display: flex; align-items: center; gap: 15px; transition: 0.2s;
         }
         
-        li:active { background: #222; }
+        li:active { background: #220000; }
         
         li.active { 
-            background: #1a0000; 
-            border-left: 5px solid var(--primary-red); 
-            color: var(--primary-red); 
-            font-weight: bold;
+            background: #1a0000; border-left: 5px solid var(--primary-red); 
+            color: var(--primary-red); font-weight: bold;
         }
-
-        .ch-icon { color: var(--primary-red); font-size: 1.2rem; }
 
         /* MENÚ LATERAL */
         #menu { 
             position: fixed; top: 0; left: -100%; width: 280px; height: 100%; 
-            background: #080808; z-index: 9999; transition: 0.3s; 
-            padding: 30px 20px; border-right: 3px solid var(--primary-red); 
+            background: #050505; z-index: 2000; transition: 0.3s; 
+            padding: 40px 20px; border-right: 2px solid var(--primary-red);
             box-sizing: border-box;
         }
         
-        .m-header { margin-bottom: 30px; border-bottom: 1px solid #222; padding-bottom: 15px; }
         .m-link { 
             text-decoration: none; color: white; display: block; 
-            padding: 15px; background: #151515; margin-bottom: 12px; 
-            border-radius: 10px; border: 1px solid #222; font-weight: bold;
+            padding: 15px; background: #111; margin-bottom: 10px; 
+            border-radius: 8px; font-weight: bold; border: 1px solid #222;
         }
 
         #overlay {
             display: none; position: fixed; top: 0; left: 0; 
-            width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 9998;
+            width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1999;
         }
     </style>
 </head>
@@ -106,142 +101,120 @@
     <div id="overlay" onclick="toggleM()"></div>
 
     <div class="navbar">
-        <div class="nav-title" onclick="toggleM()"><span>☰</span> TV GRATIS</div>
-        <a href="index.html" style="color: white; text-decoration: none; background: var(--primary-red); padding: 7px 15px; border-radius: 6px; font-size: 12px; font-weight: bold;">SALIR</a>
+        <div class="nav-brand" onclick="toggleM()">☰ MANAURE TV</div>
+        <a href="index.html" style="color:white; text-decoration:none; font-size:12px; background:#333; padding:6px 12px; border-radius:5px;">VOLVER</a>
     </div>
 
     <div id="video-container">
         <video id="player" class="video-js vjs-big-play-centered" controls preload="auto" playsinline></video>
     </div>
 
-    <div class="controls-row">
+    <div class="search-box">
         <input type="text" id="search" placeholder="Buscar canal..." onkeyup="doSearch()">
-        <button class="btn-refresh" onclick="loadList()">🔄</button>
+        <button class="refresh-btn" onclick="loadChannels()">🔄</button>
     </div>
 
     <main>
         <ul id="list">
-            <li style="justify-content: center;">Cargando señal...</li>
+            <li style="justify-content:center;">Cargando lista...</li>
         </ul>
     </main>
 
     <div id="menu">
-        <div class="m-header">
-            <h2 style="color: var(--primary-red); margin: 0;">MANAURE APP</h2>
-            <small style="color: #666;">Televisión Digital</small>
-        </div>
+        <h2 style="color: var(--primary-red); margin-top:0;">MENÚ</h2>
         <a href="index.html" class="m-link">📻 Radio En Vivo</a>
-        <a href="canales.html" class="m-link" style="border-color: var(--primary-red);">📺 TV Gratis</a>
-        <a href="PROGRAMAS.html" class="m-link">🎙️ Programas</a>
+        <a href="canales.html" class="m-link" style="border-color:var(--primary-red)">📺 TV Gratis</a>
+        <a href="PROGRAMAS.html" class="m-link">🎙️ Archivo Programas</a>
+        <div style="margin-top:50px; color:#444; font-size:10px;">Alexander Ramírez @ 2026</div>
     </div>
 
     <script src="https://vjs.zencdn.net/8.10.0/video.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/videojs-youtube/3.0.1/Youtube.min.js"></script>
 
     <script>
-        // Inicialización del reproductor
+        // Inicialización del Reproductor con MODO FLUIDO
         const player = videojs('player', {
             responsive: true,
-            fluid: false,
-            playbackRates: [0.5, 1, 1.5, 2]
+            fluid: true, // Esto hace que el video llene el contenedor automáticamente
+            fill: true,
+            playbackRates: [1],
+            html5: { vhs: { overrideNative: true }, nativeAudioTracks: false, nativeVideoTracks: false }
         });
 
-        let channelData = [];
+        let masterList = [];
 
-        // Función para cargar la lista desde GitHub
-        async function loadList() {
+        // 1. Cargar lista de GitHub
+        async function loadChannels() {
             const listUI = document.getElementById('list');
             const url = 'https://raw.githubusercontent.com/lavozdemanaureapp/lavozdemanaure/main/canales.m3u?v=' + Date.now();
             
             try {
-                const response = await fetch(url);
-                const text = await response.text();
-                parseM3U(text);
-            } catch (error) {
-                listUI.innerHTML = "<li style='color:red;'>Error al conectar con la lista de canales.</li>";
+                const r = await fetch(url);
+                const t = await r.text();
+                parseM3U(t);
+            } catch (e) {
+                listUI.innerHTML = "<li>Error de conexión.</li>";
             }
         }
 
-        // Procesador de la lista M3U
-        function parseM3U(content) {
-            const lines = content.split('\n');
-            channelData = [];
-            let currentName = "";
+        // 2. Procesar M3U (Corregido para evitar saltos)
+        function parseM3U(data) {
+            const lines = data.split('\n');
+            masterList = [];
+            let name = "";
 
             for (let i = 0; i < lines.length; i++) {
                 let line = lines[i].trim();
                 if (line.startsWith('#EXTINF:')) {
-                    currentName = line.split(',').pop();
+                    name = line.split(',').pop();
                 } else if (line.startsWith('http')) {
-                    channelData.push({ 
-                        name: currentName || "Canal sin nombre", 
-                        url: line 
-                    });
-                    currentName = ""; 
+                    masterList.push({ n: name || "Canal TV", u: line });
+                    name = ""; 
                 }
             }
-            renderChannels(channelData);
+            render(masterList);
         }
 
-        // Dibujar canales en pantalla
-        function renderChannels(list) {
+        // 3. Mostrar en pantalla
+        function render(l) {
             const container = document.getElementById('list');
-            if (list.length === 0) {
-                container.innerHTML = "<li>No se encontraron canales.</li>";
-                return;
-            }
-
-            container.innerHTML = list.map((item) => `
-                <li onclick="playStream('${item.url}', '${item.name.replace(/'/g, "\\'")}', this)">
-                    <span class="ch-icon">📺</span> ${item.name}
+            container.innerHTML = l.map(i => `
+                <li onclick="playChannel('${i.u}', '${i.n.replace(/'/g, "\\'")}', this)">
+                    <span style="color:var(--primary-red)">▶</span> ${i.n}
                 </li>
             `).join('');
         }
 
-        // Función para reproducir
-        function playStream(url, name, element) {
-            // UI: Marcar activo
+        // 4. Función de reproducción (Unificada)
+        function playChannel(url, title, el) {
             document.querySelectorAll('li').forEach(li => li.classList.remove('active'));
-            element.classList.add('active');
-            element.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            el.classList.add('active');
 
-            // Detectar tipo de stream
-            let streamType = 'application/x-mpegURL'; // HLS por defecto
-            
-            if (url.includes('youtube.com') || url.includes('youtu.be')) {
-                streamType = 'video/youtube';
-            } else if (url.includes('.mp4')) {
-                streamType = 'video/mp4';
-            }
+            let type = 'application/x-mpegURL';
+            if (url.includes('youtube.com') || url.includes('youtu.be')) type = 'video/youtube';
+            if (url.includes('.mp4')) type = 'video/mp4';
 
-            // Cargar y reproducir
-            player.src({ src: url, type: streamType });
+            player.src({ src: url, type: type });
             player.ready(() => {
-                player.play().catch(err => {
-                    console.log("Error de reproducción: El canal podría estar caído.");
-                });
+                player.play().catch(() => console.log("Error de carga"));
             });
         }
 
-        // Buscador
+        // 5. Buscador y Menú
         function doSearch() {
-            const query = document.getElementById('search').value.toLowerCase();
-            const filtered = channelData.filter(ch => ch.name.toLowerCase().includes(query));
-            renderChannels(filtered);
+            const s = document.getElementById('search').value.toLowerCase();
+            render(masterList.filter(i => i.n.toLowerCase().includes(s)));
         }
 
-        // Menú Lateral
         function toggleM() {
-            const menu = document.getElementById('menu');
-            const overlay = document.getElementById('overlay');
-            const isOpen = menu.style.left === '0px';
-            
-            menu.style.left = isOpen ? '-100%' : '0px';
-            overlay.style.display = isOpen ? 'none' : 'block';
+            const m = document.getElementById('menu');
+            const o = document.getElementById('overlay');
+            const isOpen = m.style.left === '0px';
+            m.style.left = isOpen ? '-100%' : '0px';
+            o.style.display = isOpen ? 'none' : 'block';
         }
 
-        // Carga inicial
-        window.onload = loadList;
+        window.onload = loadChannels;
     </script>
 </body>
 </html>
