@@ -2,233 +2,219 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IPTV Master Pro - Estructura Completa</title>
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Manaure App - TV Digital</title>
+    <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet" />
     <style>
-        :root { --bg: #0a0a0a; --side: #121212; --accent: #ff4500; --text: #ffffff; --card-bg: #1e1e1e; }
-        body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; height: 100vh; overflow: hidden; }
+        :root { --primary-red: #ff0000; --dark-bg: #000000; --panel-bg: #111111; }
+        
+        body, html { 
+            background: var(--dark-bg); color: white; margin: 0; padding: 0;
+            width: 100%; height: 100%; font-family: 'Segoe UI', sans-serif;
+            overflow: hidden; 
+        }
 
-        nav { width: 240px; background: var(--side); display: flex; flex-direction: column; border-right: 1px solid #222; flex-shrink: 0; }
-        .logo { padding: 20px; font-size: 18px; font-weight: bold; color: var(--accent); text-align: center; border-bottom: 1px solid #222; }
-        .search-container { padding: 15px; }
-        #search-input { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #333; background: #1a1a1a; color: white; box-sizing: border-box; }
+        /* NAVBAR */
+        .navbar { 
+            background: #000; height: 55px; display: flex; align-items: center; 
+            justify-content: space-between; padding: 0 15px; border-bottom: 1px solid #222;
+            z-index: 100;
+        }
 
-        .menu { flex-grow: 1; padding: 10px; overflow-y: auto; }
-        .btn-cat { width: 100%; padding: 12px; margin-bottom: 5px; background: transparent; border: none; color: #888; text-align: left; cursor: pointer; border-radius: 6px; font-size: 13px; transition: 0.3s; text-transform: uppercase; }
-        .btn-cat:hover, .btn-cat.active { background: var(--accent); color: white; font-weight: bold; }
+        .nav-brand { font-weight: 900; font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; gap: 8px; }
 
-        main { flex-grow: 1; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
-        .player-section { width: 100%; background: #000; padding: 15px 0; display: flex; flex-direction: column; align-items: center; border-bottom: 3px solid var(--accent); flex-shrink: 0; }
-        .video-container { width: 95%; max-width: 800px; aspect-ratio: 16 / 9; background: #111; border-radius: 8px; overflow: hidden; position: relative; }
-        video { width: 100% !important; height: 100% !important; display: block; object-fit: contain; }
+        /* CONTENEDOR DE VIDEO DINÁMICO (MODO CINE) */
+        #video-container { 
+            width: 100% !important; 
+            background: #000;
+            position: relative;
+            /* Forza la proporción 16:9 pero permite que el video se estire */
+            aspect-ratio: 16 / 9;
+        }
 
-        .fullscreen-bar { width: 95%; max-width: 800px; display: flex; justify-content: flex-end; padding-top: 10px; }
-        .btn-fs { background: #333; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-size: 12px; }
-        .btn-fs:hover { background: var(--accent); }
+        .video-js { 
+            width: 100% !important; 
+            height: 100% !important; 
+        }
 
-        .scroll-area { flex-grow: 1; padding: 20px; overflow-y: auto; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; }
-        .canal-card { background: var(--card-bg); padding: 12px; border-radius: 10px; text-align: center; cursor: pointer; border: 1px solid #333; transition: 0.2s; }
-        .canal-card img { width: 50px; height: 50px; object-fit: contain; margin-bottom: 10px; background: #000; border-radius: 4px; }
-        .canal-card p { margin: 0; font-size: 12px; color: #ddd; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        /* Ajuste para que el video llene el cuadro sin bordes extraños */
+        .vjs-tech { object-fit: contain; }
 
-        /* MODAL SERIES */
-        #modal-series { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 999; justify-content: center; align-items: center; }
-        .modal-content { background: #1a1a1a; width: 90%; max-width: 500px; border-radius: 15px; padding: 20px; max-height: 80vh; overflow-y: auto; border: 1px solid var(--accent); }
-        .episode-item { padding: 12px; background: #252525; margin-bottom: 8px; border-radius: 6px; cursor: pointer; border: 1px solid #333; font-size: 13px; }
-        .episode-item:hover { background: var(--accent); color: white; }
-        .temp-header { color: var(--accent); margin: 15px 0 10px 0; font-weight: bold; border-bottom: 1px solid #333; font-size: 14px; }
+        /* BUSCADOR */
+        .search-box { 
+            background: var(--panel-bg); padding: 12px; display: flex; gap: 10px; 
+            border-bottom: 1px solid #222; align-items: center;
+        }
+        
+        input#search { 
+            background: #222; color: white; border: 1px solid #444; 
+            padding: 10px 15px; border-radius: 8px; flex-grow: 1; outline: none;
+            font-size: 14px;
+        }
+
+        .refresh-btn { background: #222; border: 1px solid #444; color: white; padding: 10px; border-radius: 8px; }
+
+        /* LISTA DE CANALES */
+        main { 
+            height: calc(100vh - 56.25vw - 120px); 
+            overflow-y: auto; 
+            background: var(--dark-bg);
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        ul#list { list-style: none; margin: 0; padding: 0; }
+        
+        li { 
+            padding: 18px 20px; border-bottom: 1px solid #151515; 
+            display: flex; align-items: center; gap: 15px; transition: 0.2s;
+        }
+        
+        li:active { background: #220000; }
+        
+        li.active { 
+            background: #1a0000; border-left: 5px solid var(--primary-red); 
+            color: var(--primary-red); font-weight: bold;
+        }
+
+        /* MENÚ LATERAL */
+        #menu { 
+            position: fixed; top: 0; left: -100%; width: 280px; height: 100%; 
+            background: #050505; z-index: 2000; transition: 0.3s; 
+            padding: 40px 20px; border-right: 2px solid var(--primary-red);
+            box-sizing: border-box;
+        }
+        
+        .m-link { 
+            text-decoration: none; color: white; display: block; 
+            padding: 15px; background: #111; margin-bottom: 10px; 
+            border-radius: 8px; font-weight: bold; border: 1px solid #222;
+        }
+
+        #overlay {
+            display: none; position: fixed; top: 0; left: 0; 
+            width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1999;
+        }
     </style>
 </head>
 <body>
 
-<nav>
-    <div class="logo">TV DIGITAL</div>
-    <div class="search-container">
-        <input type="text" id="search-input" placeholder="Buscar..." onkeyup="buscarCanal()">
+    <div id="overlay" onclick="toggleM()"></div>
+
+    <div class="navbar">
+        <div class="nav-brand" onclick="toggleM()">☰ MANAURE TV</div>
+        <a href="index.html" style="color:white; text-decoration:none; font-size:12px; background:#333; padding:6px 12px; border-radius:5px;">VOLVER</a>
     </div>
-    <div class="menu">
-        <button class="btn-cat active" onclick="filtrar('NACIONALES')">Nacionales</button>
-        <button class="btn-cat" onclick="filtrar('INTERNACIONALES')">Internacionales</button>
-        <button class="btn-cat" onclick="filtrar('DEPORTES')">Deportes</button>
-        <button class="btn-cat" onclick="filtrar('NOTICIAS')">Noticias</button>
-        <button class="btn-cat" onclick="filtrar('INFANTIL')">Infantil</button>
-        <button class="btn-cat" onclick="filtrar('RELIGIOSO')">Religioso</button>
-        <button class="btn-cat" onclick="filtrar('PELICULAS')">Películas</button>
-        <button class="btn-cat" onclick="filtrar('SERIES')">Series</button>
+
+    <div id="video-container">
+        <video id="player" class="video-js vjs-big-play-centered" controls preload="auto" playsinline></video>
     </div>
-</nav>
 
-<main>
-    <section class="player-section">
-        <div class="video-container">
-            <video id="video" controls playsinline poster="https://via.placeholder.com/800x450/000/fff?text=Seleccione+Canal"></video>
-        </div>
-        <div class="fullscreen-bar">
-            <button class="btn-fs" onclick="activarFS()">📺 PANTALLA COMPLETA</button>
-        </div>
-    </section>
-
-    <div class="scroll-area">
-        <h3 id="titulo-seccion" style="margin-top: 0; color: var(--accent);">NACIONALES</h3>
-        <div class="grid" id="grid-canales"></div>
+    <div class="search-box">
+        <input type="text" id="search" placeholder="Buscar canal..." onkeyup="doSearch()">
+        <button class="refresh-btn" onclick="loadChannels()">🔄</button>
     </div>
-</main>
 
-<div id="modal-series">
-    <div class="modal-content">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <h2 id="modal-serie-nombre" style="margin: 0; font-size: 18px;"></h2>
-            <button onclick="cerrarModal()" style="background:none; border:none; color:white; font-size:24px; cursor:pointer;">&times;</button>
-        </div>
-        <div id="modal-cuerpo"></div>
+    <main>
+        <ul id="list">
+            <li style="justify-content:center;">Cargando lista...</li>
+        </ul>
+    </main>
+
+    <div id="menu">
+        <h2 style="color: var(--primary-red); margin-top:0;">MENÚ</h2>
+        <a href="index.html" class="m-link">📻 Radio En Vivo</a>
+        <a href="canales.html" class="m-link" style="border-color:var(--primary-red)">📺 TV Gratis</a>
+        <a href="PROGRAMAS.html" class="m-link">🎙️ Archivo Programas</a>
+        <div style="margin-top:50px; color:#444; font-size:10px;">Alexander Ramírez @ 2026</div>
     </div>
-</div>
 
-<script>
-    const URL_IPTV = "https://raw.githubusercontent.com/lavozdemanaureapp/lavozdemanaure/main/canales.m3u?v=' + Date.now();
-    
-    // Lista de categorías manuales
-    let baseDatos = { "NACIONALES":[], "INTERNACIONALES":[], "DEPORTES":[], "NOTICIAS":[], "INFANTIL":[], "RELIGIOSO":[], "PELICULAS":[], "SERIES":[] }; 
-    let seriesOrganizadas = {}; 
-    let hls = new Hls();
-    const video = document.getElementById('video');
+    <script src="https://vjs.zencdn.net/8.10.0/video.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/videojs-youtube/3.0.1/Youtube.min.js"></script>
 
-    window.onload = async () => {
-        try {
-            const proxy = "https://api.allorigins.win/raw?url=";
-            const res = await fetch(proxy + encodeURIComponent(URL_IPTV));
-            const data = await res.text();
-            procesarLista(data);
-        } catch (err) {
-            document.getElementById('titulo-seccion').innerText = "Error cargando lista.";
+    <script>
+        // Inicialización del Reproductor con MODO FLUIDO
+        const player = videojs('player', {
+            responsive: true,
+            fluid: true, // Esto hace que el video llene el contenedor automáticamente
+            fill: true,
+            playbackRates: [1],
+            html5: { vhs: { overrideNative: true }, nativeAudioTracks: false, nativeVideoTracks: false }
+        });
+
+        let masterList = [];
+
+        // 1. Cargar lista de GitHub
+        async function loadChannels() {
+            const listUI = document.getElementById('list');
+            const url = 'https://raw.githubusercontent.com/lavozdemanaureapp/lavozdemanaure/main/canales.m3u?v=' + Date.now();
+            
+            try {
+                const r = await fetch(url);
+                const t = await r.text();
+                parseM3U(t);
+            } catch (e) {
+                listUI.innerHTML = "<li>Error de conexión.</li>";
+            }
         }
-    };
 
-    function procesarLista(data) {
-        const lineas = data.split('\n');
-        let temp = {};
+        // 2. Procesar M3U (Corregido para evitar saltos)
+        function parseM3U(data) {
+            const lines = data.split('\n');
+            masterList = [];
+            let name = "";
 
-        lineas.forEach(linea => {
-            linea = linea.trim();
-            if (linea.startsWith('#EXTINF')) {
-                const nombre = linea.split(',')[1] || "Sin nombre";
-                const grupo = (linea.match(/group-title="([^"]+)"/) || [0, "Otros"])[1].toUpperCase();
-                const logo = (linea.match(/tvg-logo="([^"]+)"/) || [0, "https://via.placeholder.com/50"])[1];
-                temp = { nombre, grupo, logo };
-            } else if (linea.startsWith('http')) {
-                temp.url = linea;
-                
-                // DETECCIÓN DE SERIES (Nombre S01 E01)
-                const matchSerie = temp.nombre.match(/(.+) S(\d+) E(\d+)/i);
-                
-                if (matchSerie) {
-                    const [_, titulo, tempNum, epNum] = matchSerie;
-                    const tit = titulo.trim();
-                    if (!seriesOrganizadas[tit]) {
-                        seriesOrganizadas[tit] = { logo: temp.logo, temporadas: {} };
-                        baseDatos["SERIES"].push({ nombre: tit, logo: temp.logo, esSerie: true });
-                    }
-                    if (!seriesOrganizadas[tit].temporadas[parseInt(tempNum)]) {
-                        seriesOrganizadas[tit].temporadas[parseInt(tempNum)] = [];
-                    }
-                    seriesOrganizadas[tit].temporadas[parseInt(tempNum)].push({ ep: epNum, url: temp.url });
-                } else {
-                    // Clasificar en las categorías fijas
-                    let g = temp.grupo;
-                    if (g.includes("NACIONAL")) baseDatos["NACIONALES"].push({...temp, esSerie: false});
-                    else if (g.includes("INTER")) baseDatos["INTERNACIONALES"].push({...temp, esSerie: false});
-                    else if (g.includes("DEPOR")) baseDatos["DEPORTES"].push({...temp, esSerie: false});
-                    else if (g.includes("NOTI")) baseDatos["NOTICIAS"].push({...temp, esSerie: false});
-                    else if (g.includes("INFAN") || g.includes("KID") || g.includes("NIÑO")) baseDatos["INFANTIL"].push({...temp, esSerie: false});
-                    else if (g.includes("RELI")) baseDatos["RELIGIOSO"].push({...temp, esSerie: false});
-                    else if (g.includes("PELI") || g.includes("MOVIE")) baseDatos["PELICULAS"].push({...temp, esSerie: false});
-                    else baseDatos["INTERNACIONALES"].push({...temp, esSerie: false});
+            for (let i = 0; i < lines.length; i++) {
+                let line = lines[i].trim();
+                if (line.startsWith('#EXTINF:')) {
+                    name = line.split(',').pop();
+                } else if (line.startsWith('http')) {
+                    masterList.push({ n: name || "Canal TV", u: line });
+                    name = ""; 
                 }
-                temp = {};
             }
-        });
-        filtrar('NACIONALES');
-    }
+            render(masterList);
+        }
 
-    function filtrar(cat) {
-        document.getElementById('titulo-seccion').innerText = cat;
-        const grid = document.getElementById('grid-canales');
-        grid.innerHTML = "";
-        document.querySelectorAll('.btn-cat').forEach(b => {
-            b.classList.toggle('active', b.innerText.toUpperCase() === cat);
-        });
+        // 3. Mostrar en pantalla
+        function render(l) {
+            const container = document.getElementById('list');
+            container.innerHTML = l.map(i => `
+                <li onclick="playChannel('${i.u}', '${i.n.replace(/'/g, "\\'")}', this)">
+                    <span style="color:var(--primary-red)">▶</span> ${i.n}
+                </li>
+            `).join('');
+        }
 
-        if (baseDatos[cat]) {
-            baseDatos[cat].forEach(item => {
-                const card = document.createElement('div');
-                card.className = 'canal-card';
-                card.onclick = () => item.esSerie ? abrirSerie(item.nombre) : reproducir(item.url);
-                card.innerHTML = `<img src="${item.logo}"><p>${item.nombre}</p>`;
-                grid.appendChild(card);
+        // 4. Función de reproducción (Unificada)
+        function playChannel(url, title, el) {
+            document.querySelectorAll('li').forEach(li => li.classList.remove('active'));
+            el.classList.add('active');
+
+            let type = 'application/x-mpegURL';
+            if (url.includes('youtube.com') || url.includes('youtu.be')) type = 'video/youtube';
+            if (url.includes('.mp4')) type = 'video/mp4';
+
+            player.src({ src: url, type: type });
+            player.ready(() => {
+                player.play().catch(() => console.log("Error de carga"));
             });
         }
-    }
 
-    function abrirSerie(nombre) {
-        document.getElementById('modal-serie-nombre').innerText = nombre;
-        const cuerpo = document.getElementById('modal-cuerpo');
-        cuerpo.innerHTML = "";
-        const serie = seriesOrganizadas[nombre];
-
-        Object.keys(serie.temporadas).sort((a,b)=>a-b).forEach(t => {
-            const h = document.createElement('div');
-            h.className = 'temp-header';
-            h.innerText = `TEMPORADA ${t}`;
-            cuerpo.appendChild(h);
-
-            serie.temporadas[t].sort((a,b)=>a.ep-b.ep).forEach(e => {
-                const div = document.createElement('div');
-                div.className = 'episode-item';
-                div.innerText = `Episodio ${e.ep}`;
-                div.onclick = () => { reproducir(e.url); cerrarModal(); };
-                cuerpo.appendChild(div);
-            });
-        });
-        document.getElementById('modal-series').style.display = 'flex';
-    }
-
-    function cerrarModal() { document.getElementById('modal-series').style.display = 'none'; }
-
-    function reproducir(url) {
-        if (hls) hls.destroy();
-        hls = new Hls();
-        if (Hls.isSupported()) {
-            hls.loadSource(url);
-            hls.attachMedia(video);
-            hls.on(Hls.Events.MANIFEST_PARSED, () => video.play());
-        } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-            video.src = url;
-            video.play();
+        // 5. Buscador y Menú
+        function doSearch() {
+            const s = document.getElementById('search').value.toLowerCase();
+            render(masterList.filter(i => i.n.toLowerCase().includes(s)));
         }
-        window.scrollTo({top: 0, behavior: 'smooth'});
-    }
 
-    function activarFS() {
-        if (video.requestFullscreen) video.requestFullscreen();
-        else if (video.webkitRequestFullscreen) video.webkitRequestFullscreen();
-    }
+        function toggleM() {
+            const m = document.getElementById('menu');
+            const o = document.getElementById('overlay');
+            const isOpen = m.style.left === '0px';
+            m.style.left = isOpen ? '-100%' : '0px';
+            o.style.display = isOpen ? 'none' : 'block';
+        }
 
-    function buscarCanal() {
-        const b = document.getElementById('search-input').value.toLowerCase();
-        const grid = document.getElementById('grid-canales');
-        grid.innerHTML = "";
-        Object.values(baseDatos).flat().forEach(item => {
-            if (item.nombre.toLowerCase().includes(b)) {
-                const card = document.createElement('div');
-                card.className = 'canal-card';
-                card.onclick = () => item.esSerie ? abrirSerie(item.nombre) : reproducir(item.url);
-                card.innerHTML = `<img src="${item.logo}"><p>${item.nombre}</p>`;
-                grid.appendChild(card);
-            }
-        });
-    }
-</script>
+        window.onload = loadChannels;
+    </script>
 </body>
 </html>
