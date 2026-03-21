@@ -7,60 +7,19 @@
     <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet" />
     <style>
         :root { --primary-red: #ff0000; --dark-bg: #0f0f0f; --panel-bg: #1a1a1a; }
-        
-        body { 
-            background: var(--dark-bg); 
-            color: white; 
-            font-family: 'Segoe UI', sans-serif; 
-            margin: 0; 
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-        }
-
-        /* BARRA SUPERIOR */
-        .navbar { 
-            background: #000; height: 55px; display: flex; align-items: center; 
-            justify-content: space-between; padding: 0 15px; border-bottom: 1px solid #333;
-        }
-        .logo-img { height: 35px; width: 35px; border-radius: 50%; border: 1px solid var(--primary-red); }
-
-        /* CONTENEDOR DE VIDEO: Tamaño controlado para que no tape todo */
-        #video-container { 
-            width: 100%; 
-            max-width: 800px; /* Evita que en PC se vea gigante */
-            margin: 0 auto;
-            background: #000; 
-            aspect-ratio: 16 / 9;
-        }
-        .video-js { width: 100% !important; height: 100% !important; }
-
-        /* BUSCADOR Y CATEGORÍAS */
-        header { 
-            background: var(--panel-bg); padding: 10px; display: flex; gap: 8px; 
-            border-bottom: 1px solid #333; justify-content: center;
-        }
-        select, input { 
-            background: #333; color: white; border: 1px solid #444; 
-            padding: 8px; border-radius: 4px; font-size: 14px;
-        }
-        #search-input { flex-grow: 1; }
-
-        /* LISTA DE CANALES */
-        main { flex: 1; overflow-y: auto; background: var(--panel-bg); }
+        body { background: var(--dark-bg); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; padding-top: 60px; }
+        .navbar { position: fixed; top: 0; left: 0; width: 100%; height: 60px; background: #000; display: flex; align-items: center; justify-content: space-between; padding: 0 15px; box-sizing: border-box; z-index: 1000; border-bottom: 1px solid #333; }
+        .logo-img { height: 35px; width: 35px; border-radius: 50%; border: 1px solid var(--primary-red); object-fit: cover; }
+        header { background: var(--panel-bg); padding: 10px; display: flex; gap: 8px; border-bottom: 1px solid #333; align-items: center; }
+        select, input { background: #333; color: white; border: 1px solid #444; padding: 8px; border-radius: 4px; flex: 1; min-width: 0; font-size: 14px; }
+        .btn-refresh { background: #444; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 18px; }
+        #video-container { width: 100%; background: #000; position: sticky; top: 60px; z-index: 900; }
+        .video-js { width: 100% !important; height: auto !important; aspect-ratio: 16 / 9; }
+        #sidebar { background: var(--panel-bg); min-height: 50vh; padding-bottom: 50px; }
         #channel-list { list-style: none; margin: 0; padding: 0; }
-        #channel-list li { 
-            padding: 15px; border-bottom: 1px solid #252525; cursor: pointer; 
-            display: flex; align-items: center; gap: 15px; 
-        }
-        #channel-list li:hover { background: #222; }
-        #channel-list li.active { border-left: 5px solid var(--primary-red); background: #111; color: var(--primary-red); }
-
-        .ch-title { font-size: 14px; font-weight: bold; display: block; }
-        .ch-category { font-size: 11px; color: #777; text-transform: uppercase; }
-
-        /* MENÚ LATERAL */
+        #channel-list li { padding: 15px; border-bottom: 1px solid #252525; cursor: pointer; display: flex; align-items: center; gap: 12px; }
+        #channel-list li.active { border-left: 5px solid var(--primary-red); background: #222; }
+        .ch-category { font-size: 10px; color: #666; display: block; text-transform: uppercase; }
         #panel-menu-manaure { position: fixed; top: 0; left: -100%; width: 260px; height: 100%; background: #0c0c0c; z-index: 2000; transition: 0.4s; padding: 20px; border-right: 2px solid var(--primary-red); }
         .menu-link { text-decoration: none; color: white; padding: 12px; background: #1a1a1a; border-radius: 10px; display: flex; align-items: center; gap: 12px; margin-bottom: 10px; border: 1px solid #333; }
     </style>
@@ -69,12 +28,26 @@
 
     <div class="navbar">
         <div style="display: flex; align-items: center; gap: 12px;">
-            <div style="font-size: 24px; cursor: pointer;" onclick="toggleMenu()">☰</div>
+            <div style="font-size: 26px; color: white; cursor: pointer;" onclick="toggleMenu()">☰</div>
             <img src="logo_v2.png" alt="Logo" class="logo-img" onerror="this.src='https://via.placeholder.com/35'">
-            <span style="font-weight: bold;">MANAURE TV</span>
+            <span style="font-weight: bold; font-size: 14px;">MANAURE TV</span>
         </div>
-        <a href="index.html" style="text-decoration: none; background: var(--primary-red); color: white; font-size: 12px; padding: 6px 12px; border-radius: 5px;">VOLVER</a>
+        <a href="index.html" style="text-decoration: none; background: var(--primary-red); color: white; font-size: 11px; padding: 6px 12px; border-radius: 5px; font-weight: bold;">VOLVER</a>
     </div>
+
+    <div id="panel-menu-manaure">
+        <div style="text-align: center; margin: 50px 0 20px 0;">
+            <h2 style="color: var(--primary-red); margin: 0;">MANAURE APP</h2>
+            <small style="color: #444;">Radio & TV</small>
+        </div>
+        <nav>
+            <a href="index.html" class="menu-link"><span>📻</span> Radio en Vivo</a>
+            <a href="micambio.html" class="menu-link"><span>💸</span> Mi Cambio</a>
+            <a href="canales.html" class="menu-link" style="border-color: var(--primary-red);"><span>📺</span> TV & Cine</a>
+        </nav>
+    </div>
+
+    <div id="overlay-manaure" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:1500;" onclick="toggleMenu()"></div>
 
     <div id="video-container">
         <video id="iptv-player" class="video-js vjs-big-play-centered" controls preload="auto" playsinline></video>
@@ -82,114 +55,118 @@
 
     <header>
         <select id="category-select" onchange="filterByCategory()">
-            <option value="all">TODOS</option>
+            <option value="all">Categorías</option>
         </select>
-        <input type="text" id="search-input" placeholder="Buscar canal o peli..." onkeyup="filterBySearch()">
-        <button onclick="loadChannels()" style="background:none; border:none; cursor:pointer; font-size:20px;">🔄</button>
+        <input type="text" id="search-input" placeholder="Buscar..." onkeyup="filterBySearch()">
+        <button class="btn-refresh" onclick="loadChannels()">🔄</button>
     </header>
 
-    <main>
+    <main id="sidebar">
         <ul id="channel-list">
-            <li style="text-align: center; padding: 40px; color: #666;">Cargando contenido...</li>
+            <li style="text-align: center; color: #666; padding: 40px;">Cargando lista...</li>
         </ul>
     </main>
 
-    <div id="panel-menu-manaure">
-        <h2 style="color: var(--primary-red); text-align: center;">MANAURE APP</h2>
-        <nav>
-            <a href="index.html" class="menu-link">📻 Radio</a>
-            <a href="canales.html" class="menu-link" style="border-color: var(--primary-red);">📺 TV & Cine</a>
-        </nav>
-    </div>
-    <div id="overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:1500;" onclick="toggleMenu()"></div>
-
     <script src="https://vjs.zencdn.net/8.10.0/video.min.js"></script>
     <script>
-        const player = videojs('iptv-player');
+        const player = videojs('iptv-player', { responsive: true, fluid: true });
         let allChannels = [];
 
         async function loadChannels() {
-            const listEl = document.getElementById('channel-list');
-            // Cambia 'main' por 'master' si ves que no carga
+            const listElement = document.getElementById('channel-list');
+            // Intentamos con la URL directa de GitHub
             const url = 'https://raw.githubusercontent.com/lavozdemanaureapp/lavozdemanaure/main/canales.m3u?v=' + Date.now();
             
             try {
-                const resp = await fetch(url);
-                if(!resp.ok) throw new Error();
-                const data = await resp.text();
-                processM3U(data);
+                const response = await fetch(url);
+                if (!response.ok) throw new Error("Error en red");
+                const text = await response.text();
+                parseM3U(text);
             } catch (e) {
-                listEl.innerHTML = `<li style="color:red; text-align:center;">No se pudo cargar la lista. Revisa canales.m3u en GitHub.</li>`;
+                // Si falla la primera (main), intentamos con 'master' por si acaso
+                try {
+                    const fallbackUrl = url.replace('/main/', '/master/');
+                    const res2 = await fetch(fallbackUrl);
+                    const text2 = await res2.text();
+                    parseM3U(text2);
+                } catch (e2) {
+                    listElement.innerHTML = `<li style="color:red; text-align:center;">Error al cargar canales.m3u</li>`;
+                }
             }
         }
 
-        function processM3U(content) {
-            const lines = content.split('\n');
+        function parseM3U(data) {
+            const lines = data.split('\n');
             allChannels = [];
-            let name = "", group = "General", cats = new Set();
+            let currentName = "";
+            let currentGroup = "General";
+            let categories = new Set();
 
             lines.forEach(line => {
                 line = line.trim();
                 if (line.startsWith('#EXTINF:')) {
-                    name = line.split(',').pop();
-                    const g = line.match(/group-title="([^"]+)"/);
-                    group = g ? g[1] : "General";
-                    cats.add(group);
+                    currentName = line.split(',').pop().trim();
+                    const groupMatch = line.match(/group-title="([^"]+)"/);
+                    currentGroup = groupMatch ? groupMatch[1] : "General";
+                    categories.add(currentGroup);
                 } else if (line.startsWith('http')) {
-                    allChannels.push({ name, url: line, category: group });
+                    allChannels.push({ name: currentName, url: line, category: currentGroup });
                 }
             });
 
-            const sel = document.getElementById('category-select');
-            sel.innerHTML = '<option value="all">CATEGORÍAS</option>';
-            [...cats].sort().forEach(c => sel.innerHTML += `<option value="${c}">${c}</option>`);
-            
-            displayChannels(allChannels);
+            // Llenar categorías
+            const select = document.getElementById('category-select');
+            select.innerHTML = '<option value="all">Todas las Categorías</option>';
+            [...categories].sort().forEach(c => {
+                select.innerHTML += `<option value="${c}">${c}</option>`;
+            });
+
+            renderChannels(allChannels);
         }
 
-        function displayChannels(list) {
-            const listEl = document.getElementById('channel-list');
-            listEl.innerHTML = list.map(ch => {
+        function renderChannels(list) {
+            const listElement = document.getElementById('channel-list');
+            listElement.innerHTML = list.map(ch => {
                 let icon = '📡';
-                if(ch.category.toLowerCase().includes('cine')) icon = '🎬';
-                if(ch.category.toLowerCase().includes('serie')) icon = '📺';
-                
-                return `<li onclick="play('${ch.url}', this)">
-                    <span style="font-size:22px">${icon}</span>
+                const cat = ch.category.toLowerCase();
+                if(cat.includes('cine') || cat.includes('peli')) icon = '🎬';
+                if(cat.includes('serie')) icon = '📺';
+
+                return `<li onclick="playChannel('${ch.url}', this)">
+                    <span style="font-size:1.5em">${icon}</span>
                     <div>
-                        <span class="ch-title">${ch.name}</span>
+                        <span style="font-size:14px; font-weight:bold">${ch.name}</span>
                         <span class="ch-category">${ch.category}</span>
                     </div>
                 </li>`;
             }).join('');
         }
 
-        function play(url, el) {
-            document.querySelectorAll('li').forEach(l => l.classList.remove('active'));
+        function playChannel(url, el) {
+            document.querySelectorAll('#channel-list li').forEach(l => l.classList.remove('active'));
             el.classList.add('active');
             const type = url.includes('.mp4') ? 'video/mp4' : 'application/x-mpegURL';
-            player.src({ src: url, type: type });
+            player.src({ src: url.trim(), type: type });
             player.play();
-            // En PC no hacemos scroll automático para no perder de vista la lista
-            if(window.innerWidth < 768) window.scrollTo({top: 0, behavior: 'smooth'});
+            window.scrollTo({top: 0, behavior: 'smooth'});
         }
 
         function filterByCategory() {
-            const val = document.getElementById('category-select').value;
-            displayChannels(val === 'all' ? allChannels : allChannels.filter(c => c.category === val));
+            const cat = document.getElementById('category-select').value;
+            renderChannels(cat === 'all' ? allChannels : allChannels.filter(c => c.category === cat));
         }
 
         function filterBySearch() {
-            const val = document.getElementById('search-input').value.toLowerCase();
-            displayChannels(allChannels.filter(c => c.name.toLowerCase().includes(val)));
+            const term = document.getElementById('search-input').value.toLowerCase();
+            renderChannels(allChannels.filter(c => c.name.toLowerCase().includes(term)));
         }
 
         function toggleMenu() {
-            const m = document.getElementById('panel-menu-manaure');
-            const o = document.getElementById('overlay');
-            const open = m.style.left === '0px';
-            m.style.left = open ? '-100%' : '0px';
-            o.style.display = open ? 'none' : 'block';
+            const menu = document.getElementById('panel-menu-manaure');
+            const overlay = document.getElementById('overlay-manaure');
+            const isOpen = menu.style.left === '0px';
+            menu.style.left = isOpen ? '-100%' : '0px';
+            overlay.style.display = isOpen ? 'none' : 'block';
         }
 
         window.onload = loadChannels;
