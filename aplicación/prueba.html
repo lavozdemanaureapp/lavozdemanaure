@@ -60,8 +60,8 @@
         <nav>
             <a href="index.html" class="menu-link"><span>📻</span> Radio</a>
             <a href="micambio.html" class="menu-link"><span>💸</span> Mi Cambio</a>
-            <a href="programas.html" class="menu-link" style="border-color: var(--primary-red);"><span>📺</span> TV Gratis</a>
-            <a href="canales.html" class="menu-link"><span>📰</span> Noticias</a>
+            <a href="tv.html" class="menu-link" style="border-color: var(--primary-red);"><span>📺</span> TV Gratis</a>
+            <a href="noticias.html" class="menu-link"><span>📰</span> Noticias</a>
         </nav>
     </div>
 
@@ -97,7 +97,7 @@
         // 1. CARGAR DESDE ARCHIVO LOCAL canales.m3u
         window.onload = async () => {
             try {
-                const response = await fetch('https://raw.githubusercontent.com/lavozdemanaureapp/lavozdemanaure/refs/heads/main/canales.m3u');
+                const response = await fetch('canales.m3u');
                 if(!response.ok) throw new Error("Archivo no encontrado");
                 const data = await response.text();
                 parseM3U(data);
