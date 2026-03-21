@@ -2,192 +2,206 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>La Voz de Manaure - TV Gratis</title>
-    <link rel="manifest" href="manifest.json">
-    <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TV digital gratis</title>
+    
+    <link rel="manifest" href="manifest.json?v=7">
+    <meta name="theme-color" content="#ff0000">
+
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <script src="https://www.youtube.com/iframe_api"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
     <style>
-        :root { --primary-red: #ff0000; --dark-bg: #0f0f0f; --panel-bg: #1a1a1a; }
-        body { background: var(--dark-bg); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
-        
-        /* Cabecera */
-        .navbar { position: fixed; top: 0; left: 0; width: 100%; height: 60px; background: rgba(0,0,0,0.9); backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: space-between; padding: 0 15px; box-sizing: border-box; z-index: 10001; border-bottom: 1px solid #333; }
-        .nav-left { display: flex; align-items: center; gap: 12px; }
-        .logo-img { height: 35px; width: 35px; border-radius: 50%; border: 1px solid var(--primary-red); object-fit: cover; }
+        :root { --red-m: #ff0000; --bg: #0c0c0c; --card: #1a1a1a; }
+        body { background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; overflow-x: hidden; }
 
-        /* Buscador */
-        header { background: var(--panel-bg); margin-top: 60px; padding: 10px 20px; display: flex; gap: 10px; align-items: center; border-bottom: 1px solid #333; }
-        select, input { background: #333; color: white; border: 1px solid #444; padding: 8px; border-radius: 4px; outline: none; font-size: 14px; }
-        select { flex: 1; }
-        input { flex: 2; }
+        /* NAVBAR */
+        .navbar { position: fixed; top: 0; width: 100%; height: 60px; background: rgba(0,0,0,0.9); backdrop-filter: blur(10px); display: flex; align-items: center; padding: 0 15px; box-sizing: border-box; z-index: 10001; border-bottom: 1px solid #333; }
+        .menu-icon { font-size: 24px; cursor: pointer; margin-right: 15px; }
+        .logo-nav { height: 35px; width: 35px; border-radius: 50%; border: 1px solid var(--red-m); object-fit: cover; }
 
-        /* Layout Principal */
-        main { display: flex; flex: 1; overflow: hidden; flex-direction: column; }
-        @media (min-width: 768px) { main { flex-direction: row; } }
+        /* REPRODUCTOR FIJO ARRIBA */
+        .video-wrapper { margin-top: 60px; width: 100%; max-width: 1000px; margin-left: auto; margin-right: auto; }
+        .video-container { width: 100%; aspect-ratio: 16/9; background: #000; position: relative; border-bottom: 2px solid var(--red-m); }
+        video, #yt-player { width: 100%; height: 100%; border: none; }
+        .fullscreen-btn { position: absolute; bottom: 10px; right: 10px; z-index: 10; background: rgba(0,0,0,0.7); border: none; color: white; padding: 10px; cursor: pointer; border-radius: 5px; }
 
-        #video-container { flex: 3; background: #000; position: relative; min-height: 250px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
-        
-        /* Ajuste Fullscreen para evitar parpadeo */
-        .video-js { width: 100% !important; height: 100% !important; }
-        .vjs-fullscreen { position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; z-index: 99999 !important; }
+        /* LISTA DE CANALES */
+        .content-area { max-width: 1000px; margin: 0 auto; padding: 15px; }
+        .playlist { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; height: 160px; overflow-y: auto; background: #111; padding: 10px; border-radius: 8px; margin-bottom: 20px; }
+        .channel-card { background: var(--card); padding: 12px; border-radius: 8px; text-align: center; cursor: pointer; border: 1px solid #222; font-size: 0.8rem; transition: 0.2s; }
+        .channel-card:hover { border-color: var(--red-m); background: #222; }
 
-        #sidebar { flex: 1; max-width: 100%; background: var(--panel-bg); display: flex; flex-direction: column; border-left: 1px solid #333; }
-        @media (min-width: 768px) { #sidebar { max-width: 350px; } }
+        /* CHAT */
+        .chat-box { background: var(--card); border-radius: 12px; display: flex; flex-direction: column; height: 320px; border: 1px solid #222; }
+        .messages { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 8px; }
+        .msg { background: #2a2a2a; padding: 8px 12px; border-radius: 12px; font-size: 0.85rem; border: 1px solid #333; align-self: flex-start; }
+        .chat-input { padding: 10px; display: flex; gap: 8px; background: #222; border-bottom-radius: 12px; }
+        input#chat-in { flex: 1; background: #333; border: none; color: white; padding: 10px; border-radius: 20px; outline: none; }
 
-        #channel-list { flex: 1; overflow-y: auto; list-style: none; margin: 0; padding: 0; }
-        #channel-list li { padding: 12px 15px; border-bottom: 1px solid #252525; cursor: pointer; font-size: 14px; transition: 0.2s; }
-        #channel-list li.active { border-left: 4px solid var(--primary-red); background: #252525; color: var(--primary-red); font-weight: bold; }
-
-        /* Menú Lateral */
-        #panel-menu-manaure { position: fixed; top: 0; left: -100%; width: 260px; height: 100%; background: #0c0c0c; z-index: 10002; transition: 0.4s; padding: 20px; box-sizing: border-box; border-right: 2px solid var(--primary-red); }
-        .menu-link { text-decoration: none; color: white; padding: 12px; background: #1a1a1a; border-radius: 10px; display: flex; align-items: center; gap: 12px; border: 1px solid #333; margin-bottom: 10px; font-family: sans-serif; }
+        /* MENÚ LATERAL */
+        #panel-menu { position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background: #0c0c0c; z-index: 10002; transition: 0.4s; border-right: 2px solid var(--red-m); padding: 20px; box-sizing: border-box; }
+        .menu-link { text-decoration:none; color:white; padding: 14px; background: #1a1a1a; border-radius: 10px; display: flex; align-items: center; gap: 12px; margin-bottom: 10px; font-size: 0.9rem; }
+        #overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:10000; }
     </style>
 </head>
 <body>
 
     <div class="navbar">
-        <div class="nav-left">
-            <div style="font-size: 24px; color: white; cursor: pointer;" onclick="toggleMenu()">☰</div>
-            <img src="logo_v2.png" alt="Logo" class="logo-img" onerror="this.src='https://via.placeholder.com/35/ff0000/ffffff?text=M'">
-            <span style="font-weight: bold; font-size: 14px;">TV EN VIVO</span>
-        </div>
-        <a href="index.html" onclick="player.pause()" style="text-decoration: none; background: var(--primary-red); color: white; font-size: 11px; font-weight: bold; padding: 5px 10px; border-radius: 5px;">SALIR</a>
+        <i class="fas fa-bars menu-icon" onclick="toggleMenu()"></i>
+        <img src="logo_v2.png" class="logo-nav">
+        <span style="margin-left: 10px; font-weight: bold; letter-spacing: 1px;">TV digital gratis</span>
     </div>
 
-    <div id="panel-menu-manaure">
-        <div style="text-align: center; margin: 60px 0 30px 0;">
-            <h2 style="color: var(--primary-red); font-size: 1.2rem; margin: 0;">LA VOZ DE MANAURE</h2>
-            <small style="color: #666;">92.3 FM - Táchira</small>
+    <div id="panel-menu">
+        <div style="text-align: center; margin-bottom: 30px; margin-top: 20px;">
+            <img src="logo_v2.png" style="height: 70px; border-radius: 50%; border: 2px solid var(--red-m);">
+            <h3 style="color: var(--red-m); margin: 10px 0 0;">LA VOZ DE MANAURE</h3>
         </div>
         <nav>
-            <a href="index.html" class="menu-link"><span>📻</span> Radio</a>
-            <a href="micambio.html" class="menu-link"><span>💸</span> Mi Cambio</a>
-            <a href="canales.html" class="menu-link" style="border-color: var(--primary-red);"><span>📺</span> TV Gratis</a>
-            <a href="noticias.html" class="menu-link"><span>📰</span> Noticias</a>
+            <a href="index.html" class="menu-link"><i class="fas fa-radio"></i> Radio en Vivo</a>
+            <a href="programas.html" class="menu-link"><i class="fas fa-microphone"></i> Archivo Programas</a>
+            <a href="micambio.html" class="menu-link"><i class="fas fa-dollar-sign"></i> Mi Cambio</a>
+            <a href="canales.html" class="menu-link" style="border-left: 4px solid var(--red-m);"><i class="fas fa-tv"></i> TV Gratis</a>
         </nav>
     </div>
+    <div id="overlay" onclick="toggleMenu()"></div>
 
-    <div id="overlay-manaure" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:10000;" onclick="toggleMenu()"></div>
-
-    <header>
-        <select id="category-select" onchange="filterByCategory()">
-            <option value="all">Todas las categorías</option>
-        </select>
-        <input type="text" id="search-input" placeholder="Buscar canal..." onkeyup="filterBySearch()">
-    </header>
-
-    <main>
-        <div id="video-container">
-            <video id="iptv-player" class="video-js vjs-big-play-centered" controls preload="auto" playsinline webkit-playsinline>
-                <p class="vjs-no-js">Habilite JavaScript para ver la TV.</p>
-            </video>
+    <div class="video-wrapper">
+        <div class="video-container" id="player-wrapper">
+            <video id="video-player" controls style="display: none;"></video>
+            <div id="yt-player" style="display: none;"></div>
+            <button class="fullscreen-btn" onclick="goFullScreen()"><i class="fas fa-expand"></i></button>
         </div>
+    </div>
 
-        <div id="sidebar">
-            <ul id="channel-list">
-                <li style="text-align: center; padding: 20px;">Cargando canales desde GitHub...</li>
-            </ul>
+    <div class="content-area">
+        <h2 style="font-size: 0.8rem; color: #666; text-transform: uppercase;">Canales Disponibles</h2>
+        <div class="playlist" id="channel-list"></div>
+
+        <h2 style="font-size: 0.8rem; color: #666; text-transform: uppercase; margin-top: 20px;">Chat en Vivo</h2>
+        <div class="chat-box">
+            <div id="msg-container" class="messages"></div>
+            <div class="chat-input">
+                <input type="text" id="chat-in" placeholder="Escribe un comentario...">
+                <button id="btn-enviar" style="background:var(--red-m); border:none; color:white; padding:8px 15px; border-radius:20px; cursor:pointer;"><i class="fas fa-paper-plane"></i></button>
+            </div>
         </div>
-    </main>
+    </div>
 
-    <script src="https://vjs.zencdn.net/8.10.0/video.min.js"></script>
-    <script>
-        // CONFIGURACIÓN ANTI-PARPADEO Y FULLSCREEN FORZADO
-        const player = videojs('iptv-player', {
-            fluid: true,
-            responsive: true,
-            html5: {
-                vhs: { overrideNative: true },
-                nativeAudioTracks: false,
-                nativeVideoTracks: false
-            },
-            controlBar: {
-                fullscreenToggle: true 
-            }
-        });
+    <script type="module">
+        // LÓGICA FIREBASE (TU CHAT)
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, push, onChildAdded, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-        let allChannels = [];
-        let categories = new Set();
-        const M3U_URL = "https://raw.githubusercontent.com/lavozdemanaureapp/lavozdemanaure/refs/heads/main/canales.m3u";
-
-        window.onload = async () => {
-            try {
-                const response = await fetch(M3U_URL);
-                const data = await response.text();
-                parseM3U(data);
-            } catch (err) {
-                document.getElementById('channel-list').innerHTML = `<li style="color:red; text-align:center;">Error al conectar con GitHub</li>`;
-            }
+        const firebaseConfig = {
+            apiKey: "AIzaSyBtkKwQlTzDgQwP_RpDPnX7WJqoyg1turk",
+            authDomain: "radiomanaure.firebaseapp.com",
+            databaseURL: "https://radiomanaure-default-rtdb.firebaseio.com",
+            projectId: "radiomanaure",
+            storageBucket: "radiomanaure.firebasestorage.app",
+            messagingSenderId: "302935331677",
+            appId: "1:302935331677:web:73419d363115ad1ff7ceb4"
         };
 
-        function parseM3U(content) {
-            const lines = content.split('\n');
-            allChannels = [];
-            let currentName = "";
-            let currentGroup = "General";
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const chatRef = ref(db, 'mensajes');
 
-            lines.forEach(line => {
-                line = line.trim();
-                if (line.startsWith('#EXTINF:')) {
-                    currentName = line.split(',').pop();
-                    const groupMatch = line.match(/group-title="([^"]+)"/);
-                    currentGroup = groupMatch ? groupMatch[1] : "General";
-                    categories.add(currentGroup);
-                } else if (line.startsWith('http')) {
-                    allChannels.push({ name: currentName, url: line, category: currentGroup });
-                }
-            });
-            populateCategories();
-            renderChannels(allChannels);
-        }
+        document.getElementById('btn-enviar').onclick = function() {
+            const input = document.getElementById('chat-in');
+            if(!input.value) return;
+            push(chatRef, { texto: input.value, fecha: serverTimestamp() });
+            input.value = "";
+        };
 
-        function populateCategories() {
-            const select = document.getElementById('category-select');
-            select.innerHTML = '<option value="all">Todas las categorías</option>';
-            [...categories].sort().forEach(cat => {
-                const opt = document.createElement('option');
-                opt.value = cat;
-                opt.textContent = cat;
-                select.appendChild(opt);
-            });
-        }
+        onChildAdded(chatRef, (snapshot) => {
+            const data = snapshot.val();
+            const container = document.getElementById('msg-container');
+            const div = document.createElement('div');
+            div.className = 'msg';
+            div.innerHTML = `<b>Oyente:</b> ${data.texto}`;
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+        });
+    </script>
 
-        function renderChannels(list) {
-            const listElement = document.getElementById('channel-list');
-            listElement.innerHTML = list.map(ch => 
-                `<li onclick="playChannel('${ch.url}', this)">${ch.name}</li>`
-            ).join('');
-        }
-
-        function playChannel(url, el) {
-            document.querySelectorAll('#channel-list li').forEach(li => li.classList.remove('active'));
-            el.classList.add('active');
-            player.src({ src: url, type: 'application/x-mpegURL' });
-            player.play();
-        }
-
-        function filterByCategory() {
-            const selected = document.getElementById('category-select').value;
-            const filtered = selected === 'all' ? allChannels : allChannels.filter(ch => ch.category === selected);
-            renderChannels(filtered);
-        }
-
-        function filterBySearch() {
-            const term = document.getElementById('search-input').value.toLowerCase();
-            const filtered = allChannels.filter(ch => ch.name.toLowerCase().includes(term));
-            renderChannels(filtered);
-        }
+    <script>
+        let ytPlayer;
+        const videoTag = document.getElementById('video-player');
+        const ytTag = document.getElementById('yt-player');
 
         function toggleMenu() {
-            const menu = document.getElementById('panel-menu-manaure');
-            const overlay = document.getElementById('overlay-manaure');
-            if (menu.style.left === '0px') {
-                menu.style.left = '-100%';
-                overlay.style.display = 'none';
-            } else {
-                menu.style.left = '0px';
-                overlay.style.display = 'block';
+            const m = document.getElementById('panel-menu');
+            const o = document.getElementById('overlay');
+            const open = m.style.left === '0px';
+            m.style.left = open ? '-280px' : '0px';
+            o.style.display = open ? 'none' : 'block';
+        }
+
+        async function loadChannels() {
+            const m3uUrl = "https://raw.githubusercontent.com/lavozdemanaureapp/lavozdemanaure/refs/heads/main/canales.m3u";
+            const res = await fetch(m3uUrl);
+            const text = await res.text();
+            const lines = text.split('\n');
+            const list = document.getElementById('channel-list');
+
+            for (let i = 0; i < lines.length; i++) {
+                if (lines[i].startsWith('#EXTINF')) {
+                    const name = lines[i].split(',')[1];
+                    const url = lines[i+1]?.trim();
+                    if(url) {
+                        const d = document.createElement('div');
+                        d.className = 'channel-card';
+                        d.innerText = name;
+                        d.onclick = () => play(url);
+                        list.appendChild(d);
+                    }
+                }
             }
+        }
+
+        function play(url) {
+            if (url.includes('youtube.com') || url.includes('youtu.be')) {
+                const id = url.split('v=')[1]?.split('&')[0] || url.split('/').pop().split('?')[0];
+                showYT(id);
+            } else {
+                showVid();
+                if (Hls.isSupported() && url.includes('m3u8')) {
+                    const hls = new Hls();
+                    hls.loadSource(url);
+                    hls.attachMedia(videoTag);
+                    videoTag.play();
+                } else {
+                    videoTag.src = url;
+                    videoTag.play();
+                }
+            }
+        }
+
+        function showYT(id) {
+            videoTag.style.display='none'; ytTag.style.display='block';
+            if(!ytPlayer) ytPlayer = new YT.Player('yt-player', { videoId: id });
+            else ytPlayer.loadVideoById(id);
+        }
+
+        function showVid() {
+            ytTag.style.display='none'; videoTag.style.display='block';
+            if(ytPlayer) ytPlayer.stopVideo();
+        }
+
+        function goFullScreen() {
+            const w = document.getElementById('player-wrapper');
+            if (w.requestFullscreen) w.requestFullscreen();
+            else if (w.webkitRequestFullscreen) w.webkitRequestFullscreen();
+        }
+
+        loadChannels();
+
+        // Registro de SW
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('./sw.js?v=7');
         }
     </script>
 </body>
