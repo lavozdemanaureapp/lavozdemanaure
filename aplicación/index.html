@@ -13,7 +13,6 @@
     <style>
         :root { --red-m: #ff0000; --bg: #0c0c0c; --card: #1a1a1a; }
         
-        /* --- ANIMACIONES --- */
         @keyframes pulse-red {
             0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.7); }
             70% { transform: scale(1.05); box-shadow: 0 0 10px 5px rgba(255, 0, 0, 0); }
@@ -34,7 +33,6 @@
 
         body { background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; overflow-x: hidden; }
 
-        /* PANTALLA DE INICIO (SPLASH) */
         #splash-screen { 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
             background: #000; display: flex; flex-direction: column; 
@@ -42,7 +40,6 @@
             transition: opacity 0.8s ease; 
         }
 
-        /* NAVBAR REFINADA: RAYITAS + LOGO + RADIO */
         .navbar { position: fixed; top: 0; left: 0; width: 100%; height: 60px; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: space-between; padding: 0 15px; box-sizing: border-box; z-index: 10001; border-bottom: 1px solid #333; }
         
         header { width: 100%; background: #000; padding: 15px 0; text-align: center; border-bottom: 1px solid #222; margin-top: 60px; }
@@ -50,7 +47,6 @@
 
         .logo-nav { height: 35px; width: 35px; border-radius: 50%; border: 1px solid var(--red-m); object-fit: cover; animation: pulse-red 2s infinite; cursor: pointer; }
 
-        /* CONTENIDO */
         .scroll-container { width: 100%; max-width: 600px; padding: 20px; box-sizing: border-box; padding-bottom: 140px; }
         section { width: 100%; margin-bottom: 40px; }
         h2 { font-size: 0.8rem; color: #666; text-transform: uppercase; border-bottom: 1px solid #333; padding-bottom: 8px; margin-bottom: 20px; }
@@ -59,14 +55,12 @@
         .prog-card.active { border-left-color: var(--red-m); background: #251212; }
         .time { font-weight: bold; color: var(--red-m); min-width: 55px; }
 
-        /* CHAT */
         .chat-box { background: var(--card); border-radius: 12px; display: flex; flex-direction: column; height: 380px; border: 1px solid #222; }
         .messages { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; }
         .msg { background: #2a2a2a; padding: 10px 15px; border-radius: 15px; font-size: 0.9rem; align-self: flex-start; max-width: 85%; border: 1px solid #333; }
         .chat-input { padding: 12px; display: flex; gap: 8px; background: #222; border-bottom-left-radius: 12px; border-bottom-right-radius: 12px; }
         input { flex: 1; background: #333; border: none; color: white; padding: 10px; border-radius: 20px; outline: none; }
         
-        /* REPRODUCTOR */
         .player-bar { position: fixed; bottom: 0; width: 100%; background: #000; padding: 15px 25px; box-sizing: border-box; display: flex; align-items: center; border-top: 1px solid #333; z-index: 1000; justify-content: space-between; }
         .player-info { flex: 2; overflow: hidden; }
         .player-info strong { display: block; font-size: 1rem; color: #fff; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -80,7 +74,6 @@
 
         .play-btn { width: 55px; height: 55px; background: var(--red-m); border: none; border-radius: 50%; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 22px; box-shadow: 0 0 20px rgba(255, 0, 0, 0.4); transition: 0.3s; }
 
-        /* MENÚ LATERAL */
         #panel-menu-manaure { position: fixed; top: 0; left: -100%; width: 280px; height: 100%; background: #0c0c0c; z-index: 10002; transition: 0.4s; border-right: 2px solid var(--red-m); padding: 20px; box-sizing: border-box; }
         .menu-link { text-decoration:none; color:white; padding: 14px; background: #1a1a1a; border-radius: 10px; display: flex; align-items: center; gap: 12px; border: 1px solid #333; margin-bottom: 12px; transition: 0.3s; font-size: 0.95rem; }
         .menu-link:hover { border-color: var(--red-m); background: #222; transform: translateX(5px); }
@@ -119,7 +112,6 @@
             <a href="programas.html" class="menu-link"><span>🎙️</span> Archivo de Programas</a>
             <a href="micambio.html" class="menu-link"><span>💸</span> Mi Cambio</a>
             <a href="canales.html" class="menu-link"><span>📺</span> TV Gratis</a>
-            <a href="javascript:void(0)" onclick="registrarDescarga()" class="menu-link"><span>📲</span> Descargar Aplicación</a>
         </nav>
     </div>
 
@@ -281,7 +273,6 @@
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-database-compat.js"></script>
 
     <script>
-        // CONFIGURACIÓN USANDO TUS DATOS DE RADIOMANAURE
         const configAdmin = {
             apiKey: "AIzaSyBtkKwQlTzDgQwP_RpDPnX7WJqoyg1turk",
             authDomain: "radiomanaure.firebaseapp.com",
@@ -292,15 +283,14 @@
         firebase.initializeApp(configAdmin);
         const database = firebase.database();
 
-        // 1. REGISTRAR DESCARGA
-        function registrarDescarga() {
+        // --- CONTADOR SILENCIOSO DESDE TRES PUNTITOS ---
+        window.addEventListener('appinstalled', () => {
             const refDescargas = database.ref('estadisticas/descargas_app');
             refDescargas.transaction((current) => {
                 return (current || 0) + 1;
             });
-            // CAMBIA ESTE LINK POR TU ENLACE REAL DE APK
-            window.location.href = "https://github.com/alexander-manaure/app/raw/main/manaure_923.apk";
-        }
+            console.log('App Instalada');
+        });
 
         // 2. ACCESO ADMIN (5 TOQUES AL LOGO)
         let toques = 0;
