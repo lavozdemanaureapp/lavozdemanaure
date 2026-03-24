@@ -89,6 +89,7 @@
 </head>
 
 <body>
+    <audio id="sonido-campana" src="campana.mp3" preload="auto"></audio>
 
     <div id="splash-screen">
         <div style="position: relative;">
@@ -209,6 +210,10 @@
             input.value = "";
         };
 
+        // Lógica de mensajes con sonido de campana
+        const campana = document.getElementById('sonido-campana');
+        let inicial = true;
+
         onChildAdded(chatRef, (snapshot) => {
             const data = snapshot.val();
             const container = document.getElementById('msg-container');
@@ -217,7 +222,13 @@
             div.innerHTML = `<b>Oyente:</b> ${data.texto}`;
             container.appendChild(div);
             container.scrollTop = container.scrollHeight;
+            
+            // Suena la campana si es un mensaje nuevo (después de cargar los viejos)
+            if (!inicial) {
+                campana.play().catch(() => console.log("Sonido esperando interacción"));
+            }
         });
+        setTimeout(() => { inicial = false; }, 3000);
 
         const programming = {
             0: [{t: "00:00", n: "PROGRAMACIÓN GENERAL"}, {t: "06:00", n: "AMANECER LLANERO"}, {t: "07:00", n: "PROGRAMACION GENERAL"}, {t: "08:00", n: "LOCOMOTORA CAMPESINA - JORGE GAMBOA"}, {t: "10:00", n: "BAILABLES DE AYER, HOY Y SIEMPRE - RUFINO SEGOVIA Y LUIS PARADA"}, {t: "12:00", n: "PROGRAMACIÓN GENERAL"}, {t: "16:00", n: "MIENTRAS PASA EL TIEMPO - MAYRA OMAÑA"}, {t: "18:00", n: "PROGRAMACIÓN GENERAL"}],
@@ -276,7 +287,6 @@
                 `).join('');
             }
 
-            // ACTUALIZACIÓN DEL REPRODUCTOR
             const labelOnAir = document.getElementById('on-air');
             if (labelOnAir) {
                 labelOnAir.innerText = (activeIdx !== -1) ? today[activeIdx].n : "PROGRAMACIÓN MUSICAL";
@@ -301,24 +311,31 @@
         firebase.initializeApp(configAdmin);
         const database = firebase.database();
 
-        // CONTADOR DE INSTALACIÓN (TRES PUNTITOS)
+        // 1. CONTADOR POR QR (Apenas abren el enlace con el parámetro)
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('utm_source') === 'qr') {
+            database.ref('estadisticas/descargas_qr').transaction((c) => (c || 0) + 1);
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+
+        // 2. CONTADOR DE INSTALACIÓN (Desde los tres puntitos)
         window.addEventListener('appinstalled', () => {
-            const refDescargas = database.ref('estadisticas/descargas_app');
-            refDescargas.transaction((current) => {
-                return (current || 0) + 1;
-            });
-            console.log('App Manaure instalada');
+            database.ref('estadisticas/descargas_app').transaction((c) => (c || 0) + 1);
         });
 
-        // ACCESO ADMIN
+        // 3. ACCESO ADMIN MEJORADO
         let toques = 0;
         function accesoAdmin() {
             toques++;
             if (toques === 5) {
                 const pin = prompt("🔐 Acceso Administrativo Manaure\nIngrese su clave:");
                 if (pin === "9230") {
-                    database.ref('estadisticas/descargas_app').once('value').then((snap) => {
-                        alert("📊 REPORTE DE GESTIÓN\n\nInstalaciones totales de la App: " + (snap.val() || 0));
+                    database.ref('estadisticas').once('value').then((snap) => {
+                        const data = snap.val() || {};
+                        alert("📊 REPORTE DE GESTIÓN\n\n" +
+                              "📲 Instalaciones App: " + (data.descargas_app || 0) + "\n" +
+                              "✨ Escaneos QR: " + (data.descargas_qr || 0) + "\n\n" +
+                              "Total Digital: " + ((data.descargas_app || 0) + (data.descargas_qr || 0)));
                     });
                 } else {
                     alert("PIN Incorrecto");
