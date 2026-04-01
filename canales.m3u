@@ -2,8 +2,7 @@
 
 # --- CATEGORÍA: NACIONALES ---
 
-#EXTINF:-1 tvg-id="Venevision" tvg-logo="" group-title="NACIONALES", EN VIVO EEUU VS PORTUGAL 
-https://little-wizard-seriously-scanner.trycloudflare.com/live/partido/index.m3u8
+
 
 #EXTINF:-1 tvg-id="Venevision" tvg-logo="" group-title="NACIONALES", Venevisión Plus
 https://vod2live.univtec.com/manifest/4c41c0d8-e2e4-43cc-bd43-79afe715e1b3.m3u8
