@@ -26,29 +26,26 @@
         .video-container { width: 100%; aspect-ratio: 16/9; background: #000; position: relative; border-bottom: 2px solid var(--red-m); overflow: hidden; }
         video, #yt-player { width: 100%; height: 100%; border: none; position: absolute; top: 0; left: 0; }
         
-        /* Botón Fullscreen - Optimizado para Móvil */
         .fullscreen-btn { position: absolute; bottom: 10px; right: 10px; z-index: 100; background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.5); color: white; padding: 12px; cursor: pointer; border-radius: 50%; font-size: 1.2rem; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(3px); }
-        .fullscreen-btn:active { background: rgba(255,0,0,0.8); }
 
         /* LISTA DE CANALES */
         .content-area { max-width: 1000px; margin: 0 auto; padding: 15px; padding-bottom: 30px; }
-        .playlist { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; height: 160px; overflow-y: auto; background: #111; padding: 10px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #222; }
+        .playlist { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; height: 200px; overflow-y: auto; background: #111; padding: 10px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #222; }
         .channel-card { background: var(--card); padding: 12px; border-radius: 8px; text-align: center; cursor: pointer; border: 1px solid #222; font-size: 0.8rem; transition: 0.2s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .channel-card:hover, .channel-card.active { border-color: var(--red-m); background: #222; }
+        .channel-card:hover, .channel-card.active { border-color: var(--red-m); background: #222; color: var(--red-m); }
 
         /* CHAT */
         .chat-box { background: var(--card); border-radius: 12px; display: flex; flex-direction: column; height: 320px; border: 1px solid #222; overflow: hidden; }
         .messages { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 8px; background: #141414; }
         .msg { background: #2a2a2a; padding: 8px 12px; border-radius: 12px; font-size: 0.85rem; border: 1px solid #333; align-self: flex-start; max-width: 85%; }
         .chat-input { padding: 10px; display: flex; gap: 8px; background: #1a1a1a; border-top: 1px solid #333; }
-        input#chat-in { flex: 1; background: #333; border: none; color: white; padding: 12px; border-radius: 20px; outline: none; font-size: 16px; /* Evita zoom en iOS */ }
+        input#chat-in { flex: 1; background: #333; border: none; color: white; padding: 12px; border-radius: 20px; outline: none; font-size: 16px; }
         
         /* MENÚ LATERAL */
         #panel-menu { position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background: #0c0c0c; z-index: 10002; transition: 0.4s; border-right: 2px solid var(--red-m); padding: 20px; box-sizing: border-box; overflow-y: auto; }
         .menu-link { text-decoration:none; color:white; padding: 14px; background: #1a1a1a; border-radius: 10px; display: flex; align-items: center; gap: 12px; margin-bottom: 10px; font-size: 0.9rem; border: 1px solid #222; }
         .menu-link i { width: 20px; text-align: center; color: #666; }
         .menu-link.active { border-color: var(--red-m); background: #251212; }
-        .menu-link.active i { color: var(--red-m); }
         #overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:10000; backdrop-filter: blur(4px); }
     </style>
 </head>
@@ -62,8 +59,8 @@
 
     <div id="panel-menu">
         <div style="text-align: center; margin-bottom: 30px; margin-top: 20px;">
-            <img src="logo_v2.png" style="height: 70px; border-radius: 50%; border: 2px solid var(--red-m); box-shadow: 0 0 15px rgba(255,0,0,0.3);">
-            <h3 style="color: var(--red-m); margin: 15px 0 0; font-size: 1.1rem; letter-spacing: 1px;">LA VOZ DE MANAURE</h3>
+            <img src="logo_v2.png" style="height: 70px; border-radius: 50%; border: 2px solid var(--red-m);">
+            <h3 style="color: var(--red-m); margin: 15px 0 0; font-size: 1.1rem;">LA VOZ DE MANAURE</h3>
             <small style="color: #666;">Santa Ana del Táchira</small>
         </div>
         <nav>
@@ -78,31 +75,28 @@
     <div class="video-wrapper">
         <div class="video-container" id="player-wrapper">
             <video id="video-player" controls playsinline style="display: none;"></video>
-            
             <div id="yt-player" style="display: none;"></div>
-            
             <button class="fullscreen-btn" onclick="goFullScreen()"><i class="fas fa-expand"></i></button>
         </div>
     </div>
 
     <div class="content-area">
-        <h2 style="font-size: 0.8rem; color: #666; text-transform: uppercase; letter-spacing: 1px;">Canales Disponibles</h2>
+        <h2 style="font-size: 0.8rem; color: #666; text-transform: uppercase;">Canales Disponibles</h2>
         <div class="playlist" id="channel-list">
             <p style="text-align: center; color: #444; grid-column: 1/-1; padding-top: 20px;">Cargando lista...</p>
         </div>
 
-        <h2 style="font-size: 0.8rem; color: #666; text-transform: uppercase; margin-top: 20px; letter-spacing: 1px;">Chat en Vivo</h2>
+        <h2 style="font-size: 0.8rem; color: #666; text-transform: uppercase; margin-top: 20px;">Chat en Vivo</h2>
         <div class="chat-box">
             <div id="msg-container" class="messages"></div>
             <div class="chat-input">
                 <input type="text" id="chat-in" placeholder="Escribe un comentario...">
-                <button id="btn-enviar" style="background:var(--red-m); border:none; color:white; padding:10px 20px; border-radius:20px; cursor:pointer;"><i class="fas fa-paper-plane"></i></button>
+                <button id="btn-enviar" style="background:var(--red-m); border:none; color:white; padding:10px 20px; border-radius:20px;"><i class="fas fa-paper-plane"></i></button>
             </div>
         </div>
     </div>
 
     <script type="module">
-        // LÓGICA FIREBASE (TU CHAT)
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getDatabase, ref, push, onChildAdded, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
@@ -130,7 +124,6 @@
         onChildAdded(chatRef, (snapshot) => {
             const data = snapshot.val();
             const container = document.getElementById('msg-container');
-            if(!container) return;
             const div = document.createElement('div');
             div.className = 'msg';
             div.innerHTML = `<b>Oyente:</b> ${data.texto}`;
@@ -141,7 +134,7 @@
 
     <script>
         let ytPlayer = null;
-        let currentMode = 'none'; // 'native' o 'youtube'
+        let currentMode = 'none';
         const videoTag = document.getElementById('video-player');
         const ytTag = document.getElementById('yt-player');
         let hls = null;
@@ -161,21 +154,34 @@
                 const text = await res.text();
                 const lines = text.split('\n');
                 const list = document.getElementById('channel-list');
-                list.innerHTML = ""; // Limpiar cargando
+                list.innerHTML = ""; 
 
                 let firstUrl = null;
 
                 for (let i = 0; i < lines.length; i++) {
-                    if (lines[i].startsWith('#EXTINF')) {
-                        const name = lines[i].split(',')[1] || "Canal";
-                        const url = lines[i+1]?.trim();
+                    let line = lines[i].trim();
+                    
+                    if (line.startsWith('#EXTINF')) {
+                        const name = line.split(',')[1] || "Canal Sin Nombre";
+                        let url = "";
+
+                        // Buscar la URL saltando líneas vacías o comentarios intermedios
+                        for (let j = i + 1; j < lines.length; j++) {
+                            let nextLine = lines[j].trim();
+                            if (nextLine.startsWith('http')) {
+                                url = nextLine;
+                                i = j; 
+                                break;
+                            }
+                        }
+
                         if(url) {
                             const d = document.createElement('div');
                             d.className = 'channel-card';
                             d.innerText = name;
-                            if(!firstUrl) firstUrl = url; // Guardar el primero
+                            if(!firstUrl) firstUrl = url; 
+                            
                             d.onclick = function() {
-                                // Desactivar otros
                                 document.querySelectorAll('.channel-card').forEach(c => c.classList.remove('active'));
                                 this.classList.add('active');
                                 play(url);
@@ -185,12 +191,8 @@
                     }
                 }
                 
-                // Autoreproducir el primero
-                if(firstUrl) {
-                    const firstCard = list.querySelector('.channel-card');
-                    if(firstCard) firstCard.classList.add('active');
-                    play(firstUrl);
-                }
+                // Carga automática al inicio
+                if(firstUrl) play(firstUrl);
 
             } catch(e) {
                 console.error("Error M3U:", e);
@@ -199,7 +201,6 @@
         }
 
         function play(url) {
-            // Limpieza previa
             if (hls) { hls.destroy(); hls = null; }
             videoTag.pause();
             videoTag.src = "";
@@ -207,8 +208,7 @@
 
             if (url.includes('youtube.com') || url.includes('youtu.be')) {
                 currentMode = 'youtube';
-                const id = url.split('v=')[1]?.split('&')[0] || url.split('/').pop().split('?')[0];
-                showYT(id);
+                showYT(extractYTId(url));
             } else {
                 currentMode = 'native';
                 showVid();
@@ -217,36 +217,32 @@
                         hls = new Hls();
                         hls.loadSource(url);
                         hls.attachMedia(videoTag);
-                        videoTag.play().catch(e => console.log("Autoplay block"));
+                        hls.on(Hls.Events.MANIFEST_PARSED, () => videoTag.play().catch(e => {}));
                     } else if (videoTag.canPlayType('application/vnd.apple.mpegurl')) {
-                        // Safari Nativo
                         videoTag.src = url;
-                        videoTag.play().catch(e => console.log("Autoplay block"));
+                        videoTag.play().catch(e => {});
                     }
                 } else {
-                    // MP4 directo
                     videoTag.src = url;
-                    videoTag.play().catch(e => console.log("Autoplay block"));
+                    videoTag.play().catch(e => {});
                 }
             }
+        }
+
+        function extractYTId(url) {
+            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+            const match = url.match(regExp);
+            return (match && match[2].length == 11) ? match[2] : null;
         }
 
         function showYT(id) {
             videoTag.style.display='none'; 
             ytTag.style.display='block';
-            
             if(!ytPlayer) {
-                // Crear el reproductor por primera vez
                 ytPlayer = new YT.Player('yt-player', {
                     videoId: id,
-                    playerVars: { 
-                        'playsinline': 1,
-                        'modestbranding': 1,
-                        'rel': 0
-                    },
-                    events: {
-                        'onReady': (event) => event.target.playVideo()
-                    }
+                    playerVars: { 'playsinline': 1, 'autoplay': 1 },
+                    events: { 'onReady': (e) => e.target.playVideo() }
                 });
             } else {
                 ytPlayer.loadVideoById(id);
@@ -258,46 +254,19 @@
             videoTag.style.display='block';
         }
 
-        // --- SOLUCIÓN DEFINITIVA FULLSCREEN MÓVIL ---
         window.goFullScreen = function() {
             if (currentMode === 'native') {
-                // Para m3u8/mp4: Usamos la pantalla completa NATIVA del elemento <video>
-                if (videoTag.requestFullscreen) {
-                    videoTag.requestFullscreen();
-                } else if (videoTag.webkitRequestFullscreen) { /* Safari / iOS */
-                    videoTag.webkitRequestFullscreen();
-                } else if (videoTag.msRequestFullscreen) { /* IE11 */
-                    videoTag.msRequestFullscreen();
-                } else if (videoTag.webkitEnterFullscreen) { /* iOS antiguo */
-                    videoTag.webkitEnterFullscreen();
-                }
-            } else if (currentMode === 'youtube' && ytPlayer) {
-                // Para YouTube: No podemos forzar el iframe en móvil fácilmente,
-                // pero la API de YouTube maneja su propio botón de fullscreen.
-                // Intentamos forzar la API nativa sobre el iframe de YT.
+                if (videoTag.requestFullscreen) videoTag.requestFullscreen();
+                else if (videoTag.webkitEnterFullscreen) videoTag.webkitEnterFullscreen();
+            } else if (currentMode === 'youtube') {
                 const ytIframe = document.getElementById('yt-player');
-                if (ytIframe.requestFullscreen) {
-                    ytIframe.requestFullscreen();
-                } else if (ytIframe.webkitRequestFullscreen) {
-                    ytIframe.webkitRequestFullscreen();
-                }
+                if (ytIframe.requestFullscreen) ytIframe.requestFullscreen();
+                else if (ytIframe.webkitRequestFullscreen) ytIframe.webkitRequestFullscreen();
             }
         }
 
-        // Cargar YouTube API
-        var tag = document.createElement('script');
-        tag.src = "https://www.youtube.com/iframe_api";
-        var firstScriptTag = document.getElementsByTagName('script')[0];
-        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-
-        // Esperar a que la API esté lista para cargar canales
         function onYouTubeIframeAPIReady() {
             loadChannels();
-        }
-
-        // Registro de SW
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('./sw.js?v=7');
         }
     </script>
 </body>
