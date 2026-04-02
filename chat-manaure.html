@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Chat OBS - La Voz de Manaure</title>
+    <style>
+        :root { --red-m: #ff0000; }
+        
+        body { 
+            background: transparent !important; 
+            color: white; 
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+            padding: 10px;
+            overflow: hidden; 
+        }
+
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            height: 95vh;
+            width: 100%;
+        }
+
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding-bottom: 20px;
+            /* Ocultar scrollbar */
+            scrollbar-width: none; 
+            scroll-behavior: smooth; /* Refuerzo de deslizamiento suave */
+        }
+        .messages::-webkit-scrollbar { display: none; }
+
+        .msg {
+            background: rgba(26, 26, 26, 0.9); 
+            padding: 10px 14px;
+            border-radius: 12px;
+            border-left: 5px solid var(--red-m);
+            font-size: 1.2rem;
+            /* Animación mejorada: aparece y sube levemente */
+            animation: slideUp 0.4s ease-out forwards;
+            box-shadow: 3px 3px 10px rgba(0,0,0,0.4);
+            max-width: 85%;
+            word-wrap: break-word;
+        }
+
+        .msg b { color: var(--red-m); }
+
+        @keyframes slideUp {
+            from { 
+                opacity: 0; 
+                transform: translateY(20px); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0); 
+            }
+        }
+
+        .chat-input-area {
+            display: flex;
+            gap: 8px;
+            background: rgba(0,0,0,0.6);
+            padding: 12px;
+            border-radius: 25px;
+            margin-top: 5px;
+        }
+        
+        input {
+            flex: 1;
+            background: #222;
+            border: 1px solid #444;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 20px;
+            outline: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="chat-container">
+        <div id="msg-container" class="messages"></div>
+        
+        <div class="chat-input-area">
+            <input type="text" id="chat-in" placeholder="Responder desde el estudio...">
+            <button id="btn-enviar" style="background:var(--red-m); border:none; color:white; border-radius:50%; width:40px; height:40px; cursor:pointer; font-weight:bold;">➔</button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, push, onChildAdded, serverTimestamp, query, limitToLast } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBtkKwQlTzDgQwP_RpDPnX7WJqoyg1turk",
+            authDomain: "radiomanaure.firebaseapp.com",
+            databaseURL: "https://radiomanaure-default-rtdb.firebaseio.com",
+            projectId: "radiomanaure"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const chatRef = query(ref(db, 'mensajes'), limitToLast(20));
+
+        const groserias = ["palabra1", "groseria2", "insulto3"];
+
+        onChildAdded(chatRef, (snapshot) => {
+            const data = snapshot.val();
+            const textoOriginal = data.texto;
+
+            const esInapropiado = groserias.some(palabra => 
+                textoOriginal.toLowerCase().includes(palabra.toLowerCase())
+            );
+
+            if (esInapropiado) return;
+
+            const container = document.getElementById('msg-container');
+            const div = document.createElement('div');
+            div.className = 'msg';
+            div.innerHTML = `<b>Oyente:</b> ${textoOriginal}`;
+            
+            container.appendChild(div);
+
+            // --- DESLIZAMIENTO ELEGANTE ---
+            // Usamos un pequeño retraso para que el mensaje aparezca 
+            // y luego la lista suba suavemente.
+            setTimeout(() => {
+                container.scrollTo({
+                    top: container.scrollHeight,
+                    behavior: 'smooth'
+                });
+            }, 100);
+        });
+
+        const input = document.getElementById('chat-in');
+        const btn = document.getElementById('btn-enviar');
+
+        function enviar() {
+            if(!input.value.trim()) return;
+            push(ref(db, 'mensajes'), { 
+                texto: input.value, 
+                fecha: serverTimestamp() 
+            });
+            input.value = "";
+        }
+
+        btn.onclick = enviar;
+        input.onkeypress = (e) => { if(e.key === 'Enter') enviar(); };
+    </script>
+</body>
+</html>
