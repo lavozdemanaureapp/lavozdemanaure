@@ -1,8 +1,8 @@
 #EXTM3U
 
 # --- CATEGORÍA: NACIONALES ---
-#EXTINF:-1 group-title="NACIONALES", EVENTO EN VIVO MADRID VS BAYERN
-https://objective-nil-developed-julian.trycloudflare.com/all/index.m3u8
+#EXTINF:-1 group-title="NACIONALES",  EN VIVO 
+https://s1327.mywebtv.cloud/hls/dsports/index.m3u8?token=mTb8c1aAZjpEIBJINDh5tw&expires=1776815714
 
 #EXTINF:-1 tvg-id="Venevision" tvg-logo="" group-title="NACIONALES", Venevisión Plus
 https://vod2live.univtec.com/manifest/4c41c0d8-e2e4-43cc-bd43-79afe715e1b3.m3u8
