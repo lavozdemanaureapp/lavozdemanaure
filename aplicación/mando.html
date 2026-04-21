@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mando a Distancia - La Voz de Manaure</title>
+    <style>
+        body { 
+            background: #121212; 
+            color: white; 
+            font-family: 'Segoe UI', sans-serif; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            height: 100vh; 
+            margin: 0; 
+        }
+        .container {
+            background: #1a1a1a;
+            padding: 25px;
+            border-radius: 15px;
+            border: 2px solid #ff0000;
+            text-align: center;
+            box-shadow: 0 0 20px rgba(255,0,0,0.2);
+            width: 80%;
+            max-width: 300px;
+        }
+        h2 { color: #ff0000; margin-bottom: 20px; font-size: 1.2rem; }
+        button {
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+            text-transform: uppercase;
+        }
+        .btn-on { background: #2ecc71; color: white; }
+        .btn-on:active { background: #27ae60; transform: scale(0.95); }
+        
+        .btn-off { background: #e74c3c; color: white; }
+        .btn-off:active { background: #c0392b; transform: scale(0.95); }
+
+        #status {
+            margin-top: 15px;
+            font-size: 0.8rem;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>CONTROL DE PUBLICIDAD</h2>
+        <button class="btn-on" onclick="cambiarEstado('ON')">Lanzar Banner</button>
+        <button class="btn-off" onclick="cambiarEstado('OFF')">Quitar Banner</button>
+        <div id="status">Estado: Sincronizado</div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        // CONFIGURACIÓN (Misma que tu web principal)
+        const firebaseConfig = {
+            apiKey: "AIzaSyBtkKwQlTzDgQwP_RpDPnX7WJqoyg1turk",
+            authDomain: "radiomanaure.firebaseapp.com",
+            databaseURL: "https://radiomanaure-default-rtdb.firebaseio.com",
+            projectId: "radiomanaure"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        window.cambiarEstado = function(estado) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerText = "Enviando...";
+            
+            set(ref(db, 'estado_publicidad'), estado)
+            .then(() => {
+                statusDiv.innerText = "Estado actual: " + estado;
+                statusDiv.style.color = estado === 'ON' ? '#2ecc71' : '#e74c3c';
+            })
+            .catch((error) => {
+                statusDiv.innerText = "Error de conexión";
+                statusDiv.style.color = "red";
+            });
+        }
+    </script>
+</body>
+</html>
