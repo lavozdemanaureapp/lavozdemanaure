@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TV Manaure - Final</title>
+    <title>TV Manaure - Horizontal Estable</title>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -20,46 +20,47 @@
         .menu-toggle { position: absolute; top: 12px; left: 12px; z-index: 10002; background: rgba(0,0,0,0.8); color: white; border: 1px solid var(--rojo); padding: 10px; border-radius: 5px; cursor: pointer; }
         .nav-item { width: 85%; padding: 12px; margin: 5px 0; border-radius: 8px; background: #1a1a1a; display: flex; align-items: center; gap: 12px; cursor: pointer; text-decoration: none; color: white; font-size: 14px; }
 
+        /* CONTENEDOR PRINCIPAL */
         #main-content { width: 100%; display: flex; flex-direction: column; position: relative; }
 
+        /* AJUSTE DE VIDEO: MANTIENE LA FORMA DE TV */
         #video-wrapper { 
             width: 100%; 
-            aspect-ratio: 16/9; 
+            aspect-ratio: 16 / 9; 
             background: #000; 
             position: relative; 
             border-bottom: 2px solid var(--rojo); 
             overflow: hidden;
             flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         video { 
             width: 100%; 
             height: 100%; 
-            object-fit: cover; 
+            /* contain asegura que NO se estire verticalmente */
+            object-fit: contain; 
             display: block;
         }
 
-        #capa-publicidad { position: absolute; top: 15px; right: 15px; width: 150px; z-index: 1000; display: none; }
-        #banner-img { width: 100%; border-radius: 8px; border: 1px solid white; box-shadow: 0 0 10px rgba(0,0,0,0.5); }
-
-        .btn-vid { position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,0.7); color: white; border: 1px solid var(--rojo); padding: 8px 12px; border-radius: 5px; cursor: pointer; z-index: 101; font-size: 10px; font-weight: bold; }
-
-        #interaction-area { flex: 1; display: flex; flex-direction: column; background: #050505; }
-        #channel-bar { background: #111; padding: 10px; border-bottom: 1px solid #222; }
-        
-        select { 
-            background: #000; 
-            color: white; 
-            border: 1px solid #333; 
-            padding: 10px; 
-            border-radius: 5px; 
-            width: 100%; 
-            font-weight: bold;
-            font-size: 14px;
-            text-transform: uppercase;
+        /* FULLSCREEN: Aquí sí permitimos que llene la pantalla */
+        #video-wrapper:fullscreen video, 
+        #video-wrapper:-webkit-full-screen video { 
+            object-fit: contain !important; 
+            width: 100vw !important;
+            height: 100vh !important;
         }
 
-        iframe#chat-frame { width: 100%; height: 100%; border: none; }
+        .btn-vid { position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,0.7); color: white; border: 1px solid var(--rojo); padding: 8px 12px; border-radius: 5px; cursor: pointer; z-index: 101; font-size: 10px; font-weight: bold; }
+        #camera-layer { position: absolute; top: 10px; right: 10px; width: 75px; height: 75px; border-radius: 50%; border: 2px solid var(--rojo); overflow: hidden; display: none; z-index: 100; }
+
+        #interaction-area { flex: 1; display: flex; flex-direction: column; background: #050505; overflow: hidden; }
+        #channel-bar { background: #111; padding: 10px; border-bottom: 1px solid #222; }
+        select { background: #000; color: white; border: 1px solid #333; padding: 10px; border-radius: 5px; width: 100%; font-weight: bold; }
+        iframe#chat-frame { width: 100%; flex: 1; border: none; }
+
         #overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; z-index: 10000; }
     </style>
 </head>
@@ -80,14 +81,16 @@
 
     <div id="main-content">
         <div id="video-wrapper">
-            <div id="capa-publicidad"><img id="banner-img" src=""></div>
-            <video id="video" playsinline autoplay controls></video>
-            <button id="btn-fs" class="btn-vid" onclick="toggleFS()">AMPLIAR PANTALLA</button>
+            <video id="video" playsinline autoplay></video>
+            <div id="camera-layer">
+                <iframe id="ifr-cam" src="" style="width:100%; height:100%; border:none; transform: scale(1.5);"></iframe>
+            </div>
+            <button class="btn-vid" onclick="toggleFS()">AMPLIAR PANTALLA</button>
         </div>
 
         <div id="interaction-area">
             <div id="channel-bar">
-                <select id="channel-select"></select>
+                <select id="channel-select"><option>Cargando canales...</option></select>
             </div>
             <iframe id="chat-frame" src="chat-manaure.html"></iframe>
         </div>
@@ -100,17 +103,15 @@
         const firebaseConfig = { apiKey: "AIzaSyBtkKwQlTzDgQwP_RpDPnX7WJqoyg1turk", databaseURL: "https://radiomanaure-default-rtdb.firebaseio.com", projectId: "radiomanaure" };
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
-        
         const video = document.getElementById('video');
-        const btnFs = document.getElementById('btn-fs');
-        const select = document.getElementById('channel-select');
 
-        // Configuración HLS optimizada para evitar que se pegue
+        // AJUSTES ANTI-CORTE (Búfer optimizado)
         const hls = new Hls({
             maxBufferLength: 30,
+            maxMaxBufferLength: 60,
             enableWorker: true,
             lowLatencyMode: false,
-            manifestLoadingMaxRetry: 10
+            backBufferLength: 90
         });
 
         window.toggleMenu = () => {
@@ -124,71 +125,57 @@
             if (!document.fullscreenElement) {
                 if (wrapper.requestFullscreen) wrapper.requestFullscreen();
                 else if (wrapper.webkitRequestFullscreen) wrapper.webkitRequestFullscreen();
+                if (screen.orientation && screen.orientation.lock) {
+                    screen.orientation.lock('landscape').catch(() => {});
+                }
             } else {
                 if (document.exitFullscreen) document.exitFullscreen();
             }
         };
 
         async function loadM3U() {
-            // USAMOS LA URL DIRECTA DE GITHUB PARA EVITAR FALLOS
-            const urlM3U = "https://raw.githubusercontent.com/lavozdemanaureapp/lavozdemanaure/refs/heads/main/canales.m3u?v=" + new Date().getTime();
-            
-            try {
-                const r = await fetch(urlM3U);
-                const t = await r.text();
-                const lines = t.split('\n');
-                select.innerHTML = ''; 
-
-                let name = "";
-                lines.forEach(l => {
-                    const cleanLine = l.trim();
-                    if(cleanLine.startsWith('#EXTINF')) {
-                        name = cleanLine.split(',')[1] || "Canal Sin Nombre";
-                    }
-                    else if(cleanLine.startsWith('http')) {
-                        let o = document.createElement('option'); 
-                        o.value = cleanLine; 
-                        o.innerText = name.toUpperCase();
-                        o.dataset.name = name; 
-                        select.appendChild(o);
-                    }
-                });
-
-                if(select.options.length > 0) {
-                    play(select.options[0].value, select.options[0].dataset.name);
+            // Cache busting para que siempre cargue la lista nueva
+            const r = await fetch('canales.m3u?v=' + new Date().getTime());
+            const t = await r.text();
+            const lines = t.split('\n');
+            const select = document.getElementById('channel-select');
+            select.innerHTML = '';
+            let name = "";
+            lines.forEach(l => {
+                const clean = l.trim();
+                if(clean.startsWith('#EXTINF')) name = clean.split(',')[1];
+                else if(clean.startsWith('http')) {
+                    let o = document.createElement('option'); 
+                    o.value = clean; 
+                    o.innerText = name ? name.toUpperCase() : "CANAL";
+                    select.appendChild(o);
                 }
-            } catch (error) {
-                console.error("Error cargando M3U:", error);
-            }
+            });
+            if(select.options.length > 0) play(select.options[0].value);
         }
 
-        function play(url, name) {
-            // Actualizar etiqueta visual
-            select.options[select.selectedIndex].innerText = `▶ ${name.toUpperCase()}`;
-            
+        function play(url) {
             if (Hls.isSupported()) { 
                 hls.loadSource(url); 
                 hls.attachMedia(video); 
             } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-                video.src = url;
+                video.src = url; 
             }
         }
 
-        select.onchange = (e) => {
-            const opt = e.target.options[e.target.selectedIndex];
-            play(opt.value, opt.dataset.name);
-        };
-
+        document.getElementById('channel-select').onchange = (e) => play(e.target.value);
         loadM3U();
 
-        onValue(ref(db, 'publicidad_activa'), (snap) => {
+        onValue(ref(db, 'cabina_activa'), (snap) => {
             const d = snap.val();
-            const capa = document.getElementById('capa-publicidad');
-            if(d && d.imagen !== "OFF") {
-                document.getElementById('banner-img').src = d.imagen;
-                capa.style.display = 'block';
-            } else {
-                capa.style.display = 'none';
+            const layer = document.getElementById('camera-layer');
+            const ifr = document.getElementById('ifr-cam');
+            if(d && d.estado === "ON") { 
+                ifr.src = d.url + "&mute=1&autoplay=1"; 
+                layer.style.display = 'block'; 
+            } else { 
+                layer.style.display = 'none'; 
+                ifr.src = ""; 
             }
         });
     </script>
