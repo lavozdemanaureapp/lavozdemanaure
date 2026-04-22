@@ -116,8 +116,13 @@
         const video = document.getElementById('video');
         const btnFs = document.getElementById('btn-fs');
         const select = document.getElementById('channel-select');
-        const hls = new Hls();
-
+        const hls = new Hls({
+            maxBufferLength: 30,
+            maxMaxBufferLength: 60,
+            enableWorker: true,
+            lowLatencyMode: false,
+            backBufferLength: 90
+        });
         window.toggleMenu = () => {
             document.getElementById('sidebar').classList.toggle('active');
             const ov = document.getElementById('overlay');
@@ -143,52 +148,37 @@
             if (!document.fullscreenElement) btnFs.innerText = "AMPLIAR PANTALLA";
         });
 
-       async function loadM3U() {
-            // USAMOS TU DIRECCIÓN RAW DIRECTA
-            const urlGithub = "https://raw.githubusercontent.com/lavozdemanaureapp/lavozdemanaure/refs/heads/main/canales.m3u?v=" + new Date().getTime();
+        async function loadM3U() {
+            const r = await fetch('canales.m3u');
+            const t = await r.text();
+            const lines = t.split('\n');
+            select.innerHTML = ''; 
 
-            try {
-                const r = await fetch(urlGithub);
-                const t = await r.text();
-                const lines = t.split('\n');
-                select.innerHTML = ''; 
-
-                let name = "";
-                lines.forEach(l => {
-                    const cleanLine = l.trim();
-                    if(cleanLine.startsWith('#EXTINF')) {
-                        const parts = cleanLine.split(',');
-                        name = parts[parts.length - 1].trim();
-                    }
-                    else if(cleanLine.startsWith('http')) {
-                        let o = document.createElement('option'); 
-                        o.value = cleanLine; 
-                        o.innerText = name;
-                        o.dataset.name = name; 
-                        select.appendChild(o);
-                    }
-                });
-
-                if(select.options.length > 0) {
-                    play(select.options[0].value, select.options[0].dataset.name);
+            let name = "";
+            lines.forEach(l => {
+                if(l.startsWith('#EXTINF')) name = l.split(',')[1].trim();
+                else if(l.startsWith('http')) {
+                    let o = document.createElement('option'); 
+                    o.value = l.trim(); 
+                    o.innerText = name;
+                    o.dataset.name = name; // Guardamos el nombre limpio
+                    select.appendChild(o);
                 }
-            } catch (error) {
-                console.error("Error cargando la lista:", error);
+            });
+
+            if(select.options.length > 0) {
+                const firstChannel = select.options[0];
+                play(firstChannel.value, firstChannel.dataset.name);
             }
         }
 
         function play(url, name) {
             // Actualiza el texto del select con el canal activo
-            if(select.selectedIndex !== -1) {
-                select.options[select.selectedIndex].innerText = `+ CANALES | ${name.toUpperCase()}`;
-            }
+            const label = document.getElementById('active-label');
+            select.options[select.selectedIndex].innerText = `+ CANALES | ${name.toUpperCase()}`;
             
-            if (Hls.isSupported()) { 
-                hls.loadSource(url); 
-                hls.attachMedia(video); 
-            } else { 
-                video.src = url; 
-            }
+            if (Hls.isSupported()) { hls.loadSource(url); hls.attachMedia(video); }
+            else { video.src = url; }
         }
 
         select.onchange = (e) => {
@@ -196,7 +186,6 @@
             play(selectedOption.value, selectedOption.dataset.name);
         };
 
-        // Ejecutar carga inicial
         loadM3U();
 
         onValue(ref(db, 'publicidad_activa'), (snap) => {
