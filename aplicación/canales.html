@@ -177,19 +177,18 @@
             }
         }
 
-            if(select.options.length > 0) {
-                const firstChannel = select.options[0];
-                play(firstChannel.value, firstChannel.dataset.name);
-            }
-        }
-
         function play(url, name) {
             // Actualiza el texto del select con el canal activo
-            const label = document.getElementById('active-label');
-            select.options[select.selectedIndex].innerText = `+ CANALES | ${name.toUpperCase()}`;
+            if(select.selectedIndex !== -1) {
+                select.options[select.selectedIndex].innerText = `+ CANALES | ${name.toUpperCase()}`;
+            }
             
-            if (Hls.isSupported()) { hls.loadSource(url); hls.attachMedia(video); }
-            else { video.src = url; }
+            if (Hls.isSupported()) { 
+                hls.loadSource(url); 
+                hls.attachMedia(video); 
+            } else { 
+                video.src = url; 
+            }
         }
 
         select.onchange = (e) => {
@@ -197,6 +196,7 @@
             play(selectedOption.value, selectedOption.dataset.name);
         };
 
+        // Ejecutar carga inicial
         loadM3U();
 
         onValue(ref(db, 'publicidad_activa'), (snap) => {
