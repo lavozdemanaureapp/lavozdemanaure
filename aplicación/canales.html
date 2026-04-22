@@ -3,25 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TV Manaure - Comportamiento Dual</title>
+    <title>TV Manaure - Final</title>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root { --rojo: #ff0000; --negro: #0c0c0c; }
         body { margin: 0; background: var(--negro); color: #fff; font-family: sans-serif; display: flex; height: 100vh; overflow: hidden; }
 
-        /* MENU LATERAL - Z-INDEX ALTO PARA IR POR ENCIMA */
+        /* MENÚ - SIEMPRE POR ENCIMA DE TODO */
         #sidebar { 
             position: fixed; left: -260px; top: 0; width: 250px; height: 100%; 
             background: #000; border-right: 2px solid var(--rojo); 
-            z-index: 20000; transition: 0.4s; display: flex; flex-direction: column; align-items: center; padding-top: 20px;
+            z-index: 99999; transition: 0.4s; display: flex; flex-direction: column; align-items: center; padding-top: 20px;
         }
         #sidebar.active { left: 0; }
         .menu-toggle { position: absolute; top: 12px; left: 12px; z-index: 10002; background: rgba(0,0,0,0.8); color: white; border: 1px solid var(--rojo); padding: 10px; border-radius: 5px; cursor: pointer; }
 
         #main-content { width: 100%; display: flex; flex-direction: column; position: relative; }
 
-        /* 1. COMPORTAMIENTO VISTA NORMAL (CUADRITO CON BORDES NEGROS) */
+        /* EL CONTENEDOR (EL CUADRITO) */
         #video-wrapper { 
             width: 100%; 
             aspect-ratio: 16/9; 
@@ -29,32 +29,36 @@
             position: relative; 
             border-bottom: 2px solid var(--rojo); 
             overflow: hidden;
-            flex-shrink: 0;
-            display: flex; /* Centrado */
+            display: flex;
             justify-content: center;
             align-items: center;
         }
 
+        /* VIDEO EN VISTA NORMAL: MANTIENE BORDES NEGROS */
         video { 
-            max-width: 100%; 
-            max-height: 100%; 
-            object-fit: contain; /* MANTIENE PROPORCIÓN Y BORDES NEGROS */
+            width: 100%; 
+            height: 100%; 
+            object-fit: contain; 
             display: block;
         }
 
-        /* 2. COMPORTAMIENTO VISTA EXTENDIDA (FULLSCREEN FORZADO HORIZONTAL) */
-        #video-wrapper:fullscreen video, 
+        /* --- LA MAGIA PARA ESTIRAR HORIZONTAL AL AMPLIAR --- */
+        #video-wrapper:fullscreen { background: #000; width: 100vw; height: 100vh; }
+        
+        /* ESTO FUERZA EL ESTIRAMIENTO HORIZONTAL SÍ O SÍ */
+        #video-wrapper:fullscreen video,
         #video-wrapper:-webkit-full-screen video { 
-            object-fit: fill !important; /* FUERZA EL ESTIRADO HORIZONTAL TOTAL */
-            width: 100vw !important;
-            height: 100vh !important;
-            max-width: none !important;
-            max-height: none !important;
+            object-fit: fill !important; 
+            width: 100% !important;
+            height: 100% !important;
+            position: absolute;
+            top: 0;
+            left: 0;
         }
 
-        /* PUBLICIDAD A LA DERECHA (FLOTANTE) */
-        #capa-publicidad { position: absolute; top: 10px; right: 10px; width: 140px; z-index: 1000; display: none; }
-        #banner-img { width: 100%; border-radius: 8px; border: 1px solid white; box-shadow: 0 0 10px rgba(0,0,0,0.8); }
+        /* PUBLICIDAD A LA DERECHA */
+        #capa-publicidad { position: absolute; top: 15px; right: 15px; width: 150px; z-index: 1000; display: none; }
+        #banner-img { width: 100%; border-radius: 8px; border: 1px solid white; }
 
         .btn-vid { position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,0.7); color: white; border: 1px solid var(--rojo); padding: 8px 12px; border-radius: 5px; cursor: pointer; z-index: 101; font-size: 11px; font-weight: bold; }
         
@@ -74,8 +78,8 @@
         <img src="logo_v2.png" style="width: 70px; margin-bottom: 10px;">
         <h4 style="color: var(--rojo); margin: 0; font-size: 15px;">MANAURE 92.3</h4>
         <div style="margin-top: 20px; width: 100%; display: flex; flex-direction: column; align-items: center;">
-            <a href="index.html" style="text-decoration:none; color:white; padding:10px;">Radio</a>
-            <a href="canales.html" style="text-decoration:none; color:white; padding:10px; border-left: 3px solid var(--rojo);">TV</a>
+            <a href="index.html" style="color:white; padding:10px; text-decoration:none;">Radio</a>
+            <a href="canales.html" style="color:white; padding:10px; text-decoration:none; border-left: 3px solid var(--rojo);">TV</a>
         </div>
     </div>
 
@@ -85,11 +89,8 @@
             <video id="video" playsinline autoplay></video>
             <button id="btn-fs" class="btn-vid" onclick="toggleFS()">AMPLIAR PANTALLA</button>
         </div>
-
         <div id="interaction-area">
-            <div id="channel-bar">
-                <select id="channel-select"><option>Cargando canales...</option></select>
-            </div>
+            <div id="channel-bar"><select id="channel-select"></select></div>
             <iframe id="chat-frame" src="chat-manaure.html"></iframe>
         </div>
     </div>
@@ -98,11 +99,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-        const firebaseConfig = { 
-            apiKey: "AIzaSyBtkKwQlTzDgQwP_RpDPnX7WJqoyg1turk", 
-            databaseURL: "https://radiomanaure-default-rtdb.firebaseio.com", 
-            projectId: "radiomanaure" 
-        };
+        const firebaseConfig = { apiKey: "AIzaSyBtkKwQlTzDgQwP_RpDPnX7WJqoyg1turk", databaseURL: "https://radiomanaure-default-rtdb.firebaseio.com", projectId: "radiomanaure" };
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         const video = document.getElementById('video');
@@ -122,12 +119,11 @@
                 btnFs.innerText = "VOLVER";
             } else {
                 if (document.exitFullscreen) document.exitFullscreen();
-                else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
                 btnFs.innerText = "AMPLIAR PANTALLA";
             }
         };
 
-        // Detectar cambio de pantalla completa para el texto del botón
+        // Escuchar si el usuario sale de pantalla completa con el botón de "atrás" del teléfono
         document.addEventListener('fullscreenchange', () => {
             if (!document.fullscreenElement) btnFs.innerText = "AMPLIAR PANTALLA";
         });
@@ -137,7 +133,6 @@
             const t = await r.text();
             const lines = t.split('\n');
             const select = document.getElementById('channel-select');
-            select.innerHTML = '';
             let name = "";
             lines.forEach(l => {
                 if(l.startsWith('#EXTINF')) name = l.split(',')[1];
@@ -160,9 +155,8 @@
         onValue(ref(db, 'publicidad_activa'), (snap) => {
             const d = snap.val();
             const capa = document.getElementById('capa-publicidad');
-            const img = document.getElementById('banner-img');
             if(d && d.imagen !== "OFF") {
-                img.src = d.imagen;
+                document.getElementById('banner-img').src = d.imagen;
                 capa.style.display = 'block';
             } else {
                 capa.style.display = 'none';
