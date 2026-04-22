@@ -39,18 +39,10 @@
             display: block;
         }
 
-        #video-wrapper:fullscreen video, 
-        #video-wrapper:-webkit-full-screen video { 
-            object-fit: fill !important; 
-            width: 100vw !important;
-            height: 100vh !important;
-        }
-
         #capa-publicidad { position: absolute; top: 15px; right: 15px; width: 150px; z-index: 1000; display: none; }
         #banner-img { width: 100%; border-radius: 8px; border: 1px solid white; box-shadow: 0 0 10px rgba(0,0,0,0.5); }
 
         .btn-vid { position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,0.7); color: white; border: 1px solid var(--rojo); padding: 8px 12px; border-radius: 5px; cursor: pointer; z-index: 101; font-size: 10px; font-weight: bold; }
-        #camera-layer { position: absolute; top: 10px; right: 10px; width: 75px; height: 75px; border-radius: 50%; border: 2px solid var(--rojo); overflow: hidden; display: none; z-index: 100; }
 
         #interaction-area { flex: 1; display: flex; flex-direction: column; background: #050505; }
         #channel-bar { background: #111; padding: 10px; border-bottom: 1px solid #222; }
@@ -89,18 +81,13 @@
     <div id="main-content">
         <div id="video-wrapper">
             <div id="capa-publicidad"><img id="banner-img" src=""></div>
-            <video id="video" playsinline autoplay></video>
-            <div id="camera-layer">
-                <iframe id="ifr-cam" src="" style="width:100%; height:100%; border:none; transform: scale(1.5);"></iframe>
-            </div>
+            <video id="video" playsinline autoplay controls></video>
             <button id="btn-fs" class="btn-vid" onclick="toggleFS()">AMPLIAR PANTALLA</button>
         </div>
 
         <div id="interaction-area">
             <div id="channel-bar">
-                <select id="channel-select">
-                    <option id="active-label">+ CANALES</option>
-                </select>
+                <select id="channel-select"></select>
             </div>
             <iframe id="chat-frame" src="chat-manaure.html"></iframe>
         </div>
@@ -113,16 +100,19 @@
         const firebaseConfig = { apiKey: "AIzaSyBtkKwQlTzDgQwP_RpDPnX7WJqoyg1turk", databaseURL: "https://radiomanaure-default-rtdb.firebaseio.com", projectId: "radiomanaure" };
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
+        
         const video = document.getElementById('video');
         const btnFs = document.getElementById('btn-fs');
         const select = document.getElementById('channel-select');
+
+        // Configuración HLS optimizada para evitar que se pegue
         const hls = new Hls({
             maxBufferLength: 30,
-            maxMaxBufferLength: 60,
             enableWorker: true,
             lowLatencyMode: false,
-            backBufferLength: 90
+            manifestLoadingMaxRetry: 10
         });
+
         window.toggleMenu = () => {
             document.getElementById('sidebar').classList.toggle('active');
             const ov = document.getElementById('overlay');
@@ -134,56 +124,59 @@
             if (!document.fullscreenElement) {
                 if (wrapper.requestFullscreen) wrapper.requestFullscreen();
                 else if (wrapper.webkitRequestFullscreen) wrapper.webkitRequestFullscreen();
-                if (screen.orientation && screen.orientation.lock) {
-                    screen.orientation.lock('landscape').catch(() => {});
-                }
-                btnFs.innerText = "VOLVER";
             } else {
                 if (document.exitFullscreen) document.exitFullscreen();
-                btnFs.innerText = "AMPLIAR PANTALLA";
             }
         };
 
-        document.addEventListener('fullscreenchange', () => {
-            if (!document.fullscreenElement) btnFs.innerText = "AMPLIAR PANTALLA";
-        });
-
         async function loadM3U() {
-            const r = await fetch('https://github.com/lavozdemanaureapp/lavozdemanaure/blob/main/aplicaci%C3%B3n/canales.m3u');
-            const t = await r.text();
-            const lines = t.split('\n');
-            select.innerHTML = ''; 
+            // USAMOS LA URL DIRECTA DE GITHUB PARA EVITAR FALLOS
+            const urlM3U = "https://raw.githubusercontent.com/lavozdemanaureapp/lavozdemanaure/refs/heads/main/canales.m3u?v=" + new Date().getTime();
+            
+            try {
+                const r = await fetch(urlM3U);
+                const t = await r.text();
+                const lines = t.split('\n');
+                select.innerHTML = ''; 
 
-            let name = "";
-            lines.forEach(l => {
-                if(l.startsWith('#EXTINF')) name = l.split(',')[1].trim();
-                else if(l.startsWith('http')) {
-                    let o = document.createElement('option'); 
-                    o.value = l.trim(); 
-                    o.innerText = name;
-                    o.dataset.name = name; // Guardamos el nombre limpio
-                    select.appendChild(o);
+                let name = "";
+                lines.forEach(l => {
+                    const cleanLine = l.trim();
+                    if(cleanLine.startsWith('#EXTINF')) {
+                        name = cleanLine.split(',')[1] || "Canal Sin Nombre";
+                    }
+                    else if(cleanLine.startsWith('http')) {
+                        let o = document.createElement('option'); 
+                        o.value = cleanLine; 
+                        o.innerText = name.toUpperCase();
+                        o.dataset.name = name; 
+                        select.appendChild(o);
+                    }
+                });
+
+                if(select.options.length > 0) {
+                    play(select.options[0].value, select.options[0].dataset.name);
                 }
-            });
-
-            if(select.options.length > 0) {
-                const firstChannel = select.options[0];
-                play(firstChannel.value, firstChannel.dataset.name);
+            } catch (error) {
+                console.error("Error cargando M3U:", error);
             }
         }
 
         function play(url, name) {
-            // Actualiza el texto del select con el canal activo
-            const label = document.getElementById('active-label');
-            select.options[select.selectedIndex].innerText = `+ CANALES | ${name.toUpperCase()}`;
+            // Actualizar etiqueta visual
+            select.options[select.selectedIndex].innerText = `▶ ${name.toUpperCase()}`;
             
-            if (Hls.isSupported()) { hls.loadSource(url); hls.attachMedia(video); }
-            else { video.src = url; }
+            if (Hls.isSupported()) { 
+                hls.loadSource(url); 
+                hls.attachMedia(video); 
+            } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                video.src = url;
+            }
         }
 
         select.onchange = (e) => {
-            const selectedOption = e.target.options[e.target.selectedIndex];
-            play(selectedOption.value, selectedOption.dataset.name);
+            const opt = e.target.options[e.target.selectedIndex];
+            play(opt.value, opt.dataset.name);
         };
 
         loadM3U();
