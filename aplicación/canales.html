@@ -3,24 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TV Manaure - Horizontal</title>
+    <title>TV Manaure - Comportamiento Dual</title>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root { --rojo: #ff0000; --negro: #0c0c0c; }
         body { margin: 0; background: var(--negro); color: #fff; font-family: sans-serif; display: flex; height: 100vh; overflow: hidden; }
 
+        /* MENU LATERAL - Z-INDEX ALTO PARA IR POR ENCIMA */
         #sidebar { 
             position: fixed; left: -260px; top: 0; width: 250px; height: 100%; 
             background: #000; border-right: 2px solid var(--rojo); 
-            z-index: 10001; transition: 0.4s; display: flex; flex-direction: column; align-items: center; padding-top: 20px;
+            z-index: 20000; transition: 0.4s; display: flex; flex-direction: column; align-items: center; padding-top: 20px;
         }
         #sidebar.active { left: 0; }
         .menu-toggle { position: absolute; top: 12px; left: 12px; z-index: 10002; background: rgba(0,0,0,0.8); color: white; border: 1px solid var(--rojo); padding: 10px; border-radius: 5px; cursor: pointer; }
 
         #main-content { width: 100%; display: flex; flex-direction: column; position: relative; }
 
-        /* EL SECRETO DE LA HORIZONTALIDAD */
+        /* 1. COMPORTAMIENTO VISTA NORMAL (CUADRITO CON BORDES NEGROS) */
         #video-wrapper { 
             width: 100%; 
             aspect-ratio: 16/9; 
@@ -29,24 +30,29 @@
             border-bottom: 2px solid var(--rojo); 
             overflow: hidden;
             flex-shrink: 0;
+            display: flex; /* Centrado */
+            justify-content: center;
+            align-items: center;
         }
 
         video { 
-            width: 100%; 
-            height: 100%; 
-            object-fit: fill !important; /* ESTO FUERZA EL ESTIRADO HORIZONTAL */
+            max-width: 100%; 
+            max-height: 100%; 
+            object-fit: contain; /* MANTIENE PROPORCIÓN Y BORDES NEGROS */
             display: block;
         }
 
-        /* AJUSTE PARA PANTALLA COMPLETA */
+        /* 2. COMPORTAMIENTO VISTA EXTENDIDA (FULLSCREEN FORZADO HORIZONTAL) */
         #video-wrapper:fullscreen video, 
         #video-wrapper:-webkit-full-screen video { 
-            object-fit: fill !important; 
+            object-fit: fill !important; /* FUERZA EL ESTIRADO HORIZONTAL TOTAL */
             width: 100vw !important;
             height: 100vh !important;
+            max-width: none !important;
+            max-height: none !important;
         }
 
-        /* PUBLICIDAD A LA DERECHA */
+        /* PUBLICIDAD A LA DERECHA (FLOTANTE) */
         #capa-publicidad { position: absolute; top: 10px; right: 10px; width: 140px; z-index: 1000; display: none; }
         #banner-img { width: 100%; border-radius: 8px; border: 1px solid white; box-shadow: 0 0 10px rgba(0,0,0,0.8); }
 
