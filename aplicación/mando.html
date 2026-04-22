@@ -86,20 +86,19 @@
                 timestamp: Date.now()
             }).then(() => {
                 document.getElementById('pub-status').innerText = "Banner: " + (nombreImagen === 'OFF' ? 'Oculto' : nombreImagen);
-            });
+            }).catch(e => console.error("Error:", e));
         };
 
-        // FUNCIÓN PARA LA CABINA (YA CON TU LINK)
+        // FUNCIÓN PARA LA CABINA (CON LINK FIJO)
         window.controlCabina = function(estado) {
-            // Este es el link que generamos con tu cámara
-            const urlCam = "https://vdo.ninja/?view=nfCzBaH&label=MANAURE&autoplay=1&cleanoutput=1&transparent=1";
+            const urlCam = "https://vdo.ninja/?view=CabinaManaure&autoplay=1&mute=1&transparent=1";
             
             set(ref(db, 'cabina_activa'), {
                 estado: estado,
                 url: urlCam
             }).then(() => {
                 document.getElementById('cam-status').innerText = "Cámara: " + (estado === 'ON' ? 'AL AIRE' : 'APAGADA');
-            });
+            }).catch(e => console.error("Error:", e));
         };
     </script>
 </body>
