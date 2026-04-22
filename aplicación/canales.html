@@ -10,7 +10,6 @@
         :root { --rojo: #ff0000; --negro: #0c0c0c; }
         body { margin: 0; background: var(--negro); color: #fff; font-family: sans-serif; display: flex; height: 100vh; overflow: hidden; }
 
-        /* MENU LATERAL */
         #sidebar { 
             position: fixed; left: -260px; top: 0; width: 250px; height: 100%; 
             background: #000; border-right: 2px solid var(--rojo); 
@@ -20,10 +19,8 @@
         .menu-toggle { position: absolute; top: 12px; left: 12px; z-index: 10002; background: rgba(0,0,0,0.8); color: white; border: 1px solid var(--rojo); padding: 10px; border-radius: 5px; cursor: pointer; }
         .nav-item { width: 85%; padding: 12px; margin: 5px 0; border-radius: 8px; background: #1a1a1a; display: flex; align-items: center; gap: 12px; cursor: pointer; text-decoration: none; color: white; font-size: 14px; }
 
-        /* CONTENEDOR PRINCIPAL */
         #main-content { width: 100%; display: flex; flex-direction: column; position: relative; }
 
-        /* EL WRAPPER QUE MANTIENE LA HORIZONTALIDAD */
         #video-wrapper { 
             width: 100%; 
             aspect-ratio: 16/9; 
@@ -34,14 +31,9 @@
             flex-shrink: 0;
         }
 
-        video { 
-            width: 100%; 
-            height: 100%; 
-            object-fit: cover; 
-            display: block;
-        }
+        video { width: 100%; height: 100%; object-fit: cover; display: block; }
 
-        /* ESTIRAMIENTO FORZADO EN PANTALLA COMPLETA */
+        /* Mantenemos el estiramiento horizontal intacto */
         #video-wrapper:fullscreen video, 
         #video-wrapper:-webkit-full-screen video { 
             object-fit: fill !important; 
@@ -49,10 +41,10 @@
             height: 100vh !important;
         }
 
-        /* CAPA DE PUBLICIDAD (FLOTANTE - NO AFECTA EL VIDEO) */
+        /* Capa de Publicidad Flotante */
         #capa-publicidad { 
             position: absolute; 
-            top: 60px; /* Debajo del botón de menú */
+            top: 60px; 
             left: 15px; 
             width: 150px; 
             z-index: 110; 
@@ -60,16 +52,13 @@
         }
         #banner-img { width: 100%; border-radius: 8px; border: 1px solid rgba(255,255,255,0.3); box-shadow: 0 4px 15px rgba(0,0,0,0.8); }
 
-        /* BOTONES Y CABINA */
         .btn-vid { position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,0.7); color: white; border: 1px solid var(--rojo); padding: 8px 12px; border-radius: 5px; cursor: pointer; z-index: 101; font-size: 10px; font-weight: bold; }
         #camera-layer { position: absolute; top: 10px; right: 10px; width: 75px; height: 75px; border-radius: 50%; border: 2px solid var(--rojo); overflow: hidden; display: none; z-index: 100; }
 
-        /* INTERACCIÓN */
         #interaction-area { flex: 1; display: flex; flex-direction: column; background: #050505; }
         #channel-bar { background: #111; padding: 10px; border-bottom: 1px solid #222; }
         select { background: #000; color: white; border: 1px solid #333; padding: 8px; border-radius: 5px; width: 100%; }
         iframe#chat-frame { width: 100%; height: 100%; border: none; }
-
         #overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; z-index: 10000; }
     </style>
 </head>
@@ -83,31 +72,19 @@
         <h4 style="color: var(--rojo); margin: 0; font-size: 15px;">MANAURE 92.3</h4>
         <div style="margin-top: 20px; width: 100%; display: flex; flex-direction: column; align-items: center;">
             <a href="index.html" class="nav-item"><i class="fas fa-broadcast-tower"></i> Radio</a>
-            <a href="programas.html" class="nav-item"><i class="fas fa-microphone-lines"></i> Archivo</a>
-            <a href="micambio.html" class="nav-item"><i class="fas fa-arrows-rotate"></i> Mi Cambio</a>
-            <a href="canales.html" class="nav-item" style="border-left: 4px solid var(--rojo); background: #222;"><i class="fas fa-tv"></i> TV Gratis</a>
+            <a href="canales.html" class="nav-item" style="border-left: 4px solid var(--rojo); background: #222;"><i class="fas fa-tv"></i> TV</a>
         </div>
     </div>
 
     <div id="main-content">
         <div id="video-wrapper">
-            <div id="capa-publicidad">
-                <img id="banner-img" src="">
-            </div>
-
+            <div id="capa-publicidad"><img id="banner-img" src=""></div>
             <video id="video" playsinline autoplay></video>
-            
-            <div id="camera-layer">
-                <iframe id="ifr-cam" src="" style="width:100%; height:100%; border:none; transform: scale(1.5);"></iframe>
-            </div>
-            
+            <div id="camera-layer"><iframe id="ifr-cam" style="width:100%; height:100%; border:none; transform: scale(1.5);"></iframe></div>
             <button class="btn-vid" onclick="toggleFS()">AMPLIAR PANTALLA</button>
         </div>
-
         <div id="interaction-area">
-            <div id="channel-bar">
-                <select id="channel-select"><option>Cargando...</option></select>
-            </div>
+            <div id="channel-bar"><select id="channel-select"><option>Cargando...</option></select></div>
             <iframe id="chat-frame" src="chat-manaure.html"></iframe>
         </div>
     </div>
@@ -138,32 +115,26 @@
             if (!document.fullscreenElement) {
                 if (wrapper.requestFullscreen) wrapper.requestFullscreen();
                 else if (wrapper.webkitRequestFullscreen) wrapper.webkitRequestFullscreen();
-                
-                if (screen.orientation && screen.orientation.lock) {
-                    screen.orientation.lock('landscape').catch(() => {});
-                }
             } else {
                 if (document.exitFullscreen) document.exitFullscreen();
             }
         };
 
         async function loadM3U() {
-            try {
-                const r = await fetch('canales.m3u');
-                const t = await r.text();
-                const lines = t.split('\n');
-                const select = document.getElementById('channel-select');
-                select.innerHTML = '';
-                let name = "";
-                lines.forEach(l => {
-                    if(l.startsWith('#EXTINF')) name = l.split(',')[1];
-                    else if(l.startsWith('http')) {
-                        let o = document.createElement('option'); o.value = l.trim(); o.innerText = name;
-                        select.appendChild(o);
-                    }
-                });
-                if(select.options.length > 0) play(select.options[0].value);
-            } catch(e) { console.error("Error M3U:", e); }
+            const r = await fetch('canales.m3u');
+            const t = await r.text();
+            const lines = t.split('\n');
+            const select = document.getElementById('channel-select');
+            select.innerHTML = '';
+            let name = "";
+            lines.forEach(l => {
+                if(l.startsWith('#EXTINF')) name = l.split(',')[1];
+                else if(l.startsWith('http')) {
+                    let o = document.createElement('option'); o.value = l.trim(); o.innerText = name;
+                    select.appendChild(o);
+                }
+            });
+            if(select.options.length > 0) play(select.options[0].value);
         }
 
         function play(url) {
@@ -174,31 +145,20 @@
         document.getElementById('channel-select').onchange = (e) => play(e.target.value);
         loadM3U();
 
-        // ESCUCHAR CABINA
         onValue(ref(db, 'cabina_activa'), (snap) => {
             const d = snap.val();
             const layer = document.getElementById('camera-layer');
             const ifr = document.getElementById('ifr-cam');
-            if(d && d.estado === "ON") { 
-                ifr.src = d.url; 
-                layer.style.display = 'block'; 
-            } else { 
-                layer.style.display = 'none'; 
-                ifr.src = ""; 
-            }
+            if(d && d.estado === "ON") { ifr.src = d.url; layer.style.display = 'block'; }
+            else { layer.style.display = 'none'; ifr.src = ""; }
         });
 
-        // ESCUCHAR PUBLICIDAD (LA PIEZA QUE FALTABA)
         onValue(ref(db, 'publicidad_activa'), (snap) => {
             const d = snap.val();
             const capa = document.getElementById('capa-publicidad');
             const img = document.getElementById('banner-img');
-            if(d && d.imagen !== "OFF") {
-                img.src = d.imagen;
-                capa.style.display = 'block';
-            } else {
-                capa.style.display = 'none';
-            }
+            if(d && d.imagen !== "OFF") { img.src = d.imagen; capa.style.display = 'block'; }
+            else { capa.style.display = 'none'; }
         });
     </script>
 </body>
