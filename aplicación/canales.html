@@ -143,23 +143,39 @@
             if (!document.fullscreenElement) btnFs.innerText = "AMPLIAR PANTALLA";
         });
 
-        async function loadM3U() {
-            const r = await fetch('canales.m3u');
-            const t = await r.text();
-            const lines = t.split('\n');
-            select.innerHTML = ''; 
+       async function loadM3U() {
+            // USAMOS TU DIRECCIÓN RAW DIRECTA
+            const urlGithub = "https://raw.githubusercontent.com/lavozdemanaureapp/lavozdemanaure/refs/heads/main/canales.m3u?v=" + new Date().getTime();
 
-            let name = "";
-            lines.forEach(l => {
-                if(l.startsWith('#EXTINF')) name = l.split(',')[1].trim();
-                else if(l.startsWith('http')) {
-                    let o = document.createElement('option'); 
-                    o.value = l.trim(); 
-                    o.innerText = name;
-                    o.dataset.name = name; // Guardamos el nombre limpio
-                    select.appendChild(o);
+            try {
+                const r = await fetch(urlGithub);
+                const t = await r.text();
+                const lines = t.split('\n');
+                select.innerHTML = ''; 
+
+                let name = "";
+                lines.forEach(l => {
+                    const cleanLine = l.trim();
+                    if(cleanLine.startsWith('#EXTINF')) {
+                        const parts = cleanLine.split(',');
+                        name = parts[parts.length - 1].trim();
+                    }
+                    else if(cleanLine.startsWith('http')) {
+                        let o = document.createElement('option'); 
+                        o.value = cleanLine; 
+                        o.innerText = name;
+                        o.dataset.name = name; 
+                        select.appendChild(o);
+                    }
+                });
+
+                if(select.options.length > 0) {
+                    play(select.options[0].value, select.options[0].dataset.name);
                 }
-            });
+            } catch (error) {
+                console.error("Error cargando la lista:", error);
+            }
+        }
 
             if(select.options.length > 0) {
                 const firstChannel = select.options[0];
