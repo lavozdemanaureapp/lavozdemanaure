@@ -3,61 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>La Voz de Manaure - TV Gratis</title>
+    <title>MANAURE - TV Gratis</title>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root { --rojo-manaure: #ff0000; --fondo-oscuro: #000000; --tarjeta: #1a1a1a; }
-        
-        body { margin: 0; background: var(--fondo-oscuro); color: #fff; font-family: sans-serif; display: flex; height: 100vh; overflow: hidden; }
+        :root { --rojo: #ff0000; --negro: #000000; --gris: #1a1a1a; }
+        body { margin: 0; background: var(--negro); color: #fff; font-family: 'Segoe UI', sans-serif; display: flex; height: 100vh; overflow: hidden; }
 
-        /* MENU LATERAL DESPLEGABLE */
+        /* MENU LATERAL CON ICONOS */
         #sidebar { 
             position: fixed; left: -260px; top: 0; width: 250px; height: 100%; 
-            background: #000; border-right: 2px solid var(--rojo-manaure); 
+            background: #000; border-right: 2px solid var(--rojo); 
             z-index: 9999; transition: 0.4s; display: flex; flex-direction: column; align-items: center; padding-top: 20px;
         }
         #sidebar.active { left: 0; }
-        
-        .menu-toggle { 
-            position: absolute; top: 15px; left: 15px; z-index: 1000; 
-            background: rgba(0,0,0,0.7); color: white; border: 1px solid var(--rojo-manaure); 
-            padding: 10px; border-radius: 5px; cursor: pointer; 
-        }
+        .menu-toggle { position: absolute; top: 15px; left: 15px; z-index: 1000; background: rgba(0,0,0,0.7); color: white; border: 1px solid var(--rojo); padding: 10px; border-radius: 5px; cursor: pointer; }
 
-        .nav-item { width: 85%; padding: 12px; margin: 5px 0; border-radius: 8px; background: var(--tarjeta); display: flex; align-items: center; gap: 10px; cursor: pointer; text-decoration: none; color: white; font-size: 14px; }
-        .nav-active { border-left: 4px solid var(--rojo-manaure); background: #222; }
+        .nav-item { width: 85%; padding: 12px; margin: 5px 0; border-radius: 8px; background: var(--gris); display: flex; align-items: center; gap: 12px; cursor: pointer; text-decoration: none; color: white; font-size: 14px; }
+        .nav-active { border-left: 4px solid var(--rojo); background: #222; }
 
         /* CONTENIDO PRINCIPAL */
         #main-content { width: 100%; display: flex; flex-direction: column; position: relative; }
 
-        /* AREA DE VIDEO (60% de la pantalla) */
-        #player-area { position: relative; width: 100%; height: 55vh; background: #000; overflow: hidden; flex-shrink: 0; }
-        video { width: 100%; height: 100%; object-fit: contain; }
+        /* AREA DE VIDEO (Optimizado para móvil) */
+        #player-area { position: relative; width: 100%; height: 50vh; background: #000; flex-shrink: 0; overflow: hidden; }
+        video { width: 100%; height: 100%; object-fit: contain; background: #000; }
 
-        /* CONTROLES E INTERACCIÓN (40% de la pantalla) */
-        #interaction-area { flex-grow: 1; display: flex; flex-direction: column; background: #0a0a0a; border-top: 2px solid var(--rojo-manaure); }
+        /* CABINA Y CONTROLES (Sin chocarse) */
+        #camera-layer {
+            position: absolute; top: 10px; right: 10px; width: 85px; height: 85px;
+            border-radius: 50%; border: 3px solid var(--rojo); overflow: hidden;
+            display: none; z-index: 100; box-shadow: 0 0 10px rgba(0,0,0,0.8);
+        }
+        /* Botón movido a la izquierda de la cámara */
+        .btn-vid { position: absolute; top: 10px; right: 105px; background: rgba(0,0,0,0.8); color: white; border: 1px solid var(--rojo); padding: 8px 12px; border-radius: 5px; cursor: pointer; z-index: 101; font-size: 11px; }
 
-        /* BARRA DE CANALES */
-        #channel-bar { background: #111; padding: 10px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #222; }
-        #channel-bar label { font-size: 12px; color: var(--rojo-manaure); font-weight: bold; }
-        select { background: #000; color: #fff; border: 1px solid #444; padding: 8px; border-radius: 5px; flex-grow: 1; outline: none; }
+        /* INTERACCIÓN */
+        #interaction-area { flex-grow: 1; display: flex; flex-direction: column; background: #050505; border-top: 2px solid var(--rojo); }
+        #channel-bar { background: #111; padding: 8px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #222; }
+        #channel-bar span { font-size: 11px; color: var(--rojo); font-weight: bold; white-space: nowrap; }
+        select { background: #000; color: #fff; border: 1px solid #333; padding: 8px; border-radius: 5px; flex-grow: 1; outline: none; font-size: 13px; }
 
-        /* AREA DEL CHAT */
         #chat-area { flex-grow: 1; width: 100%; }
         iframe#chat-frame { width: 100%; height: 100%; border: none; }
 
-        /* ELEMENTOS FLOTANTES SOBRE VIDEO */
-        #camera-layer {
-            position: absolute; top: 15px; right: 15px; width: 90px; height: 90px;
-            border-radius: 50%; border: 3px solid var(--rojo-manaure); overflow: hidden;
-            display: none; z-index: 100; box-shadow: 0 0 15px rgba(0,0,0,0.8);
-        }
-        .btn-vid { position: absolute; top: 15px; right: 15px; background: rgba(0,0,0,0.8); color: white; border: 1px solid var(--rojo-manaure); padding: 8px 12px; border-radius: 5px; cursor: pointer; z-index: 101; }
-        #banner-pub { position: absolute; bottom: 15px; right: 15px; width: 150px; display: none; z-index: 99; }
-        #banner-pub img { width: 100%; border-radius: 8px; border: 1px solid #fff; }
+        #banner-pub { position: absolute; bottom: 10px; right: 10px; width: 130px; display: none; z-index: 99; }
+        #banner-pub img { width: 100%; border-radius: 5px; border: 1px solid #fff; }
 
-        #overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; z-index: 9998; }
+        #overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.75); display: none; z-index: 9998; }
+
+        /* FIX PANTALLA COMPLETA EN MÓVIL */
+        #player-area:-webkit-full-screen { width: 100%; height: 100%; }
+        #player-area:fullscreen { width: 100%; height: 100%; }
     </style>
 </head>
 <body>
@@ -67,11 +64,11 @@
 
     <div id="sidebar">
         <img src="logo_v2.png" style="width: 80px; margin-bottom: 10px;">
-        <h4 style="color: var(--rojo-manaure); margin: 0;">MANAURE 92.3</h4>
+        <h4 style="color: var(--rojo); margin: 0; font-size: 16px;">MANAURE 92.3</h4>
         <div style="margin-top: 20px; width: 100%; display: flex; flex-direction: column; align-items: center;">
             <a href="index.html" class="nav-item"><i class="fas fa-radio"></i> Radio en Vivo</a>
-            <a href="programas.html" class="nav-item"><i class="fas fa-microphone"></i> Archivo</a>
-            <a href="micambio.html" class="nav-item"><i class="fas fa-coins"></i> Mi Cambio</a>
+            <a href="programas.html" class="nav-item"><i class="fas fa-microphone-lines"></i> Archivo</a>
+            <a href="micambio.html" class="nav-item"><i class="fas fa-money-bill-transfer"></i> Mi Cambio</a>
             <a href="canales.html" class="nav-item nav-active"><i class="fas fa-tv"></i> TV Gratis</a>
         </div>
     </div>
@@ -79,16 +76,18 @@
     <div id="main-content">
         <div id="player-area">
             <video id="video" playsinline autoplay></video>
-            <button class="btn-vid" id="btn-fs" onclick="toggleFullScreen()"><i class="fas fa-expand"></i> AMPLIAR</button>
+            <button class="btn-vid" id="btn-fs" onclick="toggleFS()">
+                <i class="fas fa-expand"></i> <span id="txt-fs">AMPLIAR</span>
+            </button>
             <div id="camera-layer">
-                <iframe id="iframe-camera" src="" allow="camera;microphone;autoplay" style="width:100%; height:100%; border:none; transform: scale(1.5);"></iframe>
+                <iframe id="ifr-cam" src="" allow="camera;microphone;autoplay" style="width:100%; height:100%; border:none; transform: scale(1.5);"></iframe>
             </div>
             <div id="banner-pub"><img id="img-pub" src=""></div>
         </div>
 
         <div id="interaction-area">
             <div id="channel-bar">
-                <label><i class="fas fa-list"></i> CANALES:</label>
+                <span><i class="fas fa-tv"></i> CANALES:</span>
                 <select id="channel-select"><option>Cargando...</option></select>
             </div>
             <div id="chat-area">
@@ -117,10 +116,18 @@
             ov.style.display = ov.style.display === 'block' ? 'none' : 'block';
         };
 
-        window.toggleFullScreen = () => {
+        // Lógica de Ampliar con cambio de texto
+        window.toggleFS = () => {
             const area = document.getElementById('player-area');
-            if (!document.fullscreenElement) area.requestFullscreen();
-            else document.exitFullscreen();
+            const txt = document.getElementById('txt-fs');
+            if (!document.fullscreenElement) {
+                if(area.requestFullscreen) area.requestFullscreen();
+                else if(area.webkitRequestFullscreen) area.webkitRequestFullscreen();
+                txt.innerText = "VOLVER";
+            } else {
+                if(document.exitFullscreen) document.exitFullscreen();
+                txt.innerText = "AMPLIAR";
+            }
         };
 
         async function loadM3U() {
@@ -151,7 +158,7 @@
         onValue(ref(db, 'cabina_activa'), (snap) => {
             const d = snap.val();
             const layer = document.getElementById('camera-layer');
-            const ifr = document.getElementById('iframe-camera');
+            const ifr = document.getElementById('ifr-cam');
             if(d && d.estado === "ON") {
                 ifr.src = d.url + "&mute=1&autoplay=1";
                 layer.style.display = 'block';
