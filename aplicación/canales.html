@@ -10,7 +10,7 @@
         :root { --rojo: #ff0000; --negro: #000000; --gris: #1a1a1a; }
         body { margin: 0; background: var(--negro); color: #fff; font-family: sans-serif; display: flex; height: 100vh; overflow: hidden; }
 
-        /* MENU LATERAL CORREGIDO */
+        /* MENU LATERAL CON ICONOS CORREGIDOS */
         #sidebar { 
             position: fixed; left: -260px; top: 0; width: 250px; height: 100%; 
             background: #000; border-right: 2px solid var(--rojo); 
@@ -23,35 +23,44 @@
         .nav-active { border-left: 4px solid var(--rojo); background: #222; }
 
         /* CONTENIDO PRINCIPAL */
-        #main-content { width: 100%; display: flex; flex-direction: column; position: relative; }
+        #main-content { width: 100%; display: flex; flex-direction: column; position: relative; height: 100%; }
 
-        /* AREA DE VIDEO (FORZAR EXTENSIÓN HORIZONTAL) */
-        #player-area { position: relative; width: 100%; height: 50vh; background: #000; flex-shrink: 0; overflow: hidden; }
-        /* "fill" obliga a que se estire horizontalmente sin dejar bordes */
-        video { width: 100% !important; height: 100% !important; object-fit: fill; background: #000; }
-
-        /* CABINA Y BOTON (POSICIÓN FIJA) */
-        #camera-layer {
-            position: absolute; top: 10px; right: 10px; width: 85px; height: 85px;
-            border-radius: 50%; border: 3px solid var(--rojo); overflow: hidden;
-            display: none; z-index: 100; box-shadow: 0 0 10px rgba(0,0,0,0.8);
+        /* AREA DE VIDEO (EXTENSIÓN HORIZONTAL REAL) */
+        #player-area { position: relative; width: 100%; height: 45vh; background: #000; flex-shrink: 0; overflow: hidden; }
+        video { 
+            width: 100% !important; 
+            height: 100% !important; 
+            object-fit: fill !important; /* Fuerza el estirado horizontal */
+            background: #000; 
         }
-        .btn-vid { position: absolute; top: 10px; right: 105px; background: rgba(0,0,0,0.8); color: white; border: 1px solid var(--rojo); padding: 8px 12px; border-radius: 5px; cursor: pointer; z-index: 101; font-size: 11px; font-weight: bold; }
 
-        /* INTERACCIÓN */
+        /* CABINA Y BOTON AMPLIAR */
+        #camera-layer {
+            position: absolute; top: 10px; right: 10px; width: 80px; height: 80px;
+            border-radius: 50%; border: 3px solid var(--rojo); overflow: hidden;
+            display: none; z-index: 100;
+        }
+        .btn-vid { 
+            position: absolute; top: 10px; right: 100px; 
+            background: rgba(0,0,0,0.8); color: white; border: 1px solid var(--rojo); 
+            padding: 8px 12px; border-radius: 5px; cursor: pointer; z-index: 101; 
+            font-size: 11px; font-weight: bold; 
+        }
+
+        /* INTERACCIÓN (CANALES Y CHAT) */
         #interaction-area { flex-grow: 1; display: flex; flex-direction: column; background: #050505; border-top: 2px solid var(--rojo); }
-        #channel-bar { background: #111; padding: 8px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #222; }
+        #channel-bar { background: #111; padding: 10px; display: flex; align-items: center; gap: 10px; }
         #channel-bar span { font-size: 11px; color: var(--rojo); font-weight: bold; }
         select { background: #000; color: #fff; border: 1px solid #333; padding: 8px; border-radius: 5px; flex-grow: 1; outline: none; }
 
-        #chat-area { flex-grow: 1; width: 100%; }
+        #chat-area { flex-grow: 1; width: 100%; position: relative; }
         iframe#chat-frame { width: 100%; height: 100%; border: none; }
 
         #overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; z-index: 9998; }
         
-        /* FIX PANTALLA COMPLETA TOTAL */
-        #player-area:-webkit-full-screen video { object-fit: fill; width: 100vw; height: 100vh; }
-        #player-area:fullscreen video { object-fit: fill; width: 100vw; height: 100vh; }
+        /* PANTALLA COMPLETA FORZADA */
+        :-webkit-full-screen video { object-fit: fill !important; width: 100vw !important; height: 100vh !important; }
+        :fullscreen video { object-fit: fill !important; width: 100vw !important; height: 100vh !important; }
     </style>
 </head>
 <body>
@@ -65,7 +74,7 @@
         <div style="margin-top: 20px; width: 100%; display: flex; flex-direction: column; align-items: center;">
             <a href="index.html" class="nav-item"><i class="fas fa-radio"></i> Radio en Vivo</a>
             <a href="programas.html" class="nav-item"><i class="fas fa-microphone-lines"></i> Archivo</a>
-            <a href="micambio.html" class="nav-item"><i class="fas fa-coins"></i> Mi Cambio</a>
+            <a href="micambio.html" class="nav-item"><i class="fas fa-sack-dollar"></i> Mi Cambio</a>
             <a href="canales.html" class="nav-item nav-active"><i class="fas fa-tv"></i> TV Gratis</a>
         </div>
     </div>
@@ -83,7 +92,7 @@
 
         <div id="interaction-area">
             <div id="channel-bar">
-                <span><i class="fas fa-list-ul"></i> CANALES:</span>
+                <span><i class="fas fa-list"></i> CANALES:</span>
                 <select id="channel-select"><option>Cargando lista...</option></select>
             </div>
             <div id="chat-area">
