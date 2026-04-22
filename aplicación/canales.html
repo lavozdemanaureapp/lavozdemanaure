@@ -10,7 +10,7 @@
         :root { --rojo: #ff0000; --negro: #000000; --gris: #1a1a1a; }
         body { margin: 0; background: var(--negro); color: #fff; font-family: sans-serif; display: flex; height: 100vh; overflow: hidden; }
 
-        /* MENU LATERAL CON ICONOS CORREGIDOS */
+        /* MENU LATERAL CORREGIDO */
         #sidebar { 
             position: fixed; left: -260px; top: 0; width: 250px; height: 100%; 
             background: #000; border-right: 2px solid var(--rojo); 
@@ -23,21 +23,21 @@
         .nav-active { border-left: 4px solid var(--rojo); background: #222; }
 
         /* CONTENIDO PRINCIPAL */
-        #main-content { width: 100%; display: flex; flex-direction: column; position: relative; height: 100%; }
+        #main-content { width: 100%; display: flex; flex-direction: column; position: relative; height: 100vh; }
 
-        /* AREA DE VIDEO (EXTENSIÓN HORIZONTAL REAL) */
+        /* AREA DE VIDEO - LÓGICA DE EXTENSIÓN HORIZONTAL */
         #player-area { position: relative; width: 100%; height: 45vh; background: #000; flex-shrink: 0; overflow: hidden; }
         video { 
             width: 100% !important; 
             height: 100% !important; 
-            object-fit: fill !important; /* Fuerza el estirado horizontal */
-            background: #000; 
+            object-fit: fill !important; /* ESTA ES LA CLAVE PARA EL HORIZONTAL */
+            display: block;
         }
 
         /* CABINA Y BOTON AMPLIAR */
         #camera-layer {
             position: absolute; top: 10px; right: 10px; width: 80px; height: 80px;
-            border-radius: 50%; border: 3px solid var(--rojo); overflow: hidden;
+            border-radius: 50%; border: 2px solid var(--rojo); overflow: hidden;
             display: none; z-index: 100;
         }
         .btn-vid { 
@@ -47,20 +47,24 @@
             font-size: 11px; font-weight: bold; 
         }
 
-        /* INTERACCIÓN (CANALES Y CHAT) */
-        #interaction-area { flex-grow: 1; display: flex; flex-direction: column; background: #050505; border-top: 2px solid var(--rojo); }
+        /* SECCIÓN INFERIOR */
+        #interaction-area { flex-grow: 1; display: flex; flex-direction: column; background: #050505; border-top: 2px solid var(--rojo); overflow: hidden; }
         #channel-bar { background: #111; padding: 10px; display: flex; align-items: center; gap: 10px; }
         #channel-bar span { font-size: 11px; color: var(--rojo); font-weight: bold; }
         select { background: #000; color: #fff; border: 1px solid #333; padding: 8px; border-radius: 5px; flex-grow: 1; outline: none; }
 
-        #chat-area { flex-grow: 1; width: 100%; position: relative; }
+        #chat-area { flex-grow: 1; width: 100%; }
         iframe#chat-frame { width: 100%; height: 100%; border: none; }
 
         #overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; z-index: 9998; }
         
-        /* PANTALLA COMPLETA FORZADA */
-        :-webkit-full-screen video { object-fit: fill !important; width: 100vw !important; height: 100vh !important; }
-        :fullscreen video { object-fit: fill !important; width: 100vw !important; height: 100vh !important; }
+        /* FUERZA EL ESTIRADO EN PANTALLA COMPLETA */
+        #player-area:fullscreen video, 
+        #player-area:-webkit-full-screen video { 
+            object-fit: fill !important; 
+            width: 100vw !important; 
+            height: 100vh !important; 
+        }
     </style>
 </head>
 <body>
@@ -133,6 +137,11 @@
                 txt.innerText = "AMPLIAR";
             }
         };
+
+        // Escuchar el cambio de pantalla completa para resetear el botón si el usuario sale con la tecla escape
+        document.addEventListener('fullscreenchange', () => {
+            if (!document.fullscreenElement) document.getElementById('txt-fs').innerText = "AMPLIAR";
+        });
 
         async function loadM3U() {
             const r = await fetch('canales.m3u');
