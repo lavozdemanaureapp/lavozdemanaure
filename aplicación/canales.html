@@ -159,6 +159,32 @@
             if(d && d.estado === "ON") { ifr.src = d.url + "&mute=1&autoplay=1"; layer.style.display = 'block'; }
             else { layer.style.display = 'none'; ifr.src = ""; }
         });
+// BUSCA ESTA PARTE AL FINAL DE TU ARCHIVO canales.html
+// Y SOLO PEGA ESTO ANTES DE </script>
+
+// ESCUCHAR PUBLICIDAD (ESTO ES LO QUE FALTABA)
+onValue(ref(db, 'publicidad_activa'), (snap) => {
+    const d = snap.val();
+    // Creamos la capa solo si no existe para no romper el HTML
+    let capa = document.getElementById('capa-publicidad');
+    if(!capa) {
+        capa = document.createElement('div');
+        capa.id = 'capa-publicidad';
+        capa.style = "position: absolute; top: 15px; left: 60px; width: 180px; z-index: 105; display: none;";
+        document.getElementById('video-wrapper').appendChild(capa);
+        capa.innerHTML = '<img id="banner-img" style="width: 100%; border-radius: 10px; border: 1px solid white;">';
+    }
+    
+    const img = document.getElementById('banner-img');
+    if(d && d.imagen !== "OFF") {
+        img.src = d.imagen;
+        capa.style.display = 'block';
+    } else {
+        capa.style.display = 'none';
+    }
+});
+
+
     </script>
 </body>
 </html>
