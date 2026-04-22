@@ -2,120 +2,60 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TV Digital - La Voz de Manaure</title>
-    
-    <link rel="manifest" href="manifest.json?v=40">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MANAURE - Canales en Vivo</title>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-    <script src="https://www.youtube.com/iframe_api"></script>
-
     <style>
-        :root { --red-m: #ff0000; --bg: #0c0c0c; --card: #1a1a1a; }
-        body { background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; }
-
-        /* CONTENEDOR DE VIDEO */
-        #player-canvas {
-            position: relative;
-            width: 100%;
-            background: #000;
-            aspect-ratio: 16/9;
-            overflow: hidden;
-            border-bottom: 2px solid var(--red-m);
-        }
-
-        #player-canvas:fullscreen { width: 100vw; height: 100vh; border: none; }
-        #player-canvas:-webkit-full-screen { width: 100vw; height: 100vh; }
-
-        video, #yt-player { width: 100%; height: 100%; object-fit: contain; }
-
-        /* --- PUBLICIDAD EN UN LADITO (ESQUINA INFERIOR DERECHA) --- */
-        #ad-layer {
+        body { margin: 0; background: #000; color: #fff; font-family: sans-serif; overflow: hidden; }
+        #player-container { position: relative; width: 100vw; height: 100vh; background: #000; }
+        video { width: 100%; height: 100%; object-fit: contain; }
+        
+        /* EL CÍRCULO DE LA CABINA */
+        #camera-layer {
             position: absolute;
-            bottom: 10px; /* Separado un poco del borde inferior */
-            right: 10px;  /* Pegado a la derecha */
-            width: 35%;   /* Mucho más pequeño para que no tape */
-            max-width: 180px; 
-            z-index: 2147483647 !important;
+            top: 20px;
+            left: 20px;
+            width: 110px;
+            height: 110px;
+            border-radius: 50%;
+            border: 3px solid #ff0000;
+            overflow: hidden;
+            display: none; /* Se activa desde el mando */
+            z-index: 9999;
+            box-shadow: 0 0 15px rgba(0,0,0,0.8);
+            background: #000;
+        }
+
+        /* BANNER DE PUBLICIDAD */
+        #banner-pub {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            width: 250px;
             display: none;
-            pointer-events: none;
-            animation: fadeIn 0.5s;
+            z-index: 9998;
+            transition: 0.5s;
         }
-        #ad-layer img { 
-            width: 100%; 
-            border-radius: 5px; 
-            border: 1px solid rgba(255,255,255,0.5); 
-            box-shadow: 0 0 15px rgba(0,0,0,0.7); 
-        }
-
-        /* BOTONES DE CONTROL (AMPLIAR / SALIR) */
-        .controls-overlay { 
-            position: absolute; 
-            top: 10px; 
-            right: 10px; 
-            z-index: 2147483647; 
-            display: flex; 
-            gap: 5px;
-        }
-        .btn-ctrl { 
-            background: rgba(0,0,0,0.6); 
-            color: white; 
-            border: 1px solid #444; 
-            padding: 8px 12px; 
-            border-radius: 5px; 
-            font-size: 12px; 
-            cursor: pointer;
-        }
-        /* El botón de salir solo se verá cuando estemos en pantalla completa */
-        #btn-exit { display: none; background: var(--red-m); border: none; }
-
-        /* ANIMACIÓN */
-        @keyframes fadeIn { from {opacity: 0; transform: scale(0.8);} to {opacity: 1; transform: scale(1);} }
-
-        /* INTERFAZ */
-        .content-area { padding: 15px; max-width: 1000px; margin: 0 auto; }
-        .playlist { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; max-height: 180px; overflow-y: auto; background: #111; padding: 10px; border-radius: 8px; border: 1px solid #222; }
-        .channel-card { background: var(--card); padding: 12px; border-radius: 8px; text-align: center; cursor: pointer; border: 1px solid #333; font-size: 0.8rem; }
-        .channel-card.active { border-color: var(--red-m); background: #251212; }
-
-        .chat-box { background: var(--card); border-radius: 12px; display: flex; flex-direction: column; height: 250px; border: 1px solid #222; margin-top: 20px; overflow: hidden; }
-        .messages { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 8px; background: #141414; }
-        .msg { background: #2a2a2a; padding: 8px 12px; border-radius: 12px; font-size: 0.85rem; border: 1px solid #333; }
-        .chat-input { padding: 10px; display: flex; gap: 8px; background: #1a1a1a; }
-        input#chat-in { flex: 1; background: #333; border: none; color: white; padding: 10px; border-radius: 20px; outline: none; }
-        button#btn-enviar { background: var(--red-m); border: none; color: white; padding: 10px 15px; border-radius: 50%; }
+        #banner-pub img { width: 100%; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.5); }
     </style>
 </head>
 <body>
 
-    <div id="player-canvas">
-        <video id="video-player" playsinline></video>
-        <div id="yt-player" style="display: none;"></div>
-        
-        <div id="ad-layer">
-            <img src="" id="img-pub">
+    <div id="player-container">
+        <video id="video" controls autoplay></video>
+
+        <div id="camera-layer">
+            <iframe id="iframe-camera" src="" allow="camera;microphone" style="width:100%; height:100%; border:none; transform: scale(1.4);"></iframe>
         </div>
 
-        <div class="controls-overlay">
-            <button id="btn-fs" class="btn-ctrl" onclick="toggleFS()"><i class="fas fa-expand"></i> AMPLIAR</button>
-            <button id="btn-exit" class="btn-ctrl" onclick="exitFS()"><i class="fas fa-compress"></i> SALIR</button>
-        </div>
-    </div>
-
-    <div class="content-area">
-        <div class="playlist" id="channel-list"></div>
-        <div class="chat-box">
-            <div id="msg-container" class="messages"></div>
-            <div class="chat-input">
-                <input type="text" id="chat-in" placeholder="Escribe al chat...">
-                <button id="btn-enviar"><i class="fas fa-paper-plane"></i></button>
-            </div>
+        <div id="banner-pub">
+            <img id="img-pub" src="" alt="Publicidad">
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, push, onChildAdded, serverTimestamp, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBtkKwQlTzDgQwP_RpDPnX7WJqoyg1turk",
@@ -126,107 +66,48 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        onValue(ref(db, 'publicidad_activa'), (snap) => {
-            const data = snap.val();
-            const layer = document.getElementById('ad-layer');
-            const img = document.getElementById('img-pub');
-            if(data && data.imagen !== "OFF") {
-                img.src = data.imagen + "?v=" + Date.now();
+        // 1. LÓGICA DEL VIDEO (HLS)
+        const video = document.getElementById('video');
+        const videoSrc = 'https://lavozdemanaureapp.github.io/lavozdemanaure/aplicación/canales.m3u'; // Ajusta si el m3u tiene otra ruta
+
+        if (Hls.isSupported()) {
+            const hls = new Hls();
+            hls.loadSource(videoSrc);
+            hls.attachMedia(video);
+        } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+            video.src = videoSrc;
+        }
+
+        // 2. LÓGICA DE LA CÁMARA EN VIVO (CABINA)
+        const cabinaRef = ref(db, 'cabina_activa');
+        onValue(cabinaRef, (snapshot) => {
+            const data = snapshot.val();
+            const layer = document.getElementById('camera-layer');
+            const iframe = document.getElementById('iframe-camera');
+            
+            if (data && data.estado === "ON") {
+                if (iframe.src !== data.url) iframe.src = data.url;
                 layer.style.display = 'block';
             } else {
                 layer.style.display = 'none';
+                iframe.src = ""; 
             }
         });
 
-        const chatRef = ref(db, 'mensajes');
-        document.getElementById('btn-enviar').onclick = () => {
-            const input = document.getElementById('chat-in');
-            if(input.value) {
-                push(chatRef, { texto: input.value, fecha: serverTimestamp() });
-                input.value = "";
-            }
-        };
-        onChildAdded(chatRef, (snap) => {
-            const container = document.getElementById('msg-container');
-            const div = document.createElement('div');
-            div.className = 'msg';
-            div.innerHTML = `<b>Invitado:</b> ${snap.val().texto}`;
-            container.appendChild(div);
-            container.scrollTop = container.scrollHeight;
-        });
-    </script>
+        // 3. LÓGICA DE LA PUBLICIDAD
+        const pubRef = ref(db, 'publicidad_activa');
+        onValue(pubRef, (snapshot) => {
+            const data = snapshot.val();
+            const banner = document.getElementById('banner-pub');
+            const img = document.getElementById('img-pub');
 
-    <script>
-        const canvas = document.getElementById('player-canvas');
-        const video = document.getElementById('video-player');
-        const btnFs = document.getElementById('btn-fs');
-        const btnExit = document.getElementById('btn-exit');
-
-        function toggleFS() {
-            if (canvas.requestFullscreen) canvas.requestFullscreen();
-            else if (canvas.webkitRequestFullscreen) canvas.webkitRequestFullscreen();
-            
-            if (screen.orientation && screen.orientation.lock) {
-                screen.orientation.lock('landscape').catch(() => {});
-            }
-        }
-
-        function exitFS() {
-            if (document.exitFullscreen) document.exitFullscreen();
-            else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
-        }
-
-        // Detectar cuando entra o sale de pantalla completa para mostrar/ocultar botones
-        document.addEventListener('fullscreenchange', () => {
-            if (document.fullscreenElement) {
-                btnFs.style.display = 'none';
-                btnExit.style.display = 'block';
+            if (data && data.imagen !== "OFF") {
+                img.src = data.imagen; 
+                banner.style.display = 'block';
             } else {
-                btnFs.style.display = 'block';
-                btnExit.style.display = 'none';
+                banner.style.display = 'none';
             }
         });
-        document.addEventListener('webkitfullscreenchange', () => {
-            if (document.webkitFullscreenElement) {
-                btnFs.style.display = 'none';
-                btnExit.style.display = 'block';
-            } else {
-                btnFs.style.display = 'block';
-                btnExit.style.display = 'none';
-            }
-        });
-
-        async function loadM3U() {
-            const res = await fetch("https://raw.githubusercontent.com/lavozdemanaureapp/lavozdemanaure/refs/heads/main/canales.m3u");
-            const text = await res.text();
-            const lines = text.split('\n');
-            const list = document.getElementById('channel-list');
-            
-            lines.forEach((line, i) => {
-                if (line.startsWith('#EXTINF')) {
-                    const name = line.split(',')[1];
-                    const url = lines[i+1].trim();
-                    const d = document.createElement('div');
-                    d.className = 'channel-card';
-                    d.innerText = name;
-                    d.onclick = () => play(url, d);
-                    list.appendChild(d);
-                }
-            });
-        }
-
-        let hls;
-        function play(url, el) {
-            document.querySelectorAll('.channel-card').forEach(c => c.classList.remove('active'));
-            el.classList.add('active');
-            if (hls) hls.destroy();
-            if (Hls.isSupported()) {
-                hls = new Hls(); hls.loadSource(url); hls.attachMedia(video);
-                hls.on(Hls.Events.MANIFEST_PARSED, () => video.play());
-            } else { video.src = url; video.play(); }
-        }
-
-        function onYouTubeIframeAPIReady() { loadM3U(); }
     </script>
 </body>
 </html>
