@@ -9,24 +9,27 @@
     <style>
         body { margin: 0; background: #000; color: #fff; font-family: sans-serif; overflow: hidden; display: flex; flex-direction: column; height: 100vh; }
         
-        /* ESTE ES EL QUE VAMOS A AMPLIAR */
-        #player-canvas { position: relative; width: 100%; height: 65vh; background: #000; flex-shrink: 0; overflow: hidden; }
-        video { width: 100%; height: 100%; background: #000; pointer-events: auto; }
+        /* CONTENEDOR DE VIDEO (Lo que se amplía) */
+        #player-canvas { position: relative; width: 100%; height: 60vh; background: #000; flex-shrink: 0; overflow: hidden; }
+        video { width: 100%; height: 100%; background: #000; }
 
-        /* CÁMARA CABINA */
+        /* CÁMARA CABINA (CIRCULO) */
         #camera-layer {
             position: absolute; top: 15px; left: 15px; width: 90px; height: 90px;
             border-radius: 50%; border: 3px solid #ff0000; overflow: hidden;
             display: none; z-index: 2147483647; box-shadow: 0 0 15px rgba(0,0,0,0.8);
-            pointer-events: none; /* Para que no interfiera con clics */
         }
 
-        /* BOTONES SUPERIORES */
-        .top-controls { position: absolute; top: 10px; right: 10px; display: flex; gap: 10px; z-index: 2147483647; }
-        .btn-ctrl { background: rgba(0,0,0,0.7); color: white; border: 1px solid #ff0000; padding: 10px; border-radius: 5px; cursor: pointer; }
+        /* BOTONES DE CONTROL SUPERIOR */
+        .top-controls { position: absolute; top: 10px; right: 10px; display: flex; gap: 8px; z-index: 2147483647; }
+        .btn-ctrl { background: rgba(0,0,0,0.7); color: white; border: 1px solid #ff0000; padding: 10px; border-radius: 5px; cursor: pointer; font-size: 12px; font-weight: bold; }
 
-        /* CHAT */
-        #chat-container { flex-grow: 1; background: #111; border-top: 2px solid #ff0000; }
+        /* SELECTOR DE CANALES (LISTA) */
+        #channel-menu { position: absolute; bottom: 10px; left: 10px; z-index: 2147483647; }
+        select { background: rgba(0,0,0,0.85); color: white; border: 1px solid #ff0000; padding: 6px; border-radius: 5px; outline: none; }
+
+        /* SECCIÓN DEL CHAT */
+        #chat-container { flex-grow: 1; background: #111; border-top: 2px solid #ff0000; position: relative; }
         iframe#chat-frame { width: 100%; height: 100%; border: none; }
 
         /* PUBLICIDAD */
@@ -36,12 +39,22 @@
 </head>
 <body>
 
-    <div id="player-canvas" id="fullscreen-area">
+    <div id="player-canvas">
         <video id="video" playsinline></video>
 
         <div class="top-controls">
-            <button class="btn-ctrl" onclick="toggleFullScreen()"><i class="fas fa-expand"></i> AMPLIAR</button>
-            <button class="btn-ctrl" onclick="window.location.href='index.html'"><i class="fas fa-times"></i></button>
+            <button class="btn-ctrl" id="fs-btn" onclick="toggleFullScreen()">
+                <i class="fas fa-expand"></i> <span id="fs-text">AMPLIAR</span>
+            </button>
+            <button class="btn-ctrl" onclick="window.location.href='index.html'">
+                <i class="fas fa-times"></i> SALIR
+            </button>
+        </div>
+
+        <div id="channel-menu">
+            <select id="channel-select">
+                <option value="">Cargando lista...</option>
+            </select>
         </div>
 
         <div id="camera-layer">
@@ -69,36 +82,73 @@
         const db = getDatabase(app);
         const video = document.getElementById('video');
         const canvas = document.getElementById('player-canvas');
+        const fsText = document.getElementById('fs-text');
+        const hls = new Hls();
 
-        // FUNCIÓN AMPLIAR CORREGIDA: Amplía TODO el contenedor, no solo el video
+        // 1. MANEJO DE PANTALLA COMPLETA
         window.toggleFullScreen = function() {
             if (!document.fullscreenElement) {
                 if (canvas.requestFullscreen) canvas.requestFullscreen();
                 else if (canvas.webkitRequestFullscreen) canvas.webkitRequestFullscreen();
-                else if (canvas.msRequestFullscreen) canvas.msRequestFullscreen();
             } else {
-                document.exitFullscreen();
+                if (document.exitFullscreen) document.exitFullscreen();
             }
         };
 
-        // CARGAR CANAL (simplificado para asegurar carga)
-        const hls = new Hls();
-        const videoSrc = 'canales.m3u'; 
-        fetch(videoSrc).then(r => r.text()).then(t => {
-            const lines = t.split('\n');
-            const stream = lines.find(l => l.startsWith('http'));
-            if (Hls.isSupported()) { hls.loadSource(stream); hls.attachMedia(video); video.play(); }
-            else { video.src = stream; video.play(); }
+        // Detectar cambio para actualizar el botón
+        document.addEventListener('fullscreenchange', () => {
+            if (document.fullscreenElement) {
+                fsText.innerText = "VOLVER";
+            } else {
+                fsText.innerText = "AMPLIAR";
+            }
         });
 
-        // ESCUCHAR CABINA
+        // 2. CARGAR LISTA M3U
+        async function cargarCanales() {
+            try {
+                const response = await fetch('canales.m3u');
+                const text = await response.text();
+                const lines = text.split('\n');
+                const select = document.getElementById('channel-select');
+                select.innerHTML = '';
+
+                let currentName = "";
+                lines.forEach(line => {
+                    if (line.startsWith('#EXTINF')) {
+                        currentName = line.split(',')[1] || "Canal Sin Nombre";
+                    } else if (line.startsWith('http')) {
+                        let opt = document.createElement('option');
+                        opt.value = line.trim();
+                        opt.innerText = currentName;
+                        select.appendChild(opt);
+                    }
+                });
+                if (select.options.length > 0) cambiarCanal(select.options[0].value);
+            } catch (e) { console.error("Error cargando m3u"); }
+        }
+
+        function cambiarCanal(url) {
+            if (Hls.isSupported()) {
+                hls.loadSource(url);
+                hls.attachMedia(video);
+                video.play();
+            } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                video.src = url;
+                video.play();
+            }
+        }
+
+        document.getElementById('channel-select').addEventListener('change', (e) => cambiarCanal(e.target.value));
+        cargarCanales();
+
+        // 3. ESCUCHAR CABINA (FIREBASE)
         onValue(ref(db, 'cabina_activa'), (snap) => {
             const data = snap.val();
             const layer = document.getElementById('camera-layer');
             const iframe = document.getElementById('iframe-camera');
             if (data && data.estado === "ON") {
-                // Le sumamos mute=1 para que el navegador no lo bloquee
-                const finalUrl = data.url + "&mute=1";
+                const finalUrl = data.url + "&mute=1&autoplay=1";
                 if(iframe.src !== finalUrl) iframe.src = finalUrl;
                 layer.style.display = 'block';
             } else {
@@ -107,7 +157,7 @@
             }
         });
 
-        // ESCUCHAR PUBLICIDAD
+        // 4. ESCUCHAR PUBLICIDAD (FIREBASE)
         onValue(ref(db, 'publicidad_activa'), (snap) => {
             const data = snap.val();
             const banner = document.getElementById('banner-pub');
