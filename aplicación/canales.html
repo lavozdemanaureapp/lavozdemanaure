@@ -18,13 +18,12 @@
         }
         #sidebar.active { left: 0; }
         .menu-toggle { position: absolute; top: 12px; left: 12px; z-index: 10002; background: rgba(0,0,0,0.8); color: white; border: 1px solid var(--rojo); padding: 10px; border-radius: 5px; cursor: pointer; }
-        
         .nav-item { width: 85%; padding: 12px; margin: 5px 0; border-radius: 8px; background: var(--gris); display: flex; align-items: center; gap: 12px; cursor: pointer; text-decoration: none; color: white; font-size: 14px; }
 
         /* CONTENIDO PRINCIPAL */
         #main-content { width: 100%; display: flex; flex-direction: column; position: relative; }
 
-        /* LÓGICA DE PANTALLA (16:9 NORMAL, ESTIRADO EN FS) */
+        /* CONTENEDOR DE VIDEO */
         #main-screen { 
             width: 100%; 
             aspect-ratio: 16/9; 
@@ -34,27 +33,34 @@
             flex-shrink: 0;
             border-bottom: 2px solid var(--rojo);
         }
-        video { width: 100%; height: 100%; object-fit: contain; }
+        
+        /* LÓGICA DE VIDEO: NORMAL VS FULLSCREEN */
+        video { 
+            width: 100%; 
+            height: 100%; 
+            object-fit: contain; /* Proporción real en vista normal */
+            display: block;
+        }
+
+        /* FUERZA EL ESTIRADO HORIZONTAL EN PANTALLA COMPLETA */
+        #main-screen:fullscreen video, 
+        #main-screen:-webkit-full-screen video { 
+            object-fit: fill !important; /* Estira a los bordes */
+            width: 100vw !important; 
+            height: 100vh !important;
+        }
 
         /* BOTONES Y CABINA */
         .btn-ampliar { position: absolute; bottom: 10px; right: 10px; background: rgba(255,0,0,0.8); color: white; border: none; padding: 8px 12px; border-radius: 5px; font-weight: bold; z-index: 101; cursor: pointer; font-size: 10px; }
         #camera-layer { position: absolute; top: 10px; right: 10px; width: 75px; height: 75px; border-radius: 50%; border: 2px solid var(--rojo); overflow: hidden; z-index: 100; display: none; }
 
-        /* AREA DE CHAT */
+        /* CHAT Y CANALES */
         .content-area { flex: 1; display: flex; flex-direction: column; background: #050505; }
-        #channel-bar { background: #111; padding: 10px; display: flex; align-items: center; gap: 10px; }
-        select { background: #000; color: white; border: 1px solid #333; padding: 8px; border-radius: 5px; flex: 1; outline: none; }
+        #channel-bar { background: #111; padding: 10px; border-bottom: 1px solid #222; }
+        select { background: #000; color: white; border: 1px solid #333; padding: 8px; border-radius: 5px; width: 100%; outline: none; }
         iframe#chat-frame { width: 100%; height: 100%; border: none; }
 
         #overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; z-index: 10000; }
-
-        /* EL TRUCO DEL ALMENDRO: FORZAR HORIZONTAL AL AMPLIAR */
-        #main-screen:fullscreen video, 
-        #main-screen:-webkit-full-screen video { 
-            object-fit: fill !important; /* Aquí es donde se estira horizontalmente */
-            width: 100vw !important; 
-            height: 100vh !important; 
-        }
     </style>
 </head>
 <body>
@@ -84,7 +90,7 @@
 
         <div class="content-area">
             <div id="channel-bar">
-                <select id="channel-select"><option>Cargando lista...</option></select>
+                <select id="channel-select"><option>Cargando canales...</option></select>
             </div>
             <iframe id="chat-frame" src="chat-manaure.html"></iframe>
         </div>
@@ -111,26 +117,32 @@
             if (!document.fullscreenElement) {
                 if (screen.requestFullscreen) screen.requestFullscreen();
                 else if (screen.webkitRequestFullscreen) screen.webkitRequestFullscreen();
+                // Forzar orientación horizontal en móviles si el navegador lo permite
+                if (screen.orientation && screen.orientation.lock) {
+                    screen.orientation.lock('landscape').catch(e => console.log("Lock manual"));
+                }
             } else {
                 if (document.exitFullscreen) document.exitFullscreen();
             }
         };
 
         async function loadM3U() {
-            const r = await fetch('canales.m3u');
-            const t = await r.text();
-            const lines = t.split('\n');
-            const select = document.getElementById('channel-select');
-            select.innerHTML = '';
-            let name = "";
-            lines.forEach(l => {
-                if(l.startsWith('#EXTINF')) name = l.split(',')[1];
-                else if(l.startsWith('http')) {
-                    let o = document.createElement('option'); o.value = l.trim(); o.innerText = name;
-                    select.appendChild(o);
-                }
-            });
-            if(select.options.length > 0) play(select.options[0].value);
+            try {
+                const r = await fetch('canales.m3u');
+                const t = await r.text();
+                const lines = t.split('\n');
+                const select = document.getElementById('channel-select');
+                select.innerHTML = '';
+                let name = "";
+                lines.forEach(l => {
+                    if(l.startsWith('#EXTINF')) name = l.split(',')[1];
+                    else if(l.startsWith('http')) {
+                        let o = document.createElement('option'); o.value = l.trim(); o.innerText = name;
+                        select.appendChild(o);
+                    }
+                });
+                if(select.options.length > 0) play(select.options[0].value);
+            } catch(e) { console.log("Error M3U"); }
         }
 
         function play(url) {
