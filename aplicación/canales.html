@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TV Manaure - Final</title>
+    <title>TV Manaure - Sistema Híbrido</title>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -16,22 +16,20 @@
         #main-content { width: 100%; display: flex; flex-direction: column; position: relative; }
         #video-wrapper { width: 100%; aspect-ratio: 16 / 9; background: #000; position: relative; border-bottom: 2px solid var(--rojo); overflow: hidden; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
         
-        /* VIDEO NORMAL */
         video { width: 100%; height: 100%; object-fit: contain; display: block; }
+        iframe#video-kick { width: 100%; height: 100%; border: none; display: none; }
 
-        /* VIDEO AMPLIADO (FORZADO) */
-        #video-wrapper:fullscreen video, #video-wrapper:-webkit-full-screen video { object-fit: fill !important; width: 100vw !important; height: 100vh !important; }
+        #video-wrapper:fullscreen video { object-fit: fill !important; }
 
         #capa-publicidad { position: absolute; top: 15px; right: 15px; width: 120px; z-index: 1000; display: none; }
         #banner-img { width: 100%; border-radius: 8px; border: 1px solid white; }
 
-        /* BOTÓN DINÁMICO */
         .btn-vid { position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,0.7); color: white; border: 1px solid var(--rojo); padding: 8px 12px; border-radius: 5px; cursor: pointer; z-index: 10005; font-size: 10px; font-weight: bold; transition: 0.3s; }
         
         #interaction-area { flex: 1; display: flex; flex-direction: column; background: #050505; }
         #channel-bar { background: #111; padding: 10px; border-bottom: 1px solid #222; }
         select { background: #000; color: white; border: 1px solid #333; padding: 10px; border-radius: 5px; width: 100%; font-weight: bold; }
-        iframe#chat-frame { width: 100%; flex: 1; border: none; }
+        iframe#chat-frame { width: 100%; flex: 1; border: none; display: block; }
         #overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; z-index: 10000; }
     </style>
 </head>
@@ -54,10 +52,11 @@
         <div id="video-wrapper">
             <div id="capa-publicidad"><img id="banner-img" src=""></div>
             <video id="video" playsinline autoplay controls></video>
+            <iframe id="video-kick" allowfullscreen="true"></iframe>
             <button id="btnFS" class="btn-vid" onclick="toggleFS()">AMPLIAR PANTALLA</button>
         </div>
         <div id="interaction-area">
-            <div id="channel-bar"><select id="channel-select"><option>Cargando...</option></select></div>
+            <div id="channel-bar"><select id="channel-select"><option>Cargando lista...</option></select></div>
             <iframe id="chat-frame" src="chat-manaure.html"></iframe>
         </div>
     </div>
@@ -74,76 +73,68 @@
         
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
-        const video = document.getElementById('video');
-
-        // AQUÍ ES DONDE VA LA CONFIGURACIÓN "BLINDADA"
-        const hls = new Hls({ 
-            maxBufferLength: 45,      
-            maxMaxBufferLength: 60,   
-            startLevel: 0,            
-            enableWorker: true, 
-            lowLatencyMode: false,
-            abrEwmaDefaultEstimate: 500000 
-        });
+        
+        const videoHLS = document.getElementById('video');
+        const videoKICK = document.getElementById('video-kick');
+        const hls = new Hls({ maxBufferLength: 45, startLevel: 0, enableWorker: true });
 
         window.toggleMenu = () => {
             document.getElementById('sidebar').classList.toggle('active');
             const ov = document.getElementById('overlay');
             ov.style.display = (ov.style.display === 'block') ? 'none' : 'block';
         };
-        
-        // ... el resto del código sigue igual abajo
 
-        // LÓGICA DE AMPLIAR / VOLVER
         window.toggleFS = () => {
             const wrapper = document.getElementById('video-wrapper');
-            if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+            if (!document.fullscreenElement) {
                 if (wrapper.requestFullscreen) wrapper.requestFullscreen();
                 else if (wrapper.webkitRequestFullscreen) wrapper.webkitRequestFullscreen();
-                if (screen.orientation && screen.orientation.lock) screen.orientation.lock('landscape').catch(() => {});
             } else {
                 if (document.exitFullscreen) document.exitFullscreen();
-                else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
             }
         };
-
-        // DETECTOR DE CAMBIO DE PANTALLA PARA EL BOTÓN
-        const handleFSChange = () => {
-            const btn = document.getElementById('btnFS');
-            if (document.fullscreenElement || document.webkitFullscreenElement) {
-                btn.innerText = "VOLVER A LA APP";
-                btn.style.background = "rgba(255,0,0,0.8)";
-            } else {
-                btn.innerText = "AMPLIAR PANTALLA";
-                btn.style.background = "rgba(0,0,0,0.7)";
-            }
-        };
-        document.addEventListener('fullscreenchange', handleFSChange);
-        document.addEventListener('webkitfullscreenchange', handleFSChange);
-
-        async function loadM3U() {
-            const r = await fetch('canales.m3u?v=' + new Date().getTime());
-            const t = await r.text();
-            const lines = t.split('\n');
-            const select = document.getElementById('channel-select');
-            select.innerHTML = '';
-            let name = "";
-            lines.forEach(l => {
-                if(l.startsWith('#EXTINF')) name = l.split(',')[1];
-                else if(l.startsWith('http')) {
-                    let o = document.createElement('option'); 
-                    o.value = l.trim(); o.innerText = name ? name.toUpperCase() : "CANAL";
-                    select.appendChild(o);
-                }
-            });
-            if(select.options.length > 0) play(select.options[0].value);
-        }
 
         function play(url) {
-            if (Hls.isSupported()) { 
-                hls.loadSource(url); hls.attachMedia(video);
-                hls.on(Hls.Events.ERROR, (e, d) => { if (d.fatal) hls.recoverMediaError(); });
-            } else if (video.canPlayType('application/vnd.apple.mpegurl')) { video.src = url; }
+            if (url.startsWith('kick://')) {
+                const user = url.replace('kick://', '');
+                videoHLS.style.display = 'none';
+                videoHLS.pause();
+                videoKICK.src = `https://player.kick.com/${user}`;
+                videoKICK.style.display = 'block';
+            } else {
+                videoKICK.style.display = 'none';
+                videoKICK.src = "";
+                videoHLS.style.display = 'block';
+                if (Hls.isSupported()) {
+                    hls.loadSource(url); hls.attachMedia(videoHLS);
+                } else if (videoHLS.canPlayType('application/vnd.apple.mpegurl')) {
+                    videoHLS.src = url;
+                }
+            }
+        }
+
+        async function loadM3U() {
+            try {
+                const r = await fetch('canales.m3u?v=' + new Date().getTime());
+                const t = await r.text();
+                const lines = t.split('\n');
+                const select = document.getElementById('channel-select');
+                select.innerHTML = '';
+                let name = "";
+                
+                lines.forEach(l => {
+                    const line = l.trim();
+                    if(line.startsWith('#EXTINF')) {
+                        name = line.split(',')[1];
+                    } else if(line.length > 5 && (line.startsWith('http') || line.startsWith('kick://'))) {
+                        let o = document.createElement('option'); 
+                        o.value = line; 
+                        o.innerText = name ? name.toUpperCase() : "CANAL";
+                        select.appendChild(o);
+                    }
+                });
+                if(select.options.length > 0) play(select.options[0].value);
+            } catch (e) { alert("Error cargando canales"); }
         }
 
         document.getElementById('channel-select').onchange = (e) => play(e.target.value);
@@ -157,6 +148,18 @@
                 capa.style.display = 'block';
             } else { capa.style.display = 'none'; }
         });
+
+        const handleFSChange = () => {
+            const btn = document.getElementById('btnFS');
+            if (document.fullscreenElement) {
+                btn.innerText = "VOLVER A LA APP";
+                btn.style.background = "rgba(255,0,0,0.8)";
+            } else {
+                btn.innerText = "AMPLIAR PANTALLA";
+                btn.style.background = "rgba(0,0,0,0.7)";
+            }
+        };
+        document.addEventListener('fullscreenchange', handleFSChange);
     </script>
 </body>
 </html>
