@@ -20,13 +20,13 @@
         .menu-toggle { position: absolute; top: 12px; left: 12px; z-index: 10002; background: rgba(0,0,0,0.8); color: white; border: 1px solid var(--rojo); padding: 10px; border-radius: 5px; cursor: pointer; }
         .nav-item { width: 85%; padding: 12px; margin: 5px 0; border-radius: 8px; background: #1a1a1a; display: flex; align-items: center; gap: 12px; cursor: pointer; text-decoration: none; color: white; font-size: 14px; }
 
+        /* CONTENEDOR PRINCIPAL */
         #main-content { width: 100%; display: flex; flex-direction: column; position: relative; }
 
-        /* CONTENEDOR DE VIDEO: FORZADO HORIZONTAL */
+        /* LÓGICA DE VIDEO: TU CÓDIGO ORIGINAL INTACTO */
         #video-wrapper { 
             width: 100%; 
-            height: auto;
-            aspect-ratio: 16/9; /* Mantiene la forma de TV */
+            aspect-ratio: 16/9; 
             background: #000; 
             position: relative; 
             border-bottom: 2px solid var(--rojo); 
@@ -34,15 +34,14 @@
             flex-shrink: 0;
         }
 
-        /* VIDEO: ESTIRADO TOTAL (FILL) */
         video { 
             width: 100%; 
             height: 100%; 
-            object-fit: fill !important; /* Estira a los lados sí o sí */
+            object-fit: cover; 
             display: block;
         }
 
-        /* PANTALLA COMPLETA: MATAR BARRAS NEGRAS */
+        /* LÓGICA DE AMPLIAR (TU SECRETO DE HORIZONTALIDAD) */
         #video-wrapper:fullscreen video, 
         #video-wrapper:-webkit-full-screen video { 
             object-fit: fill !important; 
@@ -50,20 +49,15 @@
             height: 100vh !important;
         }
 
-        /* PUBLICIDAD A LA DERECHA */
-        #capa-publicidad { 
-            position: absolute; 
-            top: 15px; 
-            right: 15px; 
-            width: 140px; 
-            z-index: 110; 
-            display: none; 
-        }
-        #banner-img { width: 100%; border-radius: 8px; border: 1px solid rgba(255,255,255,0.5); box-shadow: 0 4px 10px rgba(0,0,0,0.9); }
+        /* PUBLICIDAD A LA DERECHA (FLOTANTE) */
+        #capa-publicidad { position: absolute; top: 15px; right: 15px; width: 150px; z-index: 110; display: none; }
+        #banner-img { width: 100%; border-radius: 10px; border: 1px solid white; box-shadow: 0 0 15px rgba(0,0,0,0.8); }
 
+        /* BOTONES Y CABINA */
         .btn-vid { position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,0.7); color: white; border: 1px solid var(--rojo); padding: 8px 12px; border-radius: 5px; cursor: pointer; z-index: 101; font-size: 10px; font-weight: bold; }
-        #camera-layer { position: absolute; top: 15px; right: 15px; width: 80px; height: 80px; border-radius: 50%; border: 2px solid var(--rojo); overflow: hidden; display: none; z-index: 100; }
+        #camera-layer { position: absolute; top: 10px; right: 10px; width: 75px; height: 75px; border-radius: 50%; border: 2px solid var(--rojo); overflow: hidden; display: none; z-index: 100; }
 
+        /* INTERACCIÓN */
         #interaction-area { flex: 1; display: flex; flex-direction: column; background: #050505; }
         #channel-bar { background: #111; padding: 10px; border-bottom: 1px solid #222; }
         select { background: #000; color: white; border: 1px solid #333; padding: 8px; border-radius: 5px; width: 100%; }
@@ -81,19 +75,27 @@
         <h4 style="color: var(--rojo); margin: 0; font-size: 15px;">MANAURE 92.3</h4>
         <div style="margin-top: 20px; width: 100%; display: flex; flex-direction: column; align-items: center;">
             <a href="index.html" class="nav-item"><i class="fas fa-broadcast-tower"></i> Radio</a>
-            <a href="canales.html" class="nav-item" style="border-left: 4px solid var(--rojo); background: #222;"><i class="fas fa-tv"></i> TV</a>
+            <a href="programas.html" class="nav-item"><i class="fas fa-microphone-lines"></i> Archivo</a>
+            <a href="micambio.html" class="nav-item"><i class="fas fa-arrows-rotate"></i> Mi Cambio</a>
+            <a href="canales.html" class="nav-item" style="border-left: 4px solid var(--rojo); background: #222;"><i class="fas fa-tv"></i> TV Gratis</a>
         </div>
     </div>
 
     <div id="main-content">
         <div id="video-wrapper">
             <div id="capa-publicidad"><img id="banner-img" src=""></div>
+
             <video id="video" playsinline autoplay></video>
-            <div id="camera-layer"><iframe id="ifr-cam" style="width:100%; height:100%; border:none; transform: scale(1.5);"></iframe></div>
+            <div id="camera-layer">
+                <iframe id="ifr-cam" src="" style="width:100%; height:100%; border:none; transform: scale(1.5);"></iframe>
+            </div>
             <button class="btn-vid" onclick="toggleFS()">AMPLIAR PANTALLA</button>
         </div>
+
         <div id="interaction-area">
-            <div id="channel-bar"><select id="channel-select"><option>Cargando...</option></select></div>
+            <div id="channel-bar">
+                <select id="channel-select"><option>Cargando...</option></select>
+            </div>
             <iframe id="chat-frame" src="chat-manaure.html"></iframe>
         </div>
     </div>
@@ -102,12 +104,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-        const firebaseConfig = { 
-            apiKey: "AIzaSyBtkKwQlTzDgQwP_RpDPnX7WJqoyg1turk", 
-            databaseURL: "https://radiomanaure-default-rtdb.firebaseio.com", 
-            projectId: "radiomanaure" 
-        };
-        
+        const firebaseConfig = { apiKey: "AIzaSyBtkKwQlTzDgQwP_RpDPnX7WJqoyg1turk", databaseURL: "https://radiomanaure-default-rtdb.firebaseio.com", projectId: "radiomanaure" };
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         const video = document.getElementById('video');
@@ -154,23 +151,25 @@
         document.getElementById('channel-select').onchange = (e) => play(e.target.value);
         loadM3U();
 
+        // ESCUCHAR CABINA
         onValue(ref(db, 'cabina_activa'), (snap) => {
             const d = snap.val();
             const layer = document.getElementById('camera-layer');
-            if(d && d.estado === "ON") { layer.style.display = 'block'; }
-            else { layer.style.display = 'none'; }
+            const ifr = document.getElementById('ifr-cam');
+            if(d && d.estado === "ON") { ifr.src = d.url + "&mute=1&autoplay=1"; layer.style.display = 'block'; }
+            else { layer.style.display = 'none'; ifr.src = ""; }
         });
 
+        // ESCUCHAR PUBLICIDAD (NUEVO)
         onValue(ref(db, 'publicidad_activa'), (snap) => {
             const d = snap.val();
             const capa = document.getElementById('capa-publicidad');
             const img = document.getElementById('banner-img');
-            if(d && d.imagen !== "OFF") { 
-                img.src = d.imagen; 
-                capa.style.display = 'block'; 
-                document.getElementById('camera-layer').style.display = 'none';
-            } else { 
-                capa.style.display = 'none'; 
+            if(d && d.imagen !== "OFF") {
+                img.src = d.imagen;
+                capa.style.display = 'block';
+            } else {
+                capa.style.display = 'none';
             }
         });
     </script>
