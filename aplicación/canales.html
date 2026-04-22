@@ -10,7 +10,7 @@
         :root { --rojo: #ff0000; --negro: #000000; --gris: #1a1a1a; }
         body { margin: 0; background: var(--negro); color: #fff; font-family: sans-serif; display: flex; height: 100vh; overflow: hidden; }
 
-        /* MENU LATERAL CON ICONOS CORREGIDOS */
+        /* MENU LATERAL CORREGIDO */
         #sidebar { 
             position: fixed; left: -260px; top: 0; width: 250px; height: 100%; 
             background: #000; border-right: 2px solid var(--rojo); 
@@ -25,11 +25,12 @@
         /* CONTENIDO PRINCIPAL */
         #main-content { width: 100%; display: flex; flex-direction: column; position: relative; }
 
-        /* AREA DE VIDEO (EXTENSIÓN TOTAL) */
-        #player-area { position: relative; width: 100%; height: 50vh; background: #000; flex-shrink: 0; overflow: hidden; display: flex; align-items: center; justify-content: center; }
-        video { width: 100% !important; height: 100% !important; object-fit: cover; background: #000; }
+        /* AREA DE VIDEO (FORZAR EXTENSIÓN HORIZONTAL) */
+        #player-area { position: relative; width: 100%; height: 50vh; background: #000; flex-shrink: 0; overflow: hidden; }
+        /* "fill" obliga a que se estire horizontalmente sin dejar bordes */
+        video { width: 100% !important; height: 100% !important; object-fit: fill; background: #000; }
 
-        /* CABINA Y BOTON (SIN CHOCAR) */
+        /* CABINA Y BOTON (POSICIÓN FIJA) */
         #camera-layer {
             position: absolute; top: 10px; right: 10px; width: 85px; height: 85px;
             border-radius: 50%; border: 3px solid var(--rojo); overflow: hidden;
@@ -46,14 +47,11 @@
         #chat-area { flex-grow: 1; width: 100%; }
         iframe#chat-frame { width: 100%; height: 100%; border: none; }
 
-        #banner-pub { position: absolute; bottom: 10px; right: 10px; width: 130px; display: none; z-index: 99; }
-        #banner-pub img { width: 100%; border-radius: 5px; border: 1px solid #fff; }
-
         #overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; z-index: 9998; }
-
-        /* CONFIGURACIÓN PARA QUE EXTENDA EN MÓVIL AL DAR CLIC */
-        #player-area:-webkit-full-screen { width: 100vw; height: 100vh; }
-        #player-area:fullscreen { width: 100vw; height: 100vh; }
+        
+        /* FIX PANTALLA COMPLETA TOTAL */
+        #player-area:-webkit-full-screen video { object-fit: fill; width: 100vw; height: 100vh; }
+        #player-area:fullscreen video { object-fit: fill; width: 100vw; height: 100vh; }
     </style>
 </head>
 <body>
@@ -65,9 +63,9 @@
         <img src="logo_v2.png" style="width: 80px; margin-bottom: 10px;">
         <h4 style="color: var(--rojo); margin: 0; font-size: 16px;">MANAURE 92.3</h4>
         <div style="margin-top: 20px; width: 100%; display: flex; flex-direction: column; align-items: center;">
-            <a href="index.html" class="nav-item"><i class="fas fa-broadcast-tower"></i> Radio en Vivo</a>
+            <a href="index.html" class="nav-item"><i class="fas fa-radio"></i> Radio en Vivo</a>
             <a href="programas.html" class="nav-item"><i class="fas fa-microphone-lines"></i> Archivo</a>
-            <a href="micambio.html" class="nav-item"><i class="fas fa-arrows-rotate"></i> Mi Cambio</a>
+            <a href="micambio.html" class="nav-item"><i class="fas fa-coins"></i> Mi Cambio</a>
             <a href="canales.html" class="nav-item nav-active"><i class="fas fa-tv"></i> TV Gratis</a>
         </div>
     </div>
@@ -81,7 +79,6 @@
             <div id="camera-layer">
                 <iframe id="ifr-cam" src="" allow="camera;microphone;autoplay" style="width:100%; height:100%; border:none; transform: scale(1.5);"></iframe>
             </div>
-            <div id="banner-pub"><img id="img-pub" src=""></div>
         </div>
 
         <div id="interaction-area">
@@ -115,7 +112,6 @@
             ov.style.display = ov.style.display === 'block' ? 'none' : 'block';
         };
 
-        // Lógica de extensión total
         window.toggleFS = () => {
             const area = document.getElementById('player-area');
             const txt = document.getElementById('txt-fs');
@@ -125,7 +121,6 @@
                 txt.innerText = "VOLVER";
             } else {
                 if(document.exitFullscreen) document.exitFullscreen();
-                else if(document.webkitExitFullscreen) document.webkitExitFullscreen();
                 txt.innerText = "AMPLIAR";
             }
         };
@@ -163,13 +158,6 @@
                 ifr.src = d.url + "&mute=1&autoplay=1";
                 layer.style.display = 'block';
             } else { layer.style.display = 'none'; ifr.src = ""; }
-        });
-
-        onValue(ref(db, 'publicidad_activa'), (snap) => {
-            const d = snap.val();
-            const b = document.getElementById('banner-pub');
-            if(d && d.imagen !== "OFF") { document.getElementById('img-pub').src = d.imagen; b.style.display = 'block'; }
-            else { b.style.display = 'none'; }
         });
     </script>
 </body>
