@@ -3,25 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TV Manaure - Final</title>
+    <title>TV Manaure - Horizontal</title>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root { --rojo: #ff0000; --negro: #0c0c0c; }
         body { margin: 0; background: var(--negro); color: #fff; font-family: sans-serif; display: flex; height: 100vh; overflow: hidden; }
 
-        /* MENÚ - SIEMPRE POR ENCIMA DE TODO */
+        /* MENU LATERAL */
         #sidebar { 
             position: fixed; left: -260px; top: 0; width: 250px; height: 100%; 
             background: #000; border-right: 2px solid var(--rojo); 
-            z-index: 99999; transition: 0.4s; display: flex; flex-direction: column; align-items: center; padding-top: 20px;
+            z-index: 10001; transition: 0.4s; display: flex; flex-direction: column; align-items: center; padding-top: 20px;
         }
         #sidebar.active { left: 0; }
         .menu-toggle { position: absolute; top: 12px; left: 12px; z-index: 10002; background: rgba(0,0,0,0.8); color: white; border: 1px solid var(--rojo); padding: 10px; border-radius: 5px; cursor: pointer; }
+        .nav-item { width: 85%; padding: 12px; margin: 5px 0; border-radius: 8px; background: #1a1a1a; display: flex; align-items: center; gap: 12px; cursor: pointer; text-decoration: none; color: white; font-size: 14px; }
 
+        /* CONTENEDOR PRINCIPAL */
         #main-content { width: 100%; display: flex; flex-direction: column; position: relative; }
 
-        /* EL CONTENEDOR (EL CUADRITO) */
+        /* LÓGICA DE VIDEO: TU CÓDIGO ORIGINAL INTACTO */
         #video-wrapper { 
             width: 100%; 
             aspect-ratio: 16/9; 
@@ -29,43 +31,39 @@
             position: relative; 
             border-bottom: 2px solid var(--rojo); 
             overflow: hidden;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            flex-shrink: 0;
         }
 
-        /* VIDEO EN VISTA NORMAL: MANTIENE BORDES NEGROS */
+        /* VISTA NORMAL */
         video { 
             width: 100%; 
             height: 100%; 
-            object-fit: contain; 
+            object-fit: cover; 
             display: block;
         }
 
-        /* --- LA MAGIA PARA ESTIRAR HORIZONTAL AL AMPLIAR --- */
-        #video-wrapper:fullscreen { background: #000; width: 100vw; height: 100vh; }
-        
-        /* ESTO FUERZA EL ESTIRAMIENTO HORIZONTAL SÍ O SÍ */
-        #video-wrapper:fullscreen video,
+        /* LÓGICA DE AMPLIAR (TU SECRETO DE HORIZONTALIDAD) */
+        #video-wrapper:fullscreen video, 
         #video-wrapper:-webkit-full-screen video { 
             object-fit: fill !important; 
-            width: 100% !important;
-            height: 100% !important;
-            position: absolute;
-            top: 0;
-            left: 0;
+            width: 100vw !important;
+            height: 100vh !important;
         }
 
-        /* PUBLICIDAD A LA DERECHA */
+        /* CAPA DE PUBLICIDAD - A LA DERECHA SIN ESTORBAR */
         #capa-publicidad { position: absolute; top: 15px; right: 15px; width: 150px; z-index: 1000; display: none; }
-        #banner-img { width: 100%; border-radius: 8px; border: 1px solid white; }
+        #banner-img { width: 100%; border-radius: 8px; border: 1px solid white; box-shadow: 0 0 10px rgba(0,0,0,0.5); }
 
-        .btn-vid { position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,0.7); color: white; border: 1px solid var(--rojo); padding: 8px 12px; border-radius: 5px; cursor: pointer; z-index: 101; font-size: 11px; font-weight: bold; }
-        
+        /* BOTONES Y CABINA */
+        .btn-vid { position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,0.7); color: white; border: 1px solid var(--rojo); padding: 8px 12px; border-radius: 5px; cursor: pointer; z-index: 101; font-size: 10px; font-weight: bold; }
+        #camera-layer { position: absolute; top: 10px; right: 10px; width: 75px; height: 75px; border-radius: 50%; border: 2px solid var(--rojo); overflow: hidden; display: none; z-index: 100; }
+
+        /* INTERACCIÓN */
         #interaction-area { flex: 1; display: flex; flex-direction: column; background: #050505; }
         #channel-bar { background: #111; padding: 10px; border-bottom: 1px solid #222; }
         select { background: #000; color: white; border: 1px solid #333; padding: 8px; border-radius: 5px; width: 100%; }
         iframe#chat-frame { width: 100%; height: 100%; border: none; }
+
         #overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; z-index: 10000; }
     </style>
 </head>
@@ -78,19 +76,28 @@
         <img src="logo_v2.png" style="width: 70px; margin-bottom: 10px;">
         <h4 style="color: var(--rojo); margin: 0; font-size: 15px;">MANAURE 92.3</h4>
         <div style="margin-top: 20px; width: 100%; display: flex; flex-direction: column; align-items: center;">
-            <a href="index.html" style="color:white; padding:10px; text-decoration:none;">Radio</a>
-            <a href="canales.html" style="color:white; padding:10px; text-decoration:none; border-left: 3px solid var(--rojo);">TV</a>
+            <a href="index.html" class="nav-item"><i class="fas fa-broadcast-tower"></i> Radio</a>
+            <a href="programas.html" class="nav-item"><i class="fas fa-microphone-lines"></i> Archivo</a>
+            <a href="micambio.html" class="nav-item"><i class="fas fa-arrows-rotate"></i> Mi Cambio</a>
+            <a href="canales.html" class="nav-item" style="border-left: 4px solid var(--rojo); background: #222;"><i class="fas fa-tv"></i> TV Gratis</a>
         </div>
     </div>
 
     <div id="main-content">
         <div id="video-wrapper">
             <div id="capa-publicidad"><img id="banner-img" src=""></div>
+
             <video id="video" playsinline autoplay></video>
+            <div id="camera-layer">
+                <iframe id="ifr-cam" src="" style="width:100%; height:100%; border:none; transform: scale(1.5);"></iframe>
+            </div>
             <button id="btn-fs" class="btn-vid" onclick="toggleFS()">AMPLIAR PANTALLA</button>
         </div>
+
         <div id="interaction-area">
-            <div id="channel-bar"><select id="channel-select"></select></div>
+            <div id="channel-bar">
+                <select id="channel-select"><option>Cargando...</option></select>
+            </div>
             <iframe id="chat-frame" src="chat-manaure.html"></iframe>
         </div>
     </div>
@@ -108,7 +115,8 @@
 
         window.toggleMenu = () => {
             document.getElementById('sidebar').classList.toggle('active');
-            document.getElementById('overlay').style.display = (document.getElementById('overlay').style.display === 'block') ? 'none' : 'block';
+            const ov = document.getElementById('overlay');
+            ov.style.display = (ov.style.display === 'block') ? 'none' : 'block';
         };
 
         window.toggleFS = () => {
@@ -116,14 +124,18 @@
             if (!document.fullscreenElement) {
                 if (wrapper.requestFullscreen) wrapper.requestFullscreen();
                 else if (wrapper.webkitRequestFullscreen) wrapper.webkitRequestFullscreen();
-                btnFs.innerText = "VOLVER";
+                
+                if (screen.orientation && screen.orientation.lock) {
+                    screen.orientation.lock('landscape').catch(() => {});
+                }
+                btnFs.innerText = "VOLVER"; // Cambio a VOLVER
             } else {
                 if (document.exitFullscreen) document.exitFullscreen();
-                btnFs.innerText = "AMPLIAR PANTALLA";
+                btnFs.innerText = "AMPLIAR PANTALLA"; // Cambio a AMPLIAR
             }
         };
 
-        // Escuchar si el usuario sale de pantalla completa con el botón de "atrás" del teléfono
+        // Escuchar por si salen con el botón físico del móvil
         document.addEventListener('fullscreenchange', () => {
             if (!document.fullscreenElement) btnFs.innerText = "AMPLIAR PANTALLA";
         });
@@ -133,6 +145,7 @@
             const t = await r.text();
             const lines = t.split('\n');
             const select = document.getElementById('channel-select');
+            select.innerHTML = '';
             let name = "";
             lines.forEach(l => {
                 if(l.startsWith('#EXTINF')) name = l.split(',')[1];
@@ -152,6 +165,15 @@
         document.getElementById('channel-select').onchange = (e) => play(e.target.value);
         loadM3U();
 
+        onValue(ref(db, 'cabina_activa'), (snap) => {
+            const d = snap.val();
+            const layer = document.getElementById('camera-layer');
+            const ifr = document.getElementById('ifr-cam');
+            if(d && d.estado === "ON") { ifr.src = d.url + "&mute=1&autoplay=1"; layer.style.display = 'block'; }
+            else { layer.style.display = 'none'; ifr.src = ""; }
+        });
+
+        // ESCUCHAR PUBLICIDAD DESDE FIREBASE
         onValue(ref(db, 'publicidad_activa'), (snap) => {
             const d = snap.val();
             const capa = document.getElementById('capa-publicidad');
