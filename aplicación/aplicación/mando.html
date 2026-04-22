@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mando de Estación - La Voz de Manaure</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #121212; color: white; text-align: center; padding: 20px; }
+        .container { max-width: 400px; margin: auto; }
+        .card { background: #1e1e1e; padding: 20px; border-radius: 15px; margin-bottom: 20px; border: 1px solid #333; }
+        h2 { color: #ff0000; font-size: 1.1rem; margin-bottom: 15px; text-transform: uppercase; }
+        .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        button { 
+            padding: 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;
+            transition: 0.3s; color: white; display: flex; flex-direction: column; align-items: center; gap: 5px;
+        }
+        .btn-pub { background: #333; border: 1px solid #444; width: 100%; }
+        .btn-on { background: #28a745; width: 100%; }
+        .btn-off { background: #dc3545; width: 100%; }
+        .status { font-size: 0.8rem; color: #888; margin-top: 10px; }
+        i { font-size: 1.3rem; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <img src="logo_v2.png" style="width: 60px; border-radius: 50%; border: 2px solid #ff0000; margin-bottom: 10px;">
+        <h1 style="font-size: 1.5rem; margin-bottom: 20px;">MANDO PROFESIONAL</h1>
+        
+        <div class="card">
+            <h2><i class="fas fa-ad"></i> PUBLICIDAD</h2>
+            <div class="btn-grid">
+                <button class="btn-pub" onclick="enviarPub('publicidad1.png')">
+                    <i class="fas fa-store"></i> PLUS MARKET
+                </button>
+                <button class="btn-pub" onclick="enviarPub('publicidad2.png')">
+                    <i class="fas fa-bread-slice"></i> MONTAÑES
+                </button>
+                <button class="btn-pub" onclick="enviarPub('publicidad3.png')">
+                    <i class="fas fa-mountain"></i>  EL PROFE
+                </button>
+                <button class="btn-pub" onclick="enviarPub('publicidad4.png')">
+                    <i class="fas fa-car"></i> LA TIENDITA
+                </button>
+                <button class="btn-pub" onclick="enviarPub('publicidad5.png')">
+                    <i class="fas fa-store"></i> MIGUEL
+                </button>
+                <button class="btn-pub" onclick="enviarPub('publicidad6.png')">
+                    <i class="fas fa-bread-slice"></i> LIMPIO HOGAR
+                </button>
+                <button class="btn-pub" onclick="enviarPub('publicidad7.png')">
+                    <i class="fas fa-mountain"></i> ROBIN
+                </button>
+                <button class="btn-pub" onclick="enviarPub('publicidad8.png')">
+                    <i class="fas fa-car"></i> 26 GRAMOS
+                </button>
+                <button class="btn-pub" onclick="enviarPub('publicidad9.png')">
+                    <i class="fas fa-car"></i> PLAN B
+                </button>
+                <button class="btn-pub" onclick="enviarPub('publicidad10.png')">
+                    <i class="fas fa-car"></i> CHICKEN
+                </button>
+            </div>
+            <button class="btn-off" style="margin-top: 10px;" onclick="enviarPub('OFF')">
+                <i class="fas fa-times-circle"></i> QUITAR BANNER
+            </button>
+            <div class="status" id="pub-status">Estado: Listo</div>
+        </div>
+
+        
+
+        <p style="font-size: 10px; color: #555;">LA VOZ DE MANAURE 92.3 FM</p>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBtkKwQlTzDgQwP_RpDPnX7WJqoyg1turk",
+            databaseURL: "https://radiomanaure-default-rtdb.firebaseio.com",
+            projectId: "radiomanaure"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // FUNCIÓN PARA LA PUBLICIDAD
+        window.enviarPub = function(nombreImagen) {
+            set(ref(db, 'publicidad_activa'), {
+                imagen: nombreImagen,
+                timestamp: Date.now()
+            }).then(() => {
+                document.getElementById('pub-status').innerText = "Banner: " + (nombreImagen === 'OFF' ? 'Oculto' : nombreImagen);
+            }).catch(e => console.error("Error:", e));
+        };
+
+        // FUNCIÓN PARA LA CABINA (CON LINK FIJO)
+        window.controlCabina = function(estado) {
+            const urlCam = "https://vdo.ninja/?view=CabinaManaure&autoplay=1&mute=1&transparent=1";
+            
+            set(ref(db, 'cabina_activa'), {
+                estado: estado,
+                url: urlCam
+            }).then(() => {
+                document.getElementById('cam-status').innerText = "Cámara: " + (estado === 'ON' ? 'AL AIRE' : 'APAGADA');
+            }).catch(e => console.error("Error:", e));
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TV Digital - La Voz de Manaure</title>
+    
+    <link rel="manifest" href="manifest.json?v=25">
+    <meta name="theme-color" content="#ff0000">
+
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <script src="https://www.youtube.com/iframe_api"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <style>
+        :root { --red-m: #ff0000; --bg: #0c0c0c; --card: #1a1a1a; }
+        body { background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; overflow-x: hidden; }
+
+        .navbar { position: fixed; top: 0; width: 100%; height: 60px; background: rgba(0,0,0,0.9); backdrop-filter: blur(10px); display: flex; align-items: center; padding: 0 15px; box-sizing: border-box; z-index: 10001; border-bottom: 1px solid #333; }
+        .logo-nav { height: 35px; width: 35px; border-radius: 50%; border: 1px solid var(--red-m); object-fit: cover; margin-right: 10px; }
+
+        /* CONTENEDOR MAESTRO DE VIDEO Y BANNER */
+        .video-wrapper { margin-top: 60px; width: 100%; max-width: 1000px; margin-left: auto; margin-right: auto; }
+        
+        /* Esta es la pieza clave para que el banner no desaparezca al ampliar */
+        #main-screen { 
+            width: 100%; 
+            aspect-ratio: 16/9; 
+            background: #000; 
+            position: relative; 
+            border-bottom: 2px solid var(--red-m); 
+            overflow: hidden; 
+        }
+
+        video, #yt-player { width: 100%; height: 100%; }
+
+        /* BANNER CORREGIDO PARA PANTALLA COMPLETA */
+        #ad-banner { 
+            position: absolute; 
+            bottom: 15%; 
+            left: 50%; 
+            transform: translateX(-50%); 
+            width: 80%; 
+            max-width: 380px; 
+            /* Z-index astronómico para ganar al reproductor */
+            z-index: 2147483647 !important; 
+            display: none; 
+            pointer-events: auto;
+        }
+        #ad-banner img { 
+            width: 100%; 
+            border-radius: 8px; 
+            border: 2px solid var(--red-m); 
+            box-shadow: 0 0 20px rgba(0,0,0,0.8); 
+        }
+
+        /* RESTO DE LA INTERFAZ */
+        .content-area { max-width: 1000px; margin: 0 auto; padding: 15px; }
+        .playlist { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; height: 180px; overflow-y: auto; background: #111; padding: 10px; border-radius: 8px; border: 1px solid #222; }
+        .channel-card { background: var(--card); padding: 12px; border-radius: 8px; text-align: center; cursor: pointer; border: 1px solid #222; font-size: 0.8rem; }
+        .channel-card.active { border-color: var(--red-m); background: #251212; }
+
+        .chat-box { background: var(--card); border-radius: 12px; display: flex; flex-direction: column; height: 300px; border: 1px solid #222; margin-top: 20px; overflow: hidden; }
+        .messages { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 8px; background: #141414; }
+        .msg { background: #2a2a2a; padding: 8px 12px; border-radius: 12px; font-size: 0.85rem; border: 1px solid #333; }
+        .chat-input { padding: 10px; display: flex; gap: 8px; background: #1a1a1a; }
+        input#chat-in { flex: 1; background: #333; border: none; color: white; padding: 10px; border-radius: 20px; outline: none; }
+        button#btn-enviar { background: var(--red-m); border: none; color: white; padding: 10px 15px; border-radius: 50%; }
+    </style>
+</head>
+<body>
+
+    <div class="navbar">
+        <img src="logo_v2.png" class="logo-nav">
+        <span style="font-weight: bold; font-size: 14px;">TV DIGITAL - LA VOZ DE MANAURE</span>
+    </div>
+
+    <div class="video-wrapper">
+        <div id="main-screen">
+            <video id="video-player" controls playsinline style="display: none;"></video>
+            <div id="yt-player" style="display: none;"></div>
+            
+            <div id="ad-banner">
+                <a href="https://wa.me/584121234567" target="_blank">
+                    <img src="" id="img-banner">
+                </a>
+            </div>
+        </div>
+        <button onclick="toggleFS()" style="width:100%; background:#222; color:white; border:none; padding:5px; font-size:10px; cursor:pointer;">
+            <i class="fas fa-expand"></i> AMPLIAR PANTALLA CON PUBLICIDAD
+        </button>
+    </div>
+
+    <div class="content-area">
+        <div class="playlist" id="channel-list"></div>
+        <div class="chat-box">
+            <div id="msg-container" class="messages"></div>
+            <div class="chat-input">
+                <input type="text" id="chat-in" placeholder="Tu mensaje...">
+                <button id="btn-enviar"><i class="fas fa-paper-plane"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, push, onChildAdded, serverTimestamp, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBtkKwQlTzDgQwP_RpDPnX7WJqoyg1turk",
+            databaseURL: "https://radiomanaure-default-rtdb.firebaseio.com",
+            projectId: "radiomanaure"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // PUBLICIDAD DINÁMICA
+        const pubRef = ref(db, 'publicidad_activa');
+        onValue(pubRef, (snapshot) => {
+            const data = snapshot.val();
+            const adBanner = document.getElementById('ad-banner');
+            const imgBanner = document.getElementById('img-banner');
+
+            if (data && data.imagen !== "OFF") {
+                // El ?t= obliga al celular a no usar el caché
+                imgBanner.src = data.imagen + "?t=" + new Date().getTime();
+                adBanner.style.display = 'block';
+            } else {
+                adBanner.style.display = 'none';
+            }
+        });
+
+        // CHAT
+        const chatRef = ref(db, 'mensajes');
+        document.getElementById('btn-enviar').onclick = () => {
+            const input = document.getElementById('chat-in');
+            if(input.value) {
+                push(chatRef, { texto: input.value, fecha: serverTimestamp() });
+                input.value = "";
+            }
+        };
+        onChildAdded(chatRef, (snap) => {
+            const container = document.getElementById('msg-container');
+            const div = document.createElement('div');
+            div.className = 'msg';
+            div.innerHTML = `<b>Invitado:</b> ${snap.val().texto}`;
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+        });
+    </script>
+
+    <script>
+        // PANTALLA COMPLETA PERSONALIZADA
+        function toggleFS() {
+            const elem = document.getElementById('main-screen');
+            if (elem.requestFullscreen) elem.requestFullscreen();
+            else if (elem.webkitRequestFullscreen) elem.webkitRequestFullscreen();
+            else if (elem.msRequestFullscreen) elem.msRequestFullscreen();
+        }
+
+        let ytPlayer = null;
+        const videoTag = document.getElementById('video-player');
+        const ytTag = document.getElementById('yt-player');
+        let hls = null;
+
+        async function loadChannels() {
+            try {
+                const res = await fetch("https://raw.githubusercontent.com/lavozdemanaureapp/lavozdemanaure/refs/heads/main/canales.m3u");
+                const text = await res.text();
+                const lines = text.split('\n');
+                const list = document.getElementById('channel-list');
+                
+                lines.forEach((line, i) => {
+                    if (line.startsWith('#EXTINF')) {
+                        const name = line.split(',')[1];
+                        const url = lines[i+1].trim();
+                        const d = document.createElement('div');
+                        d.className = 'channel-card';
+                        d.innerText = name;
+                        d.onclick = () => play(url, d);
+                        list.appendChild(d);
+                    }
+                });
+            } catch(e) { console.error("Error cargando M3U"); }
+        }
+
+        function play(url, el) {
+            document.querySelectorAll('.channel-card').forEach(c => c.classList.remove('active'));
+            if(el) el.classList.add('active');
+            if (hls) hls.destroy();
+            videoTag.pause();
+
+            if (url.includes('youtube.com') || url.includes('youtu.be')) {
+                videoTag.style.display='none'; ytTag.style.display='block';
+                const id = url.split('v=')[1] || url.split('/').pop();
+                if(!ytPlayer) {
+                    ytPlayer = new YT.Player('yt-player', { videoId: id, playerVars: {autoplay:1} });
+                } else { ytPlayer.loadVideoById(id); }
+            } else {
+                ytTag.style.display='none'; videoTag.style.display='block';
+                if (Hls.isSupported()) {
+                    hls = new Hls(); hls.loadSource(url); hls.attachMedia(videoTag);
+                    hls.on(Hls.Events.MANIFEST_PARSED, () => videoTag.play());
+                } else { videoTag.src = url; videoTag.play(); }
+            }
+        }
+        function onYouTubeIframeAPIReady() { loadChannels(); }
+    </script>
+</body>
+</html>
