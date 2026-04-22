@@ -66,18 +66,33 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-        const firebaseConfig = { apiKey: "AIzaSyBtkKwQlTzDgQwP_RpDPnX7WJqoyg1turk", databaseURL: "https://radiomanaure-default-rtdb.firebaseio.com", projectId: "radiomanaure" };
+        const firebaseConfig = { 
+            apiKey: "AIzaSyBtkKwQlTzDgQwP_RpDPnX7WJqoyg1turk", 
+            databaseURL: "https://radiomanaure-default-rtdb.firebaseio.com", 
+            projectId: "radiomanaure" 
+        };
+        
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         const video = document.getElementById('video');
 
-        const hls = new Hls({ maxBufferLength: 40, enableWorker: true, lowLatencyMode: false });
+        // AQUÍ ES DONDE VA LA CONFIGURACIÓN "BLINDADA"
+        const hls = new Hls({ 
+            maxBufferLength: 45,      
+            maxMaxBufferLength: 60,   
+            startLevel: 0,            
+            enableWorker: true, 
+            lowLatencyMode: false,
+            abrEwmaDefaultEstimate: 500000 
+        });
 
         window.toggleMenu = () => {
             document.getElementById('sidebar').classList.toggle('active');
             const ov = document.getElementById('overlay');
             ov.style.display = (ov.style.display === 'block') ? 'none' : 'block';
         };
+        
+        // ... el resto del código sigue igual abajo
 
         // LÓGICA DE AMPLIAR / VOLVER
         window.toggleFS = () => {
