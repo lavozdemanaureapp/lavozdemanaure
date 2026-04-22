@@ -3,68 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MANAURE - TV Gratis</title>
+    <title>TV Digital - La Voz de Manaure</title>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root { --rojo: #ff0000; --negro: #000000; --gris: #1a1a1a; }
-        body { margin: 0; background: var(--negro); color: #fff; font-family: sans-serif; display: flex; height: 100vh; overflow: hidden; }
+        :root { --red-m: #ff0000; --bg: #0c0c0c; --card: #1a1a1a; }
+        body { background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; height: 100vh; overflow: hidden; }
 
         /* MENU LATERAL CORREGIDO */
         #sidebar { 
             position: fixed; left: -260px; top: 0; width: 250px; height: 100%; 
-            background: #000; border-right: 2px solid var(--rojo); 
-            z-index: 9999; transition: 0.4s; display: flex; flex-direction: column; align-items: center; padding-top: 20px;
+            background: #000; border-right: 2px solid var(--red-m); 
+            z-index: 10001; transition: 0.4s; display: flex; flex-direction: column; align-items: center; padding-top: 20px;
         }
         #sidebar.active { left: 0; }
-        .menu-toggle { position: absolute; top: 15px; left: 15px; z-index: 1000; background: rgba(0,0,0,0.8); color: white; border: 1px solid var(--rojo); padding: 10px; border-radius: 5px; cursor: pointer; }
+        .menu-toggle { position: absolute; top: 12px; left: 12px; z-index: 10002; background: rgba(0,0,0,0.8); color: white; border: 1px solid var(--red-m); padding: 10px; border-radius: 5px; cursor: pointer; }
+        .nav-item { width: 85%; padding: 12px; margin: 5px 0; border-radius: 8px; background: var(--card); display: flex; align-items: center; gap: 12px; cursor: pointer; text-decoration: none; color: white; font-size: 14px; }
+        .nav-active { border-left: 4px solid var(--red-m); background: #222; }
 
-        .nav-item { width: 85%; padding: 12px; margin: 5px 0; border-radius: 8px; background: var(--gris); display: flex; align-items: center; gap: 12px; cursor: pointer; text-decoration: none; color: white; font-size: 14px; }
-        .nav-active { border-left: 4px solid var(--rojo); background: #222; }
+        /* CONTENEDOR PRINCIPAL */
+        #main-content { flex: 1; display: flex; flex-direction: column; width: 100%; position: relative; }
 
-        /* CONTENIDO PRINCIPAL */
-        #main-content { width: 100%; display: flex; flex-direction: column; position: relative; height: 100vh; }
-
-        /* AREA DE VIDEO - LÓGICA DE EXTENSIÓN HORIZONTAL */
-        #player-area { position: relative; width: 100%; height: 45vh; background: #000; flex-shrink: 0; overflow: hidden; }
-        video { 
-            width: 100% !important; 
-            height: 100% !important; 
-            object-fit: fill !important; /* ESTA ES LA CLAVE PARA EL HORIZONTAL */
-            display: block;
+        /* LÓGICA DE PANTALLA HORIZONTAL (TU CÓDIGO) */
+        #main-screen { 
+            width: 100%; 
+            aspect-ratio: 16/9; 
+            background: #000; 
+            position: relative; 
+            border-bottom: 2px solid var(--red-m); 
+            overflow: hidden;
+            flex-shrink: 0;
         }
+        video { width: 100%; height: 100%; object-fit: cover; } /* Cover para llenar horizontal */
 
-        /* CABINA Y BOTON AMPLIAR */
+        /* ELEMENTOS FLOTANTES */
         #camera-layer {
             position: absolute; top: 10px; right: 10px; width: 80px; height: 80px;
-            border-radius: 50%; border: 2px solid var(--rojo); overflow: hidden;
-            display: none; z-index: 100;
+            border-radius: 50%; border: 2px solid var(--red-m); overflow: hidden;
+            z-index: 100; display: none;
         }
-        .btn-vid { 
-            position: absolute; top: 10px; right: 100px; 
-            background: rgba(0,0,0,0.8); color: white; border: 1px solid var(--rojo); 
-            padding: 8px 12px; border-radius: 5px; cursor: pointer; z-index: 101; 
-            font-size: 11px; font-weight: bold; 
+        .btn-ampliar {
+            position: absolute; bottom: 10px; right: 10px;
+            background: rgba(0,0,0,0.7); color: white; border: 1px solid var(--red-m);
+            padding: 5px 10px; font-size: 10px; border-radius: 4px; z-index: 101; cursor: pointer;
         }
 
-        /* SECCIÓN INFERIOR */
-        #interaction-area { flex-grow: 1; display: flex; flex-direction: column; background: #050505; border-top: 2px solid var(--rojo); overflow: hidden; }
-        #channel-bar { background: #111; padding: 10px; display: flex; align-items: center; gap: 10px; }
-        #channel-bar span { font-size: 11px; color: var(--rojo); font-weight: bold; }
-        select { background: #000; color: #fff; border: 1px solid #333; padding: 8px; border-radius: 5px; flex-grow: 1; outline: none; }
+        /* AREA INFERIOR: CHAT Y LISTA */
+        .content-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: #050505; }
+        
+        #channel-bar { background: #111; padding: 8px 15px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #222; }
+        select { background: #000; color: white; border: 1px solid #333; padding: 6px; border-radius: 4px; flex: 1; }
 
-        #chat-area { flex-grow: 1; width: 100%; }
+        #chat-container { flex: 1; width: 100%; }
         iframe#chat-frame { width: 100%; height: 100%; border: none; }
 
-        #overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; z-index: 9998; }
-        
-        /* FUERZA EL ESTIRADO EN PANTALLA COMPLETA */
-        #player-area:fullscreen video, 
-        #player-area:-webkit-full-screen video { 
-            object-fit: fill !important; 
-            width: 100vw !important; 
-            height: 100vh !important; 
-        }
+        #overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; z-index: 10000; }
     </style>
 </head>
 <body>
@@ -73,8 +66,8 @@
     <div id="overlay" onclick="toggleMenu()"></div>
 
     <div id="sidebar">
-        <img src="logo_v2.png" style="width: 80px; margin-bottom: 10px;">
-        <h4 style="color: var(--rojo); margin: 0; font-size: 16px;">MANAURE 92.3</h4>
+        <img src="logo_v2.png" style="width: 70px; margin-bottom: 10px;">
+        <span style="font-weight: bold; font-size: 14px; color: var(--red-m);">MANAURE 92.3</span>
         <div style="margin-top: 20px; width: 100%; display: flex; flex-direction: column; align-items: center;">
             <a href="index.html" class="nav-item"><i class="fas fa-radio"></i> Radio en Vivo</a>
             <a href="programas.html" class="nav-item"><i class="fas fa-microphone-lines"></i> Archivo</a>
@@ -84,22 +77,24 @@
     </div>
 
     <div id="main-content">
-        <div id="player-area">
-            <video id="video" playsinline autoplay></video>
-            <button class="btn-vid" id="btn-fs" onclick="toggleFS()">
-                <i class="fas fa-expand"></i> <span id="txt-fs">AMPLIAR</span>
-            </button>
+        <div id="main-screen">
+            <video id="video-player" playsinline autoplay></video>
+            
             <div id="camera-layer">
                 <iframe id="ifr-cam" src="" allow="camera;microphone;autoplay" style="width:100%; height:100%; border:none; transform: scale(1.5);"></iframe>
             </div>
+
+            <button class="btn-ampliar" onclick="toggleFS()">
+                <i class="fas fa-expand"></i> <span id="btn-txt">AMPLIAR</span>
+            </button>
         </div>
 
-        <div id="interaction-area">
+        <div class="content-area">
             <div id="channel-bar">
-                <span><i class="fas fa-list"></i> CANALES:</span>
-                <select id="channel-select"><option>Cargando lista...</option></select>
+                <span style="font-size: 11px; color: var(--red-m); font-weight: bold;">CANALES:</span>
+                <select id="channel-select"><option>Cargando...</option></select>
             </div>
-            <div id="chat-area">
+            <div id="chat-container">
                 <iframe id="chat-frame" src="chat-manaure.html"></iframe>
             </div>
         </div>
@@ -116,32 +111,27 @@
         };
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
-        const video = document.getElementById('video');
+        const video = document.getElementById('video-player');
         const hls = new Hls();
 
         window.toggleMenu = () => {
             document.getElementById('sidebar').classList.toggle('active');
             const ov = document.getElementById('overlay');
-            ov.style.display = ov.style.display === 'block' ? 'none' : 'block';
+            ov.style.display = (ov.style.display === 'block') ? 'none' : 'block';
         };
 
         window.toggleFS = () => {
-            const area = document.getElementById('player-area');
-            const txt = document.getElementById('txt-fs');
+            const screen = document.getElementById('main-screen');
+            const txt = document.getElementById('btn-txt');
             if (!document.fullscreenElement) {
-                if(area.requestFullscreen) area.requestFullscreen();
-                else if(area.webkitRequestFullscreen) area.webkitRequestFullscreen();
+                if (screen.requestFullscreen) screen.requestFullscreen();
+                else if (screen.webkitRequestFullscreen) screen.webkitRequestFullscreen();
                 txt.innerText = "VOLVER";
             } else {
-                if(document.exitFullscreen) document.exitFullscreen();
+                if (document.exitFullscreen) document.exitFullscreen();
                 txt.innerText = "AMPLIAR";
             }
         };
-
-        // Escuchar el cambio de pantalla completa para resetear el botón si el usuario sale con la tecla escape
-        document.addEventListener('fullscreenchange', () => {
-            if (!document.fullscreenElement) document.getElementById('txt-fs').innerText = "AMPLIAR";
-        });
 
         async function loadM3U() {
             const r = await fetch('canales.m3u');
