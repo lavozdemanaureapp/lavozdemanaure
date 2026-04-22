@@ -3,53 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TV Manaure - Final Fix</title>
+    <title>TV Manaure - Final</title>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root { --rojo: #ff0000; --negro: #0c0c0c; }
         body { margin: 0; background: var(--negro); color: #fff; font-family: sans-serif; display: flex; height: 100vh; overflow: hidden; }
-        
         #sidebar { position: fixed; left: -260px; top: 0; width: 250px; height: 100%; background: #000; border-right: 2px solid var(--rojo); z-index: 10001; transition: 0.4s; display: flex; flex-direction: column; align-items: center; padding-top: 20px; }
         #sidebar.active { left: 0; }
         .menu-toggle { position: absolute; top: 12px; left: 12px; z-index: 10002; background: rgba(0,0,0,0.8); color: white; border: 1px solid var(--rojo); padding: 10px; border-radius: 5px; cursor: pointer; }
         .nav-item { width: 85%; padding: 12px; margin: 5px 0; border-radius: 8px; background: #1a1a1a; display: flex; align-items: center; gap: 12px; cursor: pointer; text-decoration: none; color: white; font-size: 14px; }
-
         #main-content { width: 100%; display: flex; flex-direction: column; position: relative; }
-
-        /* EL SECRETO ESTÁ AQUÍ */
-        #video-wrapper { 
-            width: 100%; 
-            aspect-ratio: 16 / 9; 
-            background: #000; 
-            position: relative; 
-            border-bottom: 2px solid var(--rojo); 
-            overflow: hidden;
-            flex-shrink: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        video { 
-            width: 100%; 
-            height: 100%; 
-            object-fit: cover; /* Cambiado a cover para que llene el espacio inicial */
-            display: block;
-        }
-
-        /* ESTO OBLIGA A RELLENAR TODA LA PANTALLA EN EL MÓVIL */
-        #video-wrapper:fullscreen { width: 100vw; height: 100vh; background: #000; }
-        #video-wrapper:fullscreen video { object-fit: fill !important; width: 100vw !important; height: 100vh !important; }
+        #video-wrapper { width: 100%; aspect-ratio: 16 / 9; background: #000; position: relative; border-bottom: 2px solid var(--rojo); overflow: hidden; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
         
-        /* Compatibilidad con iPhones y Chrome viejo */
-        #video-wrapper:-webkit-full-screen { width: 100vw; height: 100vh; }
-        #video-wrapper:-webkit-full-screen video { object-fit: fill !important; width: 100vw !important; height: 100vh !important; }
+        /* VIDEO NORMAL */
+        video { width: 100%; height: 100%; object-fit: contain; display: block; }
+
+        /* VIDEO AMPLIADO (FORZADO) */
+        #video-wrapper:fullscreen video, #video-wrapper:-webkit-full-screen video { object-fit: fill !important; width: 100vw !important; height: 100vh !important; }
 
         #capa-publicidad { position: absolute; top: 15px; right: 15px; width: 120px; z-index: 1000; display: none; }
         #banner-img { width: 100%; border-radius: 8px; border: 1px solid white; }
 
-        .btn-vid { position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,0.7); color: white; border: 1px solid var(--rojo); padding: 8px 12px; border-radius: 5px; cursor: pointer; z-index: 101; font-size: 10px; font-weight: bold; }
+        /* BOTÓN DINÁMICO */
+        .btn-vid { position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,0.7); color: white; border: 1px solid var(--rojo); padding: 8px 12px; border-radius: 5px; cursor: pointer; z-index: 10005; font-size: 10px; font-weight: bold; transition: 0.3s; }
         
         #interaction-area { flex: 1; display: flex; flex-direction: column; background: #050505; }
         #channel-bar { background: #111; padding: 10px; border-bottom: 1px solid #222; }
@@ -77,13 +54,10 @@
         <div id="video-wrapper">
             <div id="capa-publicidad"><img id="banner-img" src=""></div>
             <video id="video" playsinline autoplay controls></video>
-            <button class="btn-vid" onclick="toggleFS()">AMPLIAR PANTALLA</button>
+            <button id="btnFS" class="btn-vid" onclick="toggleFS()">AMPLIAR PANTALLA</button>
         </div>
-
         <div id="interaction-area">
-            <div id="channel-bar">
-                <select id="channel-select"><option>Cargando...</option></select>
-            </div>
+            <div id="channel-bar"><select id="channel-select"><option>Cargando...</option></select></div>
             <iframe id="chat-frame" src="chat-manaure.html"></iframe>
         </div>
     </div>
@@ -97,12 +71,7 @@
         const db = getDatabase(app);
         const video = document.getElementById('video');
 
-        // BUFFER DE ESTABILIDAD (40 segundos de colchón para evitar el "se pega")
-        const hls = new Hls({
-            maxBufferLength: 40, 
-            enableWorker: true,
-            lowLatencyMode: false
-        });
+        const hls = new Hls({ maxBufferLength: 40, enableWorker: true, lowLatencyMode: false });
 
         window.toggleMenu = () => {
             document.getElementById('sidebar').classList.toggle('active');
@@ -110,20 +79,32 @@
             ov.style.display = (ov.style.display === 'block') ? 'none' : 'block';
         };
 
+        // LÓGICA DE AMPLIAR / VOLVER
         window.toggleFS = () => {
             const wrapper = document.getElementById('video-wrapper');
-            if (!document.fullscreenElement) {
+            if (!document.fullscreenElement && !document.webkitFullscreenElement) {
                 if (wrapper.requestFullscreen) wrapper.requestFullscreen();
                 else if (wrapper.webkitRequestFullscreen) wrapper.webkitRequestFullscreen();
-                
-                // Forzar horizontalidad en celulares
-                if (screen.orientation && screen.orientation.lock) {
-                    screen.orientation.lock('landscape').catch(() => {});
-                }
+                if (screen.orientation && screen.orientation.lock) screen.orientation.lock('landscape').catch(() => {});
             } else {
                 if (document.exitFullscreen) document.exitFullscreen();
+                else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
             }
         };
+
+        // DETECTOR DE CAMBIO DE PANTALLA PARA EL BOTÓN
+        const handleFSChange = () => {
+            const btn = document.getElementById('btnFS');
+            if (document.fullscreenElement || document.webkitFullscreenElement) {
+                btn.innerText = "VOLVER A LA APP";
+                btn.style.background = "rgba(255,0,0,0.8)";
+            } else {
+                btn.innerText = "AMPLIAR PANTALLA";
+                btn.style.background = "rgba(0,0,0,0.7)";
+            }
+        };
+        document.addEventListener('fullscreenchange', handleFSChange);
+        document.addEventListener('webkitfullscreenchange', handleFSChange);
 
         async function loadM3U() {
             const r = await fetch('canales.m3u?v=' + new Date().getTime());
@@ -145,14 +126,9 @@
 
         function play(url) {
             if (Hls.isSupported()) { 
-                hls.loadSource(url); 
-                hls.attachMedia(video);
-                hls.on(Hls.Events.ERROR, (event, data) => {
-                    if (data.fatal) hls.recoverMediaError();
-                });
-            } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-                video.src = url; 
-            }
+                hls.loadSource(url); hls.attachMedia(video);
+                hls.on(Hls.Events.ERROR, (e, d) => { if (d.fatal) hls.recoverMediaError(); });
+            } else if (video.canPlayType('application/vnd.apple.mpegurl')) { video.src = url; }
         }
 
         document.getElementById('channel-select').onchange = (e) => play(e.target.value);
