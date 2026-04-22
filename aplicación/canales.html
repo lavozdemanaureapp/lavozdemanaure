@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TV Manaure - Horizontal</title>
+    <title>TV Manaure - Final</title>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -55,7 +55,6 @@
         #interaction-area { flex: 1; display: flex; flex-direction: column; background: #050505; }
         #channel-bar { background: #111; padding: 10px; border-bottom: 1px solid #222; }
         
-        /* ESTILO PARA EL SELECTOR DE CANALES */
         select { 
             background: #000; 
             color: white; 
@@ -65,6 +64,7 @@
             width: 100%; 
             font-weight: bold;
             font-size: 14px;
+            text-transform: uppercase;
         }
 
         iframe#chat-frame { width: 100%; height: 100%; border: none; }
@@ -98,9 +98,11 @@
 
         <div id="interaction-area">
             <div id="channel-bar">
-                <select id="channel-select"><option>+ Canales</option></select>
+                <select id="channel-select">
+                    <option id="active-label">+ CANALES</option>
+                </select>
             </div>
-            <iframe id="chat-frame" src="chat-manaure.html" title="Envía tu comentario"></iframe>
+            <iframe id="chat-frame" src="chat-manaure.html"></iframe>
         </div>
     </div>
 
@@ -113,6 +115,7 @@
         const db = getDatabase(app);
         const video = document.getElementById('video');
         const btnFs = document.getElementById('btn-fs');
+        const select = document.getElementById('channel-select');
         const hls = new Hls();
 
         window.toggleMenu = () => {
@@ -126,7 +129,6 @@
             if (!document.fullscreenElement) {
                 if (wrapper.requestFullscreen) wrapper.requestFullscreen();
                 else if (wrapper.webkitRequestFullscreen) wrapper.webkitRequestFullscreen();
-                
                 if (screen.orientation && screen.orientation.lock) {
                     screen.orientation.lock('landscape').catch(() => {});
                 }
@@ -145,36 +147,40 @@
             const r = await fetch('canales.m3u');
             const t = await r.text();
             const lines = t.split('\n');
-            const select = document.getElementById('channel-select');
             select.innerHTML = ''; 
-            
-            // Agregar la opción por defecto decorada
-            let defOpt = document.createElement('option');
-            defOpt.innerText = "+ CANALES";
-            defOpt.disabled = true;
-            defOpt.selected = true;
-            select.appendChild(defOpt);
 
             let name = "";
             lines.forEach(l => {
-                if(l.startsWith('#EXTINF')) name = l.split(',')[1];
+                if(l.startsWith('#EXTINF')) name = l.split(',')[1].trim();
                 else if(l.startsWith('http')) {
                     let o = document.createElement('option'); 
                     o.value = l.trim(); 
-                    o.innerText = name.toUpperCase();
+                    o.innerText = name;
+                    o.dataset.name = name; // Guardamos el nombre limpio
                     select.appendChild(o);
                 }
             });
-            // Auto-reproducir el primero si hay
-            if(select.options.length > 1) play(select.options[1].value);
+
+            if(select.options.length > 0) {
+                const firstChannel = select.options[0];
+                play(firstChannel.value, firstChannel.dataset.name);
+            }
         }
 
-        function play(url) {
+        function play(url, name) {
+            // Actualiza el texto del select con el canal activo
+            const label = document.getElementById('active-label');
+            select.options[select.selectedIndex].innerText = `+ CANALES | ${name.toUpperCase()}`;
+            
             if (Hls.isSupported()) { hls.loadSource(url); hls.attachMedia(video); }
             else { video.src = url; }
         }
 
-        document.getElementById('channel-select').onchange = (e) => play(e.target.value);
+        select.onchange = (e) => {
+            const selectedOption = e.target.options[e.target.selectedIndex];
+            play(selectedOption.value, selectedOption.dataset.name);
+        };
+
         loadM3U();
 
         onValue(ref(db, 'publicidad_activa'), (snap) => {
