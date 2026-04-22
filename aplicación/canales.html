@@ -22,10 +22,11 @@
 
         #main-content { width: 100%; display: flex; flex-direction: column; position: relative; }
 
-        /* EL CONTENEDOR DE VIDEO: Sin aspect-ratio para permitir estiramiento horizontal */
+        /* CONTENEDOR DE VIDEO: FORZADO HORIZONTAL */
         #video-wrapper { 
             width: 100%; 
-            height: 250px; /* Altura fija para vista normal */
+            height: auto;
+            aspect-ratio: 16/9; /* Mantiene la forma de TV */
             background: #000; 
             position: relative; 
             border-bottom: 2px solid var(--rojo); 
@@ -33,31 +34,34 @@
             flex-shrink: 0;
         }
 
-        /* VIDEO: Estira a los lados siempre */
+        /* VIDEO: ESTIRADO TOTAL (FILL) */
         video { 
             width: 100%; 
             height: 100%; 
-            object-fit: fill; 
+            object-fit: fill !important; /* Estira a los lados sí o sí */
             display: block;
         }
 
-        /* FORZADO HORIZONTAL TOTAL EN PANTALLA COMPLETA */
-        #video-wrapper:fullscreen, #video-wrapper:-webkit-full-screen { width: 100vw; height: 100vh; }
-        #video-wrapper:fullscreen video, #video-wrapper:-webkit-full-screen video { object-fit: fill !important; }
+        /* PANTALLA COMPLETA: MATAR BARRAS NEGRAS */
+        #video-wrapper:fullscreen video, 
+        #video-wrapper:-webkit-full-screen video { 
+            object-fit: fill !important; 
+            width: 100vw !important;
+            height: 100vh !important;
+        }
 
         /* PUBLICIDAD A LA DERECHA */
         #capa-publicidad { 
             position: absolute; 
             top: 15px; 
-            right: 15px; /* Movida a la derecha */
+            right: 15px; 
             width: 140px; 
             z-index: 110; 
             display: none; 
         }
         #banner-img { width: 100%; border-radius: 8px; border: 1px solid rgba(255,255,255,0.5); box-shadow: 0 4px 10px rgba(0,0,0,0.9); }
 
-        /* CABINA Y BOTONES */
-        .btn-vid { position: absolute; bottom: 10px; left: 10px; background: rgba(0,0,0,0.7); color: white; border: 1px solid var(--rojo); padding: 8px 12px; border-radius: 5px; cursor: pointer; z-index: 101; font-size: 10px; }
+        .btn-vid { position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,0.7); color: white; border: 1px solid var(--rojo); padding: 8px 12px; border-radius: 5px; cursor: pointer; z-index: 101; font-size: 10px; font-weight: bold; }
         #camera-layer { position: absolute; top: 15px; right: 15px; width: 80px; height: 80px; border-radius: 50%; border: 2px solid var(--rojo); overflow: hidden; display: none; z-index: 100; }
 
         #interaction-area { flex: 1; display: flex; flex-direction: column; background: #050505; }
@@ -84,14 +88,10 @@
     <div id="main-content">
         <div id="video-wrapper">
             <div id="capa-publicidad"><img id="banner-img" src=""></div>
-            
             <video id="video" playsinline autoplay></video>
-            
             <div id="camera-layer"><iframe id="ifr-cam" style="width:100%; height:100%; border:none; transform: scale(1.5);"></iframe></div>
-            
             <button class="btn-vid" onclick="toggleFS()">AMPLIAR PANTALLA</button>
         </div>
-
         <div id="interaction-area">
             <div id="channel-bar"><select id="channel-select"><option>Cargando...</option></select></div>
             <iframe id="chat-frame" src="chat-manaure.html"></iframe>
@@ -157,9 +157,8 @@
         onValue(ref(db, 'cabina_activa'), (snap) => {
             const d = snap.val();
             const layer = document.getElementById('camera-layer');
-            const ifr = document.getElementById('ifr-cam');
-            if(d && d.estado === "ON") { ifr.src = d.url; layer.style.display = 'block'; }
-            else { layer.style.display = 'none'; ifr.src = ""; }
+            if(d && d.estado === "ON") { layer.style.display = 'block'; }
+            else { layer.style.display = 'none'; }
         });
 
         onValue(ref(db, 'publicidad_activa'), (snap) => {
@@ -169,7 +168,6 @@
             if(d && d.imagen !== "OFF") { 
                 img.src = d.imagen; 
                 capa.style.display = 'block'; 
-                // Ocultar cámara si sale publicidad para que no choquen
                 document.getElementById('camera-layer').style.display = 'none';
             } else { 
                 capa.style.display = 'none'; 
