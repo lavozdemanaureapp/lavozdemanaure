@@ -149,7 +149,7 @@
         });
 
         async function loadM3U() {
-            const r = await fetch('canales.m3u');
+            const r = await fetch('https://github.com/lavozdemanaureapp/lavozdemanaure/blob/main/aplicaci%C3%B3n/canales.m3u');
             const t = await r.text();
             const lines = t.split('\n');
             select.innerHTML = ''; 
