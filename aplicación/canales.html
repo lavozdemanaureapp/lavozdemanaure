@@ -3,69 +3,90 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MANAURE - En Vivo</title>
+    <title>La Voz de Manaure - TV Gratis</title>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        body { margin: 0; background: #000; color: #fff; font-family: sans-serif; overflow: hidden; display: flex; flex-direction: column; height: 100vh; }
+        :root { --rojo-manaure: #ff0000; --fondo-oscuro: #0a0a0a; --tarjeta: #1a1a1a; }
         
-        /* CONTENEDOR DE VIDEO (Lo que se amplía) */
-        #player-canvas { position: relative; width: 100%; height: 60vh; background: #000; flex-shrink: 0; overflow: hidden; }
-        video { width: 100%; height: 100%; background: #000; }
+        body { margin: 0; background: var(--fondo-oscuro); color: #fff; font-family: 'Segoe UI', sans-serif; display: flex; height: 100vh; overflow: hidden; }
 
-        /* CÁMARA CABINA (CIRCULO) */
+        /* BARRA LATERAL (RECUPERADA DE TU FOTO) */
+        #sidebar { width: 250px; background: #000; border-right: 2px solid var(--rojo-manaure); display: flex; flex-direction: column; align-items: center; padding: 20px 10px; flex-shrink: 0; }
+        .logo-app { width: 120px; margin-bottom: 20px; }
+        .nav-item { width: 100%; padding: 15px; margin: 5px 0; border-radius: 10px; background: var(--tarjeta); display: flex; align-items: center; gap: 10px; cursor: pointer; transition: 0.3s; border: 1px solid transparent; text-decoration: none; color: white; }
+        .nav-item:hover { border-color: var(--rojo-manaure); background: #222; }
+        .nav-active { border-left: 5px solid var(--rojo-manaure); background: #222; }
+
+        /* CONTENIDO PRINCIPAL */
+        #main-content { flex-grow: 1; display: flex; flex-direction: column; position: relative; }
+
+        /* REPRODUCTOR DE VIDEO */
+        #player-area { position: relative; width: 100%; height: 60vh; background: #000; overflow: hidden; }
+        video { width: 100%; height: 100%; }
+
+        /* CÁMARA CABINA */
         #camera-layer {
-            position: absolute; top: 15px; left: 15px; width: 90px; height: 90px;
-            border-radius: 50%; border: 3px solid #ff0000; overflow: hidden;
-            display: none; z-index: 2147483647; box-shadow: 0 0 15px rgba(0,0,0,0.8);
+            position: absolute; top: 15px; left: 15px; width: 100px; height: 100px;
+            border-radius: 50%; border: 3px solid var(--rojo-manaure); overflow: hidden;
+            display: none; z-index: 100; box-shadow: 0 0 15px rgba(0,0,0,0.8);
         }
 
-        /* BOTONES DE CONTROL SUPERIOR */
-        .top-controls { position: absolute; top: 10px; right: 10px; display: flex; gap: 8px; z-index: 2147483647; }
-        .btn-ctrl { background: rgba(0,0,0,0.7); color: white; border: 1px solid #ff0000; padding: 10px; border-radius: 5px; cursor: pointer; font-size: 12px; font-weight: bold; }
+        /* CONTROLES SOBRE EL VIDEO */
+        .video-overlay-btns { position: absolute; top: 10px; right: 10px; z-index: 101; display: flex; gap: 5px; }
+        .btn-vid { background: rgba(0,0,0,0.8); color: white; border: 1px solid var(--rojo-manaure); padding: 8px 12px; border-radius: 5px; cursor: pointer; font-size: 12px; }
 
-        /* SELECTOR DE CANALES (LISTA) */
-        #channel-menu { position: absolute; bottom: 10px; left: 10px; z-index: 2147483647; }
-        select { background: rgba(0,0,0,0.85); color: white; border: 1px solid #ff0000; padding: 6px; border-radius: 5px; outline: none; }
+        /* SELECTOR DE CANALES */
+        #channel-bar { position: absolute; bottom: 10px; left: 10px; z-index: 101; }
+        select { background: #000; color: #fff; border: 1px solid var(--rojo-manaure); padding: 5px; border-radius: 5px; }
 
-        /* SECCIÓN DEL CHAT */
-        #chat-container { flex-grow: 1; background: #111; border-top: 2px solid #ff0000; position: relative; }
+        /* CHAT RECUPERADO */
+        #chat-area { flex-grow: 1; background: var(--fondo-oscuro); border-top: 2px solid var(--rojo-manaure); }
         iframe#chat-frame { width: 100%; height: 100%; border: none; }
 
         /* PUBLICIDAD */
-        #banner-pub { position: absolute; bottom: 15px; right: 15px; width: 160px; display: none; z-index: 2147483646; }
+        #banner-pub { position: absolute; bottom: 15px; right: 15px; width: 180px; display: none; z-index: 99; }
         #banner-pub img { width: 100%; border-radius: 8px; border: 1px solid #fff; }
+
+        /* RESPONSIVE: Si es móvil, esconde el sidebar */
+        @media (max-width: 768px) { #sidebar { display: none; } }
     </style>
 </head>
 <body>
 
-    <div id="player-canvas">
-        <video id="video" playsinline></video>
+    <div id="sidebar">
+        <img src="logo_v2.png" class="logo-app" alt="Logo">
+        <h4 style="color: var(--rojo-manaure); margin-bottom: 5px;">LA VOZ DE MANAURE</h4>
+        <p style="font-size: 10px; color: #888; margin-bottom: 20px;">COMUNITARIA 92.3 FM</p>
 
-        <div class="top-controls">
-            <button class="btn-ctrl" id="fs-btn" onclick="toggleFullScreen()">
-                <i class="fas fa-expand"></i> <span id="fs-text">AMPLIAR</span>
-            </button>
-            <button class="btn-ctrl" onclick="window.location.href='index.html'">
-                <i class="fas fa-times"></i> SALIR
-            </button>
-        </div>
-
-        <div id="channel-menu">
-            <select id="channel-select">
-                <option value="">Cargando lista...</option>
-            </select>
-        </div>
-
-        <div id="camera-layer">
-            <iframe id="iframe-camera" src="" allow="camera;microphone;autoplay" style="width:100%; height:100%; border:none; transform: scale(1.5);"></iframe>
-        </div>
-
-        <div id="banner-pub"><img id="img-pub" src=""></div>
+        <a href="index.html" class="nav-item"><i class="fas fa-radio"></i> Radio en Vivo</a>
+        <a href="programas.html" class="nav-item"><i class="fas fa-microphone"></i> Archivo</a>
+        <a href="micambio.html" class="nav-item"><i class="fas fa-coins"></i> Mi Cambio</a>
+        <a href="canales.html" class="nav-item nav-active"><i class="fas fa-tv"></i> TV Gratis</a>
     </div>
 
-    <div id="chat-container">
-        <iframe id="chat-frame" src="chat-manaure.html"></iframe>
+    <div id="main-content">
+        <div id="player-area">
+            <video id="video" playsinline autoplay></video>
+
+            <div class="video-overlay-btns">
+                <button class="btn-ctrl btn-vid" id="btn-fs" onclick="toggleFullScreen()"><i class="fas fa-expand"></i> AMPLIAR</button>
+            </div>
+
+            <div id="channel-bar">
+                <select id="channel-select"><option>Cargando Canales...</option></select>
+            </div>
+
+            <div id="camera-layer">
+                <iframe id="iframe-camera" src="" allow="camera;microphone;autoplay" style="width:100%; height:100%; border:none; transform: scale(1.5);"></iframe>
+            </div>
+
+            <div id="banner-pub"><img id="img-pub" src=""></div>
+        </div>
+
+        <div id="chat-area">
+            <iframe id="chat-frame" src="chat-manaure.html"></iframe>
+        </div>
     </div>
 
     <script type="module">
@@ -81,93 +102,64 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         const video = document.getElementById('video');
-        const canvas = document.getElementById('player-canvas');
-        const fsText = document.getElementById('fs-text');
+        const playerArea = document.getElementById('player-area');
         const hls = new Hls();
 
-        // 1. MANEJO DE PANTALLA COMPLETA
+        // FULLSCREEN DE TODO EL ÁREA DE VIDEO
         window.toggleFullScreen = function() {
             if (!document.fullscreenElement) {
-                if (canvas.requestFullscreen) canvas.requestFullscreen();
-                else if (canvas.webkitRequestFullscreen) canvas.webkitRequestFullscreen();
+                if (playerArea.requestFullscreen) playerArea.requestFullscreen();
+                document.getElementById('btn-fs').innerHTML = '<i class="fas fa-compress"></i> VOLVER';
             } else {
-                if (document.exitFullscreen) document.exitFullscreen();
+                document.exitFullscreen();
+                document.getElementById('btn-fs').innerHTML = '<i class="fas fa-expand"></i> AMPLIAR';
             }
         };
 
-        // Detectar cambio para actualizar el botón
-        document.addEventListener('fullscreenchange', () => {
-            if (document.fullscreenElement) {
-                fsText.innerText = "VOLVER";
-            } else {
-                fsText.innerText = "AMPLIAR";
-            }
-        });
-
-        // 2. CARGAR LISTA M3U
-        async function cargarCanales() {
-            try {
-                const response = await fetch('canales.m3u');
-                const text = await response.text();
-                const lines = text.split('\n');
-                const select = document.getElementById('channel-select');
-                select.innerHTML = '';
-
-                let currentName = "";
-                lines.forEach(line => {
-                    if (line.startsWith('#EXTINF')) {
-                        currentName = line.split(',')[1] || "Canal Sin Nombre";
-                    } else if (line.startsWith('http')) {
-                        let opt = document.createElement('option');
-                        opt.value = line.trim();
-                        opt.innerText = currentName;
-                        select.appendChild(opt);
-                    }
-                });
-                if (select.options.length > 0) cambiarCanal(select.options[0].value);
-            } catch (e) { console.error("Error cargando m3u"); }
+        // CARGAR M3U
+        async function cargarM3U() {
+            const r = await fetch('canales.m3u');
+            const t = await r.text();
+            const lines = t.split('\n');
+            const select = document.getElementById('channel-select');
+            select.innerHTML = '';
+            let name = "";
+            lines.forEach(l => {
+                if(l.startsWith('#EXTINF')) name = l.split(',')[1];
+                else if(l.startsWith('http')) {
+                    let o = document.createElement('option'); o.value = l.trim(); o.innerText = name;
+                    select.appendChild(o);
+                }
+            });
+            if(select.options.length > 0) play(select.options[0].value);
         }
 
-        function cambiarCanal(url) {
-            if (Hls.isSupported()) {
-                hls.loadSource(url);
-                hls.attachMedia(video);
-                video.play();
-            } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-                video.src = url;
-                video.play();
-            }
+        function play(url) {
+            if (Hls.isSupported()) { hls.loadSource(url); hls.attachMedia(video); }
+            else { video.src = url; }
         }
 
-        document.getElementById('channel-select').addEventListener('change', (e) => cambiarCanal(e.target.value));
-        cargarCanales();
+        document.getElementById('channel-select').onchange = (e) => play(e.target.value);
+        cargarM3U();
 
-        // 3. ESCUCHAR CABINA (FIREBASE)
+        // FIREBASE: CABINA
         onValue(ref(db, 'cabina_activa'), (snap) => {
-            const data = snap.val();
+            const d = snap.val();
             const layer = document.getElementById('camera-layer');
-            const iframe = document.getElementById('iframe-camera');
-            if (data && data.estado === "ON") {
-                const finalUrl = data.url + "&mute=1&autoplay=1";
-                if(iframe.src !== finalUrl) iframe.src = finalUrl;
+            const ifr = document.getElementById('iframe-camera');
+            if(d && d.estado === "ON") {
+                const url = d.url + "&mute=1&autoplay=1";
+                if(ifr.src !== url) ifr.src = url;
                 layer.style.display = 'block';
-            } else {
-                layer.style.display = 'none';
-                iframe.src = "";
-            }
+            } else { layer.style.display = 'none'; ifr.src = ""; }
         });
 
-        // 4. ESCUCHAR PUBLICIDAD (FIREBASE)
+        // FIREBASE: PUBLICIDAD
         onValue(ref(db, 'publicidad_activa'), (snap) => {
-            const data = snap.val();
-            const banner = document.getElementById('banner-pub');
-            const img = document.getElementById('img-pub');
-            if (data && data.imagen !== "OFF") {
-                img.src = data.imagen;
-                banner.style.display = 'block';
-            } else {
-                banner.style.display = 'none';
-            }
+            const d = snap.val();
+            const b = document.getElementById('banner-pub');
+            if(d && d.imagen !== "OFF") { document.getElementById('img-pub').src = d.imagen; b.style.display = 'block'; }
+            else { b.style.display = 'none'; }
         });
     </script>
 </body>
