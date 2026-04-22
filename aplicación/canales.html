@@ -3,53 +3,84 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MANAURE - Canales en Vivo</title>
+    <title>MANAURE - Multi-Canal & Cabina</title>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <style>
-        body { margin: 0; background: #000; color: #fff; font-family: sans-serif; overflow: hidden; }
-        #player-container { position: relative; width: 100vw; height: 100vh; background: #000; }
-        video { width: 100%; height: 100%; object-fit: contain; }
+        body { margin: 0; background: #000; color: #fff; font-family: 'Segoe UI', sans-serif; overflow: hidden; }
         
-        /* EL CÍRCULO DE LA CABINA */
+        /* CONTENEDOR PRINCIPAL */
+        #main-container { display: flex; flex-direction: column; height: 100vh; width: 100vw; }
+        
+        /* REPRODUCTOR */
+        #player-canvas { position: relative; flex-grow: 1; background: #000; display: flex; align-items: center; justify-content: center; }
+        video { width: 100%; height: 100%; max-height: 100vh; }
+
+        /* EL CÍRCULO DE TU CARA (CABINA) */
         #camera-layer {
             position: absolute;
-            top: 20px;
-            left: 20px;
-            width: 110px;
-            height: 110px;
+            top: 15px;
+            left: 15px;
+            width: 100px;
+            height: 100px;
             border-radius: 50%;
             border: 3px solid #ff0000;
             overflow: hidden;
-            display: none; /* Se activa desde el mando */
+            display: none;
             z-index: 9999;
             box-shadow: 0 0 15px rgba(0,0,0,0.8);
-            background: #000;
         }
+
+        /* SELECTOR DE CANALES */
+        #channel-menu {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 10000;
+            background: rgba(0,0,0,0.7);
+            padding: 5px;
+            border-radius: 5px;
+        }
+        select { background: #222; color: white; border: 1px solid #ff0000; padding: 5px; border-radius: 5px; }
 
         /* BANNER DE PUBLICIDAD */
         #banner-pub {
             position: absolute;
             bottom: 20px;
             right: 20px;
-            width: 250px;
+            width: 200px;
             display: none;
             z-index: 9998;
-            transition: 0.5s;
         }
-        #banner-pub img { width: 100%; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.5); }
+        #banner-pub img { width: 100%; border-radius: 10px; }
+
+        /* SECCIÓN DEL CHAT (ABAJO) */
+        #chat-container { height: 30vh; background: #111; border-top: 2px solid #ff0000; }
+        iframe#chat-frame { width: 100%; height: 100%; border: none; }
     </style>
 </head>
 <body>
 
-    <div id="player-container">
-        <video id="video" controls autoplay></video>
+    <div id="main-container">
+        <div id="player-canvas">
+            <video id="video" controls autoplay></video>
 
-        <div id="camera-layer">
-            <iframe id="iframe-camera" src="" allow="camera;microphone" style="width:100%; height:100%; border:none; transform: scale(1.4);"></iframe>
+            <div id="channel-menu">
+                <select id="channel-select">
+                    <option value="">Cargando canales...</option>
+                </select>
+            </div>
+
+            <div id="camera-layer">
+                <iframe id="iframe-camera" src="" allow="camera;microphone" style="width:100%; height:100%; border:none; transform: scale(1.4);"></iframe>
+            </div>
+
+            <div id="banner-pub">
+                <img id="img-pub" src="" alt="Publicidad">
+            </div>
         </div>
 
-        <div id="banner-pub">
-            <img id="img-pub" src="" alt="Publicidad">
+        <div id="chat-container">
+            <iframe id="chat-frame" src="chat-manaure.html"></iframe>
         </div>
     </div>
 
@@ -65,44 +96,72 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
-
-        // 1. LÓGICA DEL VIDEO (HLS)
         const video = document.getElementById('video');
-        const videoSrc = 'https://lavozdemanaureapp.github.io/lavozdemanaure/aplicación/canales.m3u'; // Ajusta si el m3u tiene otra ruta
+        const hls = new Hls();
 
-        if (Hls.isSupported()) {
-            const hls = new Hls();
-            hls.loadSource(videoSrc);
-            hls.attachMedia(video);
-        } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-            video.src = videoSrc;
+        // 1. CARGAR CANALES DESDE EL M3U
+        async function cargarCanales() {
+            const response = await fetch('canales.m3u');
+            const text = await response.text();
+            const lines = text.split('\n');
+            const select = document.getElementById('channel-select');
+            select.innerHTML = ''; // Limpiar
+
+            let currentName = "";
+            lines.forEach(line => {
+                if (line.startsWith('#EXTINF')) {
+                    currentName = line.split(',')[1];
+                } else if (line.startsWith('http')) {
+                    let opt = document.createElement('option');
+                    opt.value = line.trim();
+                    opt.innerText = currentName;
+                    select.appendChild(opt);
+                }
+            });
+
+            // Reproducir el primero por defecto
+            if (select.options.length > 0) {
+                cambiarCanal(select.options[0].value);
+            }
         }
 
-        // 2. LÓGICA DE LA CÁMARA EN VIVO (CABINA)
-        const cabinaRef = ref(db, 'cabina_activa');
-        onValue(cabinaRef, (snapshot) => {
-            const data = snapshot.val();
+        function cambiarCanal(url) {
+            if (Hls.isSupported()) {
+                hls.loadSource(url);
+                hls.attachMedia(video);
+                hls.on(Hls.Events.MANIFEST_PARSED, () => video.play());
+            } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                video.src = url;
+            }
+        }
+
+        document.getElementById('channel-select').addEventListener('change', (e) => {
+            cambiarCanal(e.target.value);
+        });
+
+        cargarCanales();
+
+        // 2. LÓGICA DE LA CÁMARA (FIREBASE)
+        onValue(ref(db, 'cabina_activa'), (snap) => {
+            const data = snap.val();
             const layer = document.getElementById('camera-layer');
             const iframe = document.getElementById('iframe-camera');
-            
             if (data && data.estado === "ON") {
-                if (iframe.src !== data.url) iframe.src = data.url;
+                if(iframe.src !== data.url) iframe.src = data.url;
                 layer.style.display = 'block';
             } else {
                 layer.style.display = 'none';
-                iframe.src = ""; 
+                iframe.src = "";
             }
         });
 
-        // 3. LÓGICA DE LA PUBLICIDAD
-        const pubRef = ref(db, 'publicidad_activa');
-        onValue(pubRef, (snapshot) => {
-            const data = snapshot.val();
+        // 3. LÓGICA DE PUBLICIDAD (FIREBASE)
+        onValue(ref(db, 'publicidad_activa'), (snap) => {
+            const data = snap.val();
             const banner = document.getElementById('banner-pub');
             const img = document.getElementById('img-pub');
-
             if (data && data.imagen !== "OFF") {
-                img.src = data.imagen; 
+                img.src = data.imagen;
                 banner.style.display = 'block';
             } else {
                 banner.style.display = 'none';
