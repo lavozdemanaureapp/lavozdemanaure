@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MANAURE - TV</title>
+    <title>MANAURE - TV Gratis</title>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -14,47 +14,46 @@
         #sidebar { 
             position: fixed; left: -260px; top: 0; width: 250px; height: 100%; 
             background: #000; border-right: 2px solid var(--rojo); 
-            z-index: 9999; transition: 0.4s; display: flex; flex-direction: column; align-items: center; padding-top: 20px;
+            z-index: 10001; transition: 0.4s; display: flex; flex-direction: column; align-items: center; padding-top: 20px;
         }
         #sidebar.active { left: 0; }
-        .menu-toggle { position: absolute; top: 15px; left: 15px; z-index: 1000; background: rgba(0,0,0,0.8); color: white; border: 1px solid var(--rojo); padding: 10px; border-radius: 5px; cursor: pointer; }
+        .menu-toggle { position: absolute; top: 12px; left: 12px; z-index: 10002; background: rgba(0,0,0,0.8); color: white; border: 1px solid var(--rojo); padding: 10px; border-radius: 5px; cursor: pointer; }
         
         .nav-item { width: 85%; padding: 12px; margin: 5px 0; border-radius: 8px; background: var(--gris); display: flex; align-items: center; gap: 12px; cursor: pointer; text-decoration: none; color: white; font-size: 14px; }
-        .nav-active { border-left: 4px solid var(--rojo); background: #222; }
 
         /* CONTENIDO PRINCIPAL */
         #main-content { width: 100%; display: flex; flex-direction: column; position: relative; }
 
-        /* AREA DE VIDEO - PROPORCIÓN NATURAL EN VISTA NORMAL */
-        #player-area { 
-            position: relative; 
+        /* LÓGICA DE PANTALLA (16:9 NORMAL, ESTIRADO EN FS) */
+        #main-screen { 
             width: 100%; 
-            aspect-ratio: 16 / 9; /* Esto mantiene la forma correcta antes de ampliar */
+            aspect-ratio: 16/9; 
             background: #000; 
-            flex-shrink: 0; 
+            position: relative; 
+            overflow: hidden;
+            flex-shrink: 0;
+            border-bottom: 2px solid var(--rojo);
         }
-        video { 
-            width: 100%; 
-            height: 100%; 
-            object-fit: contain; /* No se estira hasta que tú lo pidas */
-        }
+        video { width: 100%; height: 100%; object-fit: contain; }
 
         /* BOTONES Y CABINA */
-        .btn-vid { position: absolute; bottom: 10px; right: 10px; background: rgba(255,0,0,0.7); color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; z-index: 101; font-size: 10px; font-weight: bold; }
-        #camera-layer { position: absolute; top: 10px; right: 10px; width: 70px; height: 70px; border-radius: 50%; border: 2px solid var(--rojo); overflow: hidden; display: none; z-index: 100; }
+        .btn-ampliar { position: absolute; bottom: 10px; right: 10px; background: rgba(255,0,0,0.8); color: white; border: none; padding: 8px 12px; border-radius: 5px; font-weight: bold; z-index: 101; cursor: pointer; font-size: 10px; }
+        #camera-layer { position: absolute; top: 10px; right: 10px; width: 75px; height: 75px; border-radius: 50%; border: 2px solid var(--rojo); overflow: hidden; z-index: 100; display: none; }
 
-        /* INTERACCIÓN (CHAT) */
-        #interaction-area { flex: 1; display: flex; flex-direction: column; background: #050505; border-top: 1px solid #333; overflow: hidden; }
-        #channel-bar { background: #111; padding: 8px; display: flex; align-items: center; }
-        select { background: #000; color: #fff; border: 1px solid #333; padding: 8px; border-radius: 5px; width: 100%; outline: none; }
+        /* AREA DE CHAT */
+        .content-area { flex: 1; display: flex; flex-direction: column; background: #050505; }
+        #channel-bar { background: #111; padding: 10px; display: flex; align-items: center; gap: 10px; }
+        select { background: #000; color: white; border: 1px solid #333; padding: 8px; border-radius: 5px; flex: 1; outline: none; }
         iframe#chat-frame { width: 100%; height: 100%; border: none; }
 
-        #overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; z-index: 9998; }
+        #overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; z-index: 10000; }
 
-        /* LÓGICA DE EXTENSIÓN HORIZONTAL (SOLO EN PANTALLA COMPLETA) */
-        #player-area:fullscreen video, 
-        #player-area:-webkit-full-screen video { 
-            object-fit: fill !important; 
+        /* EL TRUCO DEL ALMENDRO: FORZAR HORIZONTAL AL AMPLIAR */
+        #main-screen:fullscreen video, 
+        #main-screen:-webkit-full-screen video { 
+            object-fit: fill !important; /* Aquí es donde se estira horizontalmente */
+            width: 100vw !important; 
+            height: 100vh !important; 
         }
     </style>
 </head>
@@ -65,27 +64,27 @@
 
     <div id="sidebar">
         <img src="logo_v2.png" style="width: 70px; margin-bottom: 10px;">
-        <h4 style="color: var(--rojo); margin: 0; font-size: 14px;">MANAURE 92.3 FM</h4>
+        <h4 style="color: var(--rojo); margin: 0; font-size: 15px;">MANAURE 92.3</h4>
         <div style="margin-top: 20px; width: 100%; display: flex; flex-direction: column; align-items: center;">
             <a href="index.html" class="nav-item"><i class="fas fa-broadcast-tower"></i> Radio</a>
             <a href="programas.html" class="nav-item"><i class="fas fa-microphone-lines"></i> Archivo</a>
             <a href="micambio.html" class="nav-item"><i class="fas fa-arrows-rotate"></i> Mi Cambio</a>
-            <a href="canales.html" class="nav-item nav-active"><i class="fas fa-tv"></i> TV Gratis</a>
+            <a href="canales.html" class="nav-item" style="border-left: 4px solid var(--rojo); background: #222;"><i class="fas fa-tv"></i> TV Gratis</a>
         </div>
     </div>
 
     <div id="main-content">
-        <div id="player-area">
-            <video id="video" playsinline autoplay></video>
-            <button class="btn-vid" onclick="toggleFS()">AMPLIAR PANTALLA</button>
+        <div id="main-screen">
+            <video id="video-player" playsinline autoplay></video>
             <div id="camera-layer">
                 <iframe id="ifr-cam" src="" style="width:100%; height:100%; border:none; transform: scale(1.5);"></iframe>
             </div>
+            <button class="btn-ampliar" onclick="toggleFS()">AMPLIAR PANTALLA</button>
         </div>
 
-        <div id="interaction-area">
+        <div class="content-area">
             <div id="channel-bar">
-                <select id="channel-select"><option>Cargando canales...</option></select>
+                <select id="channel-select"><option>Cargando lista...</option></select>
             </div>
             <iframe id="chat-frame" src="chat-manaure.html"></iframe>
         </div>
@@ -98,7 +97,7 @@
         const firebaseConfig = { apiKey: "AIzaSyBtkKwQlTzDgQwP_RpDPnX7WJqoyg1turk", databaseURL: "https://radiomanaure-default-rtdb.firebaseio.com", projectId: "radiomanaure" };
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
-        const video = document.getElementById('video');
+        const video = document.getElementById('video-player');
         const hls = new Hls();
 
         window.toggleMenu = () => {
@@ -108,10 +107,10 @@
         };
 
         window.toggleFS = () => {
-            const area = document.getElementById('player-area');
+            const screen = document.getElementById('main-screen');
             if (!document.fullscreenElement) {
-                if (area.requestFullscreen) area.requestFullscreen();
-                else if (area.webkitRequestFullscreen) area.webkitRequestFullscreen();
+                if (screen.requestFullscreen) screen.requestFullscreen();
+                else if (screen.webkitRequestFullscreen) screen.webkitRequestFullscreen();
             } else {
                 if (document.exitFullscreen) document.exitFullscreen();
             }
