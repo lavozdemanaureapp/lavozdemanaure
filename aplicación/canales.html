@@ -3,31 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MANAURE TV CLOUD</title>
+    <title>Manaure TV - v3</title>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root { --rojo: #ff0000; --negro: #0c0c0c; --amarillo: #ffcc00; }
+        :root { --rojo: #ff0000; --negro: #0c0c0c; --naranja: #ff6600; }
         body { margin: 0; background: var(--negro); color: #fff; font-family: sans-serif; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
         
-        /* SIDEBAR - BOTÓN AMARILLO PARA CONFIRMAR ACTUALIZACIÓN */
-        #sidebar { position: fixed; left: -260px; top: 0; width: 250px; height: 100%; background: #000; border-right: 2px solid var(--rojo); z-index: 10001; transition: 0.3s; display: flex; flex-direction: column; align-items: center; padding-top: 15px; }
+        /* SIDEBAR CON BOTÓN VOLVER NARANJA */
+        #sidebar { position: fixed; left: -280px; top: 0; width: 260px; height: 100%; background: #000; border-right: 2px solid var(--rojo); z-index: 10001; transition: 0.3s; display: flex; flex-direction: column; align-items: center; padding-top: 20px; }
         #sidebar.active { left: 0; }
         
-        /* SI ESTE BOTÓN NO SALE AMARILLO, LA APP NO SE ESTÁ ACTUALIZANDO */
-        .btn-volver { width: 90%; background: var(--amarillo); color: #000; border: none; padding: 15px; margin-bottom: 20px; border-radius: 8px; cursor: pointer; font-weight: 800; text-transform: uppercase; font-size: 14px; }
+        /* BOTÓN VOLVER REESTRUCTURADO */
+        .btn-volver { width: 90%; background: var(--naranja); color: white; border: none; padding: 16px; margin-bottom: 25px; border-radius: 10px; cursor: pointer; font-weight: bold; text-transform: uppercase; font-size: 15px; display: flex; align-items: center; justify-content: center; gap: 10px; }
 
-        .menu-toggle { position: absolute; top: 12px; left: 12px; z-index: 10002; background: rgba(0,0,0,0.8); color: white; border: 1px solid var(--rojo); padding: 10px; border-radius: 5px; }
+        .menu-toggle { position: absolute; top: 12px; left: 12px; z-index: 10002; background: rgba(0,0,0,0.8); color: white; border: 1px solid var(--rojo); padding: 10px; border-radius: 5px; cursor: pointer; }
         
+        /* CONTENEDOR DE VIDEO */
         #player-canvas { width: 100%; aspect-ratio: 16 / 9; background: #000; position: relative; border-bottom: 2px solid var(--rojo); flex-shrink: 0; }
         video, iframe { width: 100%; height: 100%; border: none; display: block; background: #000; }
 
-        /* ARREGLO DE LA LISTA: ALTURA MÁXIMA PARA EL SELECTOR */
+        /* ÁREA DE INTERACCIÓN - SCROLL GARANTIZADO */
         #interaction-area { 
             flex: 1; 
             display: flex; 
             flex-direction: column; 
-            overflow-y: auto; /* SCROLL HABILITADO */
+            overflow-y: auto; /* Habilita el desplazamiento vertical */
             background: #050505;
             -webkit-overflow-scrolling: touch;
         }
@@ -36,19 +37,19 @@
         
         select { 
             width: 100%; 
-            background: #222; 
+            background: #1a1a1a; 
             color: white; 
             border: 2px solid var(--rojo); 
             padding: 15px; 
             border-radius: 10px; 
             font-size: 18px; 
             font-weight: bold;
-            height: auto;
+            appearance: none; /* Elimina estilos nativos para evitar bloqueos */
         }
 
-        iframe#chat-frame { width: 100%; min-height: 600px; border: none; flex-shrink: 0; }
+        iframe#chat-frame { width: 100%; min-height: 550px; border: none; flex-shrink: 0; }
         #overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; z-index: 10000; }
-        .btn-vid { position: absolute; bottom: 10px; right: 10px; background: var(--rojo); color: white; border: none; padding: 10px; border-radius: 5px; font-size: 10px; font-weight: bold; z-index: 1000; }
+        .btn-vid { position: absolute; bottom: 10px; right: 10px; background: var(--rojo); color: white; border: none; padding: 10px; border-radius: 5px; font-size: 11px; font-weight: bold; z-index: 1000; }
     </style>
 </head>
 <body>
@@ -60,22 +61,25 @@
         <button class="btn-volver" onclick="toggleMenu()">
             <i class="fas fa-arrow-left"></i> VOLVER AL CANAL
         </button>
+        
         <img src="logo_v2.png" style="width: 80px; margin-bottom: 10px;">
         <div style="margin-top: 20px; width: 100%; display: flex; flex-direction: column; align-items: center;">
-            <a href="index.html" style="color: white; text-decoration: none; padding: 15px;">RADIO</a>
-            <a href="canales.html" style="color: var(--amarillo); text-decoration: none; padding: 15px; font-weight: bold;">TV EN VIVO</a>
+            <a href="index.html" style="color: white; text-decoration: none; padding: 15px; font-size: 16px;">RADIO MANAURE</a>
+            <a href="canales.html" style="color: var(--naranja); text-decoration: none; padding: 15px; font-weight: bold; font-size: 16px;">TV EN VIVO</a>
         </div>
     </div>
 
     <div id="player-canvas">
         <video id="video" playsinline autoplay controls></video>
         <iframe id="video-iframe" style="display:none;" allow="autoplay; fullscreen"></iframe>
-        <button class="btn-vid" onclick="toggleFS()"><i class="fas fa-expand"></i> AMPLIAR PANTALLA</button>
+        <button class="btn-vid" onclick="toggleFS()"><i class="fas fa-expand"></i> PANTALLA COMPLETA</button>
     </div>
 
     <div id="interaction-area">
         <div id="channel-bar">
-            <select id="channel-select"></select>
+            <select id="channel-select">
+                <option>Cargando lista...</option>
+            </select>
         </div>
         <iframe id="chat-frame" src="chat-manaure.html"></iframe>
     </div>
@@ -83,11 +87,13 @@
     <script>
         const videoHLS = document.getElementById('video');
         const videoIFRAME = document.getElementById('video-iframe');
-        const hls = new Hls();
+        const hls = new Hls({ maxBufferLength: 30 });
 
         window.toggleMenu = () => {
-            document.getElementById('sidebar').classList.toggle('active');
-            document.getElementById('overlay').style.display = (document.getElementById('overlay').style.display === 'block') ? 'none' : 'block';
+            const sb = document.getElementById('sidebar');
+            const ov = document.getElementById('overlay');
+            sb.classList.toggle('active');
+            ov.style.display = (ov.style.display === 'block') ? 'none' : 'block';
         };
 
         window.toggleFS = () => {
@@ -107,28 +113,39 @@
                 videoIFRAME.src = `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&mute=1`;
             } else {
                 videoIFRAME.style.display = 'none'; videoHLS.style.display = 'block';
-                if (Hls.isSupported()) { hls.loadSource(url); hls.attachMedia(videoHLS); }
+                if (Hls.isSupported()) { 
+                    hls.loadSource(url); 
+                    hls.attachMedia(videoHLS); 
+                    hls.on(Hls.Events.MANIFEST_PARSED, () => videoHLS.play().catch(()=>{}));
+                } else if (videoHLS.canPlayType('application/vnd.apple.mpegurl')) {
+                    videoHLS.src = url;
+                    videoHLS.play();
+                }
             }
         };
 
         async function loadM3U() {
-            // USAMOS UN NÚMERO ALEATORIO PARA MATAR LA CACHÉ DEL .M3U
-            const r = await fetch('canales.m3u?v=' + Math.random());
+            // Se agrega un timestamp para evitar la caché del archivo .m3u
+            const r = await fetch('canales.m3u?t=' + new Date().getTime());
             const t = await r.text();
             const lines = t.split('\n');
             const select = document.getElementById('channel-select');
             select.innerHTML = '';
-            lines.forEach((line, i) => {
+            
+            for (let i = 0; i < lines.length; i++) {
+                let line = lines[i].trim();
                 if (line.startsWith('#EXTINF')) {
-                    let name = line.split(',')[1];
-                    let url = lines[i+1].trim();
-                    if(url.startsWith('http')) {
-                        let opt = new Option(name.toUpperCase().trim(), url);
-                        select.add(opt);
+                    let name = line.split(',')[1] || "CANAL";
+                    let url = lines[i + 1] ? lines[i + 1].trim() : "";
+                    if (url.startsWith('http')) {
+                        let opt = document.createElement('option');
+                        opt.value = url;
+                        opt.innerText = name.toUpperCase().trim();
+                        select.appendChild(opt);
                     }
                 }
-            });
-            if(select.length > 0) play(select.options[0].value);
+            }
+            if (select.length > 0) play(select.options[0].value);
         }
 
         document.getElementById('channel-select').onchange = (e) => play(e.target.value);
