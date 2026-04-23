@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Panel de Control - Manaure TV</title>
+    <style>
+        body { background: #000; color: white; font-family: 'Segoe UI', sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        .card { background: #0a0a0a; border: 2px solid #ff0000; padding: 40px; border-radius: 20px; text-align: center; box-shadow: 0 0 40px rgba(255,0,0,0.4); min-width: 300px; }
+        h1 { font-size: 18px; text-transform: uppercase; letter-spacing: 2px; color: #fff; margin-bottom: 20px; }
+        .contador { font-size: 120px; font-weight: 900; color: #ff0000; margin: 0; line-height: 1; }
+        .status { margin-top: 25px; font-size: 12px; color: #444; border-top: 1px solid #222; padding-top: 15px; }
+        .live-dot { height: 10px; width: 10px; background-color: #ff0000; border-radius: 50%; display: inline-block; margin-right: 8px; animation: blink 1s infinite; }
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.2; } 100% { opacity: 1; } }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h1><span class="live-dot"></span> ESPECTADORES EN VIVO</h1>
+        <p id="total-users" class="contador">0</p>
+        <div class="status" id="last-update">Esperando señal de MediaMTX...</div>
+    </div>
+
+    <script>
+        // Si estás en la misma PC usa 127.0.0.1, si estás en otra usa la IP que viste en ipconfig
+        const API_URL = 'http://192.168.0.103/v3/paths/list'; 
+
+        async function updateStats() {
+            try {
+                // El modo 'cors' es para que el navegador no lo bloquee
+                const response = await fetch(API_URL, { mode: 'cors' });
+                const data = await response.json();
+                
+                // MediaMTX organiza los datos en "items". Sumamos todos los lectores.
+                let totalReaders = 0;
+                if (data.items) {
+                    data.items.forEach(path => {
+                        totalReaders += path.readerCount;
+                    });
+                }
+
+                document.getElementById('total-users').innerText = totalReaders;
+                document.getElementById('last-update').innerText = 'ACTUALIZADO: ' + new Date().toLocaleTimeString();
+                document.getElementById('total-users').style.color = totalReaders > 0 ? '#ff0000' : '#333';
+
+            } catch (error) {
+                document.getElementById('last-update').innerText = 'ERROR: Verifica que MediaMTX esté abierto y la API activa';
+                document.getElementById('total-users').innerText = '?';
+            }
+        }
+
+        setInterval(updateStats, 3000); // Actualiza cada 3 segundos para más precisión
+        updateStats();
+    </script>
+</body>
+</html>
