@@ -133,39 +133,29 @@
             }
         };
 
-      async function loadM3U() {
-    try {
-        // El Math.random evita que la PC use la lista vieja guardada en memoria
-        const r = await fetch('canales.m3u?v=' + Math.random());
-        const t = await r.text();
-        const lines = t.split('\n');
-        const select = document.getElementById('channel-select');
-        select.innerHTML = '';
-        
-        for (let i = 0; i < lines.length; i++) {
-            let line = lines[i].trim();
-            if (line.startsWith('#EXTINF')) {
-                let name = line.split(',')[1] || "CANAL";
-                let url = lines[i + 1] ? lines[i + 1].trim() : "";
-                if (url.startsWith('http')) {
-                    let opt = new Option(name.toUpperCase().trim(), url);
-                    select.add(opt);
+        async function loadM3U() {
+            // Busca esta línea en tu función loadM3U
+            const r = await fetch('canales.m3u?v=' + Math.random());
+            const t = await r.text();
+            const lines = t.split('\n');
+            const select = document.getElementById('channel-select');
+            select.innerHTML = '';
+            for (let i = 0; i < lines.length; i++) {
+                let line = lines[i].trim();
+                if (line.startsWith('#EXTINF')) {
+                    let name = line.split(',')[1] || "CANAL";
+                    let url = lines[i + 1] ? lines[i + 1].trim() : "";
+                    if (url.startsWith('http')) {
+                        let opt = new Option(name.toUpperCase().trim(), url);
+                        select.add(opt);
+                    }
                 }
             }
+            if (select.length > 0) play(select.options[0].value);
         }
-        
-        // Si hay canales, reproduce el primero
-        if (select.length > 0) play(select.options[0].value);
 
-    } catch(e) { 
-        console.error("Error cargando M3U:", e); 
-    }
-}
-
-// ESTA ES LA CLAVE: Esperamos 1 segundo para que la PC no se bloquee
-setTimeout(() => {
-    loadM3U();
-}, 1000);
+        document.getElementById('channel-select').onchange = (e) => play(e.target.value);
+        loadM3U();
     </script>
 
 <button id="btn-secreto" onclick="verEstadisticas()" style="background: #28a745; border: none; border-radius: 50%; width: 12px; height: 12px; cursor: pointer; opacity: 0.4; margin: 20px auto; display: block;"></button>
