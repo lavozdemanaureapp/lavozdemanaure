@@ -43,7 +43,39 @@
 
         iframe#chat-frame { width: 100%; min-height: 600px; border: none; flex-shrink: 0; }
         #overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; z-index: 10000; }
-    </style>
+   
+#channel-select {
+    position: relative;
+    z-index: 9999 !important; /* Lo pone por encima de todo */
+    cursor: pointer;
+}
+
+#channel-bar {
+    position: sticky;
+    top: 0;
+    z-index: 10000; /* Asegura que la barra completa sea prioridad */
+}
+/* Ajuste para que la PC no bloquee los canales */
+        #channel-select {
+            position: relative;
+            z-index: 10002 !important; /* Más alto que cualquier otro elemento */
+            cursor: pointer;
+        }
+
+        #channel-bar {
+            position: sticky;
+            top: 0;
+            z-index: 10001; 
+        }
+
+        /* Aseguramos que el botón verde no flote sobre lo demás */
+        #btn-secreto {
+            position: relative;
+            z-index: 1;
+            margin: 40px auto 10px auto; /* Le damos espacio arriba para que no estorbe */
+        } 
+
+</style>
 </head>
 <body>
 
