@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>
+<head> 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Manaure TV Profesional</title>
@@ -157,19 +157,42 @@
         loadM3U();
     </script>
 
-<!-- Default Statcounter code for manaure app
-https://lavozdemanaureapp.lavozdemanaureradio.workers.dev/canales -->
-<script type="text/javascript">
-var sc_project=13223970; 
-var sc_invisible=1; 
-var sc_security="a42d6ad0"; 
+<button id="btn-secreto" onclick="verEstadisticas()" style="background: #28a745; border: none; border-radius: 50%; width: 12px; height: 12px; cursor: pointer; opacity: 0.4; margin: 20px auto; display: block;"></button>
+
+<div id="stats-privadas" style="display: none; text-align: center; color: #28a745; font-family: monospace; padding-bottom: 20px;">
+    AUDIENCIA TOTAL TV: <br>
+    <span id="valor-visitas" style="font-size: 20px; font-weight: bold;">0</span>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getDatabase, ref, runTransaction, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+    // Tu configuración real de radiomanaure
+    const firebaseConfig = {
+        apiKey: "AIzaSyBtkKwQlTzDgQwP_RpDPnX7WJqoyg1turk",
+        authDomain: "radiomanaure.firebaseapp.com",
+        databaseURL: "https://radiomanaure-default-rtdb.firebaseio.com",
+        projectId: "radiomanaure"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const visitasRef = ref(db, 'estadisticas/visitas_tv');
+
+    // Suma automática al entrar a la página
+    runTransaction(visitasRef, (actual) => (actual || 0) + 1);
+
+    // Función para mostrar los datos al tocar el punto verde
+    window.verEstadisticas = () => {
+        const panel = document.getElementById('stats-privadas');
+        panel.style.display = (panel.style.display === 'none') ? 'block' : 'none';
+        if(panel.style.display === 'block') {
+            onValue(visitasRef, (s) => { 
+                document.getElementById('valor-visitas').innerText = s.val() || 0; 
+            });
+        }
+    };
 </script>
-<script type="text/javascript"
-src="https://www.statcounter.com/counter/counter.js" async></script>
-<noscript><div class="statcounter"><a title="Web Analytics Made Easy -
-Statcounter" href="https://statcounter.com/" target="_blank"><img
-class="statcounter" src="https://c.statcounter.com/13223970/0/a42d6ad0/1/"
-alt="Web Analytics Made Easy - Statcounter"
-referrerPolicy="no-referrer-when-downgrade"></a></div></noscript>
 </body>
 </html>
