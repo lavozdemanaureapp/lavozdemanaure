@@ -43,39 +43,7 @@
 
         iframe#chat-frame { width: 100%; min-height: 600px; border: none; flex-shrink: 0; }
         #overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; z-index: 10000; }
-   
-#channel-select {
-    position: relative;
-    z-index: 9999 !important; /* Lo pone por encima de todo */
-    cursor: pointer;
-}
-
-#channel-bar {
-    position: sticky;
-    top: 0;
-    z-index: 10000; /* Asegura que la barra completa sea prioridad */
-}
-/* Ajuste para que la PC no bloquee los canales */
-        #channel-select {
-            position: relative;
-            z-index: 10002 !important; /* Más alto que cualquier otro elemento */
-            cursor: pointer;
-        }
-
-        #channel-bar {
-            position: sticky;
-            top: 0;
-            z-index: 10001; 
-        }
-
-        /* Aseguramos que el botón verde no flote sobre lo demás */
-        #btn-secreto {
-            position: relative;
-            z-index: 1;
-            margin: 40px auto 10px auto; /* Le damos espacio arriba para que no estorbe */
-        } 
-
-</style>
+    </style>
 </head>
 <body>
 
@@ -165,29 +133,39 @@
             }
         };
 
-        async function loadM3U() {
-            // Busca esta línea en tu función loadM3U
-            const r = await fetch('canales.m3u?v=' + Math.random());
-            const t = await r.text();
-            const lines = t.split('\n');
-            const select = document.getElementById('channel-select');
-            select.innerHTML = '';
-            for (let i = 0; i < lines.length; i++) {
-                let line = lines[i].trim();
-                if (line.startsWith('#EXTINF')) {
-                    let name = line.split(',')[1] || "CANAL";
-                    let url = lines[i + 1] ? lines[i + 1].trim() : "";
-                    if (url.startsWith('http')) {
-                        let opt = new Option(name.toUpperCase().trim(), url);
-                        select.add(opt);
-                    }
+      async function loadM3U() {
+    try {
+        // El Math.random evita que la PC use la lista vieja guardada en memoria
+        const r = await fetch('canales.m3u?v=' + Math.random());
+        const t = await r.text();
+        const lines = t.split('\n');
+        const select = document.getElementById('channel-select');
+        select.innerHTML = '';
+        
+        for (let i = 0; i < lines.length; i++) {
+            let line = lines[i].trim();
+            if (line.startsWith('#EXTINF')) {
+                let name = line.split(',')[1] || "CANAL";
+                let url = lines[i + 1] ? lines[i + 1].trim() : "";
+                if (url.startsWith('http')) {
+                    let opt = new Option(name.toUpperCase().trim(), url);
+                    select.add(opt);
                 }
             }
-            if (select.length > 0) play(select.options[0].value);
         }
+        
+        // Si hay canales, reproduce el primero
+        if (select.length > 0) play(select.options[0].value);
 
-        document.getElementById('channel-select').onchange = (e) => play(e.target.value);
-        loadM3U();
+    } catch(e) { 
+        console.error("Error cargando M3U:", e); 
+    }
+}
+
+// ESTA ES LA CLAVE: Esperamos 1 segundo para que la PC no se bloquee
+setTimeout(() => {
+    loadM3U();
+}, 1000);
     </script>
 
 <button id="btn-secreto" onclick="verEstadisticas()" style="background: #28a745; border: none; border-radius: 50%; width: 12px; height: 12px; cursor: pointer; opacity: 0.4; margin: 20px auto; display: block;"></button>
