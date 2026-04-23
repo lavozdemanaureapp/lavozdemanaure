@@ -134,7 +134,8 @@
         };
 
         async function loadM3U() {
-            const r = await fetch('canales.m3u?v=' + Date.now());
+            // Busca esta línea en tu función loadM3U
+            const r = await fetch('canales.m3u?v=' + Math.random());
             const t = await r.text();
             const lines = t.split('\n');
             const select = document.getElementById('channel-select');
