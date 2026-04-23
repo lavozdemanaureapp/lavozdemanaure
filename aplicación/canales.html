@@ -3,30 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Manaure 92.3 FM - Radio</title>
+    <title>Manaure TV Profesional</title>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root { --rojo: #ff0000; --negro: #0c0c0c; --gris: #1a1a1a; }
+        :root { --rojo: #ff0000; --negro: #0c0c0c; }
         body { margin: 0; background: var(--negro); color: #fff; font-family: sans-serif; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
-
-        /* SIDEBAR UNIFICADO ROJO */
+        
+        /* SIDEBAR UNIFICADO CON BOTÓN ROJO */
         #sidebar { position: fixed; left: -280px; top: 0; width: 260px; height: 100%; background: #000; border-right: 2px solid var(--rojo); z-index: 10001; transition: 0.3s; display: flex; flex-direction: column; align-items: center; padding-top: 20px; }
         #sidebar.active { left: 0; }
         
-        /* BOTÓN VOLVER AL MENÚ - ROJO */
-        .btn-regresar { width: 90%; background: var(--rojo); color: #fff; border: none; padding: 16px; margin-bottom: 25px; border-radius: 10px; cursor: pointer; font-weight: 900; text-transform: uppercase; font-size: 14px; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 4px 15px rgba(255,0,0,0.3); }
+        .btn-regresar { width: 90%; background: var(--rojo); color: #fff; border: none; padding: 16px; margin-bottom: 25px; border-radius: 10px; cursor: pointer; font-weight: 900; text-transform: uppercase; font-size: 14px; display: flex; align-items: center; justify-content: center; gap: 10px; }
 
         .menu-toggle { position: absolute; top: 12px; left: 12px; z-index: 10002; background: rgba(0,0,0,0.8); color: white; border: 1px solid var(--rojo); padding: 10px; border-radius: 5px; cursor: pointer; }
         
-        /* CONTENIDO PRINCIPAL */
-        #main-container { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px; }
-        
-        .logo-station { width: 180px; margin-bottom: 20px; filter: drop-shadow(0 0 10px rgba(255,0,0,0.5)); }
-        
-        .nav-link { color: white; text-decoration: none; padding: 15px; font-size: 16px; width: 85%; text-align: center; border-radius: 8px; margin: 5px 0; transition: 0.3s; }
-        .nav-link:hover { background: var(--gris); color: var(--rojo); }
-        .nav-active { background: var(--gris); border-left: 4px solid var(--rojo); font-weight: bold; }
+        /* CONTENEDOR DE VIDEO */
+        #player-canvas { width: 100%; aspect-ratio: 16 / 9; background: #000; position: relative; border-bottom: 2px solid var(--rojo); flex-shrink: 0; }
+        video, iframe { width: 100%; height: 100%; border: none; display: block; background: #000; }
 
+        /* BOTÓN DINÁMICO SOBRE VIDEO */
+        .btn-vid { 
+            position: absolute; bottom: 10px; right: 10px; background: var(--rojo); color: white; border: none; 
+            padding: 10px 15px; border-radius: 5px; font-size: 11px; font-weight: bold; z-index: 1000; 
+            min-width: 100px; display: flex; align-items: center; justify-content: center; gap: 5px;
+        }
+        
+        /* ÁREA DE INTERACCIÓN: LISTA Y CHAT */
+        #interaction-area { 
+            flex: 1; display: flex; flex-direction: column; overflow-y: auto; background: #050505; -webkit-overflow-scrolling: touch;
+        }
+
+        #channel-bar { padding: 15px; background: #111; border-bottom: 1px solid #333; position: sticky; top: 0; z-index: 100; text-align: center; }
+        
+        .scroll-hint { font-size: 10px; color: var(--rojo); text-transform: uppercase; margin-bottom: 8px; display: block; font-weight: bold; animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
+
+        select { width: 100%; background: #1a1a1a; color: white; border: 2px solid var(--rojo); padding: 15px; border-radius: 10px; font-size: 18px; font-weight: bold; outline: none; }
+
+        iframe#chat-frame { width: 100%; min-height: 600px; border: none; flex-shrink: 0; }
         #overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; z-index: 10000; }
     </style>
 </head>
@@ -41,28 +56,105 @@
         </button>
         <img src="logo_v2.png" style="width: 80px; margin-bottom: 10px;">
         <div style="margin-top: 20px; width: 100%; display: flex; flex-direction: column; align-items: center;">
-            <a href="index.html" class="nav-link">RADIO EN VIVO</a>
-            <a href="canales.html" class="nav-link">TV EN VIVO</a>
-            <a href="programas.html" class="nav-link">PROGRAMAS</a>
+            <a href="index.html" style="color: white; text-decoration: none; padding: 15px;">RADIO EN VIVO</a>
+            <a href="canales.html" style="color: var(--rojo); text-decoration: none; padding: 15px; font-weight: bold;">TV EN VIVO</a>
+            <a href="programas.html" style="color: white; text-decoration: none; padding: 15px;">PROGRAMAS</a>
         </div>
     </div>
 
-    <div id="main-container">
-        <img src="logo_v2.png" class="logo-station">
-        <h2 style="margin: 0; color: var(--rojo);">LA VOZ DE MANAURE</h2>
-        <p style="color: #aaa; font-size: 14px;">92.3 FM - Santa Ana del Táchira</p>
-        
-        <div id="player-placeholder" style="margin-top: 30px;">
-             </div>
+    <div id="player-canvas">
+        <video id="video" playsinline autoplay controls></video>
+        <iframe id="video-iframe" style="display:none;" allow="autoplay; fullscreen"></iframe>
+        <button class="btn-vid" onclick="toggleFS()"><i class="fas fa-expand"></i> AMPLIAR</button>
+    </div>
+
+    <div id="interaction-area">
+        <div id="channel-bar">
+            <span class="scroll-hint"><i class="fas fa-arrow-down"></i> Desliza para más canales y chat <i class="fas fa-arrow-down"></i></span>
+            <select id="channel-select"><option>Cargando lista...</option></select>
+        </div>
+        <iframe id="chat-frame" src="chat-manaure.html"></iframe>
     </div>
 
     <script>
+        const videoHLS = document.getElementById('video');
+        const videoIFRAME = document.getElementById('video-iframe');
+        const canvas = document.getElementById('player-canvas');
+        const hls = new Hls({ maxBufferLength: 30 });
+
         window.toggleMenu = () => {
             const sb = document.getElementById('sidebar');
             const ov = document.getElementById('overlay');
             sb.classList.toggle('active');
             ov.style.display = (ov.style.display === 'block') ? 'none' : 'block';
         };
+
+        window.toggleFS = () => {
+            const btn = document.querySelector('.btn-vid');
+            if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+                const enterFS = canvas.requestFullscreen || canvas.webkitRequestFullscreen;
+                if (enterFS) {
+                    enterFS.call(canvas).then(() => {
+                        btn.innerHTML = '<i class="fas fa-compress"></i> VOLVER';
+                        if (screen.orientation && screen.orientation.lock) screen.orientation.lock('landscape').catch(() => {});
+                    });
+                }
+            } else {
+                const exitFS = document.exitFullscreen || document.webkitExitFullscreen;
+                if (exitFS) exitFS.call(document);
+            }
+        };
+
+        const resetBtn = () => {
+            const btn = document.querySelector('.btn-vid');
+            if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+                btn.innerHTML = '<i class="fas fa-expand"></i> AMPLIAR';
+            }
+        };
+        document.addEventListener('fullscreenchange', resetBtn);
+        document.addEventListener('webkitfullscreenchange', resetBtn);
+
+        window.play = (url) => {
+            videoIFRAME.src = "";
+            if (url.includes('youtube.com') || url.includes('youtu.be')) {
+                let id = url.includes('v=') ? url.split('v=')[1].split('&')[0] : url.split('/').pop().split('?')[0];
+                videoHLS.style.display = 'none'; videoHLS.pause();
+                videoIFRAME.style.display = 'block';
+                videoIFRAME.src = `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&mute=1&rel=0`;
+            } else {
+                videoIFRAME.style.display = 'none'; videoHLS.style.display = 'block';
+                if (Hls.isSupported()) { 
+                    hls.loadSource(url); 
+                    hls.attachMedia(videoHLS); 
+                    hls.on(Hls.Events.MANIFEST_PARSED, () => videoHLS.play().catch(()=>{}));
+                } else if (videoHLS.canPlayType('application/vnd.apple.mpegurl')) {
+                    videoHLS.src = url; videoHLS.play();
+                }
+            }
+        };
+
+        async function loadM3U() {
+            const r = await fetch('canales.m3u?v=' + Date.now());
+            const t = await r.text();
+            const lines = t.split('\n');
+            const select = document.getElementById('channel-select');
+            select.innerHTML = '';
+            for (let i = 0; i < lines.length; i++) {
+                let line = lines[i].trim();
+                if (line.startsWith('#EXTINF')) {
+                    let name = line.split(',')[1] || "CANAL";
+                    let url = lines[i + 1] ? lines[i + 1].trim() : "";
+                    if (url.startsWith('http')) {
+                        let opt = new Option(name.toUpperCase().trim(), url);
+                        select.add(opt);
+                    }
+                }
+            }
+            if (select.length > 0) play(select.options[0].value);
+        }
+
+        document.getElementById('channel-select').onchange = (e) => play(e.target.value);
+        loadM3U();
     </script>
 </body>
 </html>
