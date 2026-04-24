@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Manaure TV Pro</title>
+    <title>Manaure TV v3</title>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -11,64 +11,77 @@
         * { box-sizing: border-box; }
         body { margin: 0; background: var(--negro); color: #fff; font-family: sans-serif; height: 100vh; width: 100vw; overflow: hidden; display: flex; flex-direction: column; }
 
-        /* BOTÓN VOLVER */
+        /* BOTÓN VOLVER (FLOTANTE FUERA DE LA BARRA) */
         .menu-toggle { 
-            position: fixed; top: 12px; right: 12px; z-index: 100000; 
-            background: var(--rojo); color: white; border: none; 
-            padding: 8px 15px; border-radius: 8px; cursor: pointer; 
-            display: flex; align-items: center; gap: 8px; font-weight: bold;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.9);
+            position: fixed; 
+            bottom: 20px; /* Lo pasamos abajo para que no tape la lista arriba */
+            right: 20px; 
+            z-index: 100000; 
+            background: var(--rojo); 
+            color: white; 
+            border: none; 
+            padding: 15px; 
+            border-radius: 50%; /* Circular para que sea más directo */
+            width: 60px;
+            height: 60px;
+            cursor: pointer; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            box-shadow: 0 4px 20px rgba(255,0,0,0.5);
+            font-size: 20px;
         }
 
         /* SIDEBAR */
-        #sidebar { position: fixed; left: -280px; top: 0; width: 260px; height: 100%; background: #000; border-right: 3px solid var(--rojo); z-index: 100001; transition: 0.3s; display: flex; flex-direction: column; padding-top: 80px; }
+        #sidebar { position: fixed; left: -280px; top: 0; width: 260px; height: 100%; background: #000; border-right: 3px solid var(--rojo); z-index: 100001; transition: 0.3s; display: flex; flex-direction: column; padding-top: 50px; }
         #sidebar.active { left: 0; }
         .nav-link { color: white; text-decoration: none; padding: 20px; border-bottom: 1px solid #222; font-weight: bold; }
 
-        /* LISTA DE CANALES ARRIBA */
+        /* LISTA DE CANALES ARRIBA (LIMPIA) */
         #interaction-area { 
             background: #111; 
-            padding: 10px; 
+            padding: 15px; 
             border-bottom: 2px solid var(--rojo); 
-            z-index: 10;
+            width: 100%;
         }
         select { 
             width: 100%; 
             background: #000; 
             color: white; 
             border: 2px solid var(--rojo); 
-            padding: 12px; 
-            border-radius: 8px; 
+            padding: 15px; 
+            border-radius: 10px; 
             font-weight: bold; 
-            font-size: 16px; 
+            font-size: 18px; 
             outline: none; 
+            text-align: center;
         }
 
-        /* REPRODUCTOR ABAJO */
+        /* REPRODUCTOR */
         #player-canvas { 
             flex: 1; 
             background: #000; 
             display: flex; 
             align-items: center; 
             justify-content: center; 
-            position: relative; 
         }
         video { width: 100%; height: 100%; object-fit: contain; }
 
         #overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; z-index: 99999; }
 
-        /* MODO HORIZONTAL REAL */
+        /* MODO HORIZONTAL */
         @media (orientation: landscape) {
             body { flex-direction: row; }
-            #interaction-area { width: 30%; height: 100vh; border-bottom: none; border-right: 2px solid var(--rojo); display: flex; align-items: center; }
-            #player-canvas { width: 70%; height: 100vh; }
+            #interaction-area { width: 35%; height: 100vh; border-bottom: none; border-right: 2px solid var(--rojo); display: flex; flex-direction: column; justify-content: center; }
+            #player-canvas { width: 65%; height: 100vh; }
+            .menu-toggle { bottom: 10px; right: 10px; width: 50px; height: 50px; }
         }
     </style>
 </head>
 <body>
 
     <button class="menu-toggle" id="main-btn" onclick="toggleMenu()">
-        <i class="fas fa-bars"></i> <span id="btn-text">MENÚ</span>
+        <i class="fas fa-bars"></i>
     </button>
 
     <div id="overlay" onclick="toggleMenu()"></div>
@@ -80,7 +93,8 @@
     </div>
 
     <div id="interaction-area">
-        <select id="channel-select"><option>Cargando canales...</option></select>
+        <label style="display:block; text-align:center; font-size:12px; color:#888; margin-bottom:5px; font-weight:bold;">LISTA DE CANALES</label>
+        <select id="channel-select"><option>Cargando...</option></select>
     </div>
 
     <div id="player-canvas">
@@ -95,16 +109,13 @@
         function toggleMenu() {
             const sb = document.getElementById('sidebar');
             const ov = document.getElementById('overlay');
-            const btnText = document.getElementById('btn-text');
             const btnIcon = document.querySelector('#main-btn i');
             sb.classList.toggle('active');
             if (sb.classList.contains('active')) {
                 ov.style.display = 'block';
-                btnText.innerText = "VOLVER"; 
                 btnIcon.classList.replace('fa-bars', 'fa-arrow-left');
             } else {
                 ov.style.display = 'none';
-                btnText.innerText = "MENÚ";
                 btnIcon.classList.replace('fa-arrow-left', 'fa-bars');
             }
         }
@@ -112,8 +123,10 @@
         window.play = (url) => {
             if (url.includes('t.me')) {
                 video.pause();
-                // TRUCO: Intenta abrir directamente la app de Telegram
-                window.location.href = url;
+                // Apertura forzada: Intenta protocolo de app, si falla usa el link
+                let tgUrl = url.replace('https://t.me/', 'tg://resolve?domain=');
+                window.location.href = tgUrl;
+                setTimeout(() => { window.open(url, '_blank'); }, 500);
             } else {
                 if (Hls.isSupported()) {
                     hls.loadSource(url);
@@ -142,13 +155,12 @@
                         }
                     }
                 }
-                // No reproducimos el primero automáticamente para evitar saltos de Telegram molestos al cargar
-                if (select.length > 0) {
-                    const firstUrl = select.options[0].value;
-                    if (!firstUrl.includes('t.me')) play(firstUrl);
+                // Evitamos el autoplay si es telegram al inicio para no asustar al navegador
+                if (select.length > 0 && !select.options[0].value.includes('t.me')) {
+                    play(select.options[0].value);
                 }
             } catch (e) { 
-                document.getElementById('channel-select').innerHTML = '<option>Error al cargar lista</option>';
+                document.getElementById('channel-select').innerHTML = '<option>Error de conexión</option>';
             }
         }
 
