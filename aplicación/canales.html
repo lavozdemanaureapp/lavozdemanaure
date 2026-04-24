@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Manaure TV - Full Screen</title>
+    <title>Manaure TV Pro</title>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root { --rojo: #ff0000; --negro: #000000; }
+        :root { --rojo: #ff0000; --negro: #000; }
         * { box-sizing: border-box; }
         body { margin: 0; background: var(--negro); color: #fff; font-family: sans-serif; height: 100vh; width: 100vw; overflow: hidden; }
 
-        /* BOTÓN VOLVER / MENÚ */
+        /* BOTÓN VOLVER */
         .menu-toggle { 
             position: fixed; top: 15px; left: 15px; z-index: 100000; 
             background: var(--rojo); color: white; border: none; 
@@ -23,28 +23,29 @@
         /* SIDEBAR */
         #sidebar { position: fixed; left: -280px; top: 0; width: 260px; height: 100%; background: #000; border-right: 3px solid var(--rojo); z-index: 100001; transition: 0.3s; display: flex; flex-direction: column; padding-top: 80px; }
         #sidebar.active { left: 0; }
-        .nav-link { color: white; text-decoration: none; padding: 20px; border-bottom: 1px solid #222; font-weight: bold; display: flex; align-items: center; gap: 10px; }
+        .nav-link { color: white; text-decoration: none; padding: 20px; border-bottom: 1px solid #222; font-weight: bold; }
 
-        /* CONTENEDOR MAESTRO */
+        /* CONTENEDOR PRINCIPAL */
         #app-wrapper { display: flex; flex-direction: column; height: 100vh; width: 100vw; }
 
-        /* REPRODUCTOR NATIVO (EXTENDIDO) */
-        #player-canvas { flex: 1; background: #000; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
-        video { width: 100%; height: 100%; object-fit: contain; background: #000; }
+        /* REPRODUCTOR */
+        #player-canvas { flex: 1; background: #000; display: flex; align-items: center; justify-content: center; position: relative; }
+        video { width: 100%; height: 100%; object-fit: contain; }
+        
+        /* AVISO TELEGRAM */
+        #tg-msg { display: none; position: absolute; text-align: center; background: rgba(0,0,0,0.9); padding: 20px; border-radius: 15px; border: 1px solid #0088cc; z-index: 10; }
+        .btn-tg { background: #0088cc; color: white; text-decoration: none; padding: 12px 25px; border-radius: 50px; font-weight: bold; display: inline-block; margin-top: 10px; }
 
-        /* ÁREA DE LISTA (FLOTANTE O INFERIOR) */
+        /* LISTA DE CANALES */
         #interaction-area { background: #0a0a0a; padding: 15px; border-top: 2px solid var(--rojo); }
-        select { width: 100%; background: #000; color: white; border: 2px solid var(--rojo); padding: 15px; border-radius: 10px; font-weight: bold; font-size: 18px; text-align: center; outline: none; }
+        select { width: 100%; background: #000; color: white; border: 2px solid var(--rojo); padding: 15px; border-radius: 10px; font-weight: bold; font-size: 18px; outline: none; }
 
         #overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; z-index: 99999; }
 
-        /* ------------------------------------------------------- */
-        /* DISEÑO PARA PANTALLA HORIZONTAL (LANDSCAPE)            */
-        /* ------------------------------------------------------- */
         @media (orientation: landscape) {
             #app-wrapper { flex-direction: row; }
-            #player-canvas { flex: 3; } /* El video toma la mayor parte */
-            #interaction-area { width: 300px; height: 100vh; border-top: none; border-left: 2px solid var(--rojo); display: flex; align-items: center; }
+            #player-canvas { flex: 3; }
+            #interaction-area { width: 320px; height: 100vh; border-top: none; border-left: 2px solid var(--rojo); display: flex; align-items: center; }
         }
     </style>
 </head>
@@ -57,23 +58,31 @@
     <div id="overlay" onclick="toggleMenu()"></div>
 
     <div id="sidebar">
-        <a href="index.html" class="nav-link"><i class="fas fa-radio"></i> RADIO EN VIVO</a>
-        <a href="canales.html" class="nav-link" style="color:var(--rojo)"><i class="fas fa-tv"></i> TV EN VIVO</a>
-        <a href="programas.html" class="nav-link"><i class="fas fa-calendar-alt"></i> PROGRAMACIONES</a>
+        <a href="index.html" class="nav-link">RADIO EN VIVO</a>
+        <a href="canales.html" class="nav-link" style="color:var(--rojo)">TV EN VIVO</a>
+        <a href="programas.html" class="nav-link">PROGRAMACIONES</a>
     </div>
 
     <div id="app-wrapper">
         <div id="player-canvas">
             <video id="video" playsinline autoplay controls></video>
+            
+            <div id="tg-msg">
+                <i class="fab fa-telegram" style="font-size: 40px; color: #0088cc;"></i>
+                <p>Este canal es de Telegram</p>
+                <a id="tg-btn" href="#" target="_blank" class="btn-tg">ABRIR EN VIVO</a>
+            </div>
         </div>
 
         <div id="interaction-area">
-            <select id="channel-select"><option>Cargando canales desde GitHub...</option></select>
+            <select id="channel-select"><option>⏳ Cargando canales...</option></select>
         </div>
     </div>
 
     <script>
         const video = document.getElementById('video');
+        const tgMsg = document.getElementById('tg-msg');
+        const tgBtn = document.getElementById('tg-btn');
         const hls = new Hls();
         const M3U_URL = 'https://raw.githubusercontent.com/lavozdemanaureapp/lavozdemanaure/main/canales.m3u';
 
@@ -82,9 +91,7 @@
             const ov = document.getElementById('overlay');
             const btnText = document.getElementById('btn-text');
             const btnIcon = document.querySelector('#main-btn i');
-            
             sb.classList.toggle('active');
-            
             if (sb.classList.contains('active')) {
                 ov.style.display = 'block';
                 btnText.innerText = "VOLVER"; 
@@ -97,23 +104,32 @@
         }
 
         window.play = (url) => {
-            if (Hls.isSupported()) {
-                hls.loadSource(url);
-                hls.attachMedia(video);
-                hls.on(Hls.Events.MANIFEST_PARSED, () => video.play().catch(()=>{}));
-            } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-                video.src = url;
+            video.style.display = "block";
+            tgMsg.style.display = "none";
+            video.pause();
+
+            if (url.includes('t.me')) {
+                video.style.display = "none";
+                tgMsg.style.display = "block";
+                tgBtn.href = url;
+            } else {
+                if (Hls.isSupported()) {
+                    hls.loadSource(url);
+                    hls.attachMedia(video);
+                    hls.on(Hls.Events.MANIFEST_PARSED, () => video.play().catch(()=>{}));
+                } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                    video.src = url;
+                }
             }
         };
 
         async function loadM3U() {
             try {
-                // Se agrega un parámetro aleatorio para evitar el caché de GitHub
                 const r = await fetch(M3U_URL + '?v=' + Math.random());
                 const t = await r.text();
                 const lines = t.split('\n');
                 const select = document.getElementById('channel-select');
-                select.innerHTML = '';
+                select.innerHTML = ''; // Limpia el "Cargando..."
                 
                 for (let i = 0; i < lines.length; i++) {
                     if (lines[i].startsWith('#EXTINF')) {
@@ -125,10 +141,8 @@
                     }
                 }
                 if (select.length > 0) play(select.options[0].value);
-                else select.innerHTML = '<option>No se encontraron canales</option>';
             } catch (e) { 
-                console.error("Error M3U:", e);
-                document.getElementById('channel-select').innerHTML = '<option>Error al conectar con GitHub</option>';
+                document.getElementById('channel-select').innerHTML = '<option>Error al cargar</option>';
             }
         }
 
