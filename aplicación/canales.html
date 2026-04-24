@@ -3,31 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Manaure TV M</title>
+    <title>Manaure TV Pro Fix</title>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <style>
-        body { margin: 0; background: #000; height: 100vh; display: flex; flex-direction: column; font-family: sans-serif; overflow: hidden; }
+        body { margin: 0; background: #000; height: 100vh; width: 100vw; display: flex; flex-direction: column; font-family: sans-serif; overflow: hidden; }
         
-        /* Lista superior */
-        #selector-caja { background: #111; padding: 10px; border-bottom: 2px solid red; z-index: 10; }
-        select { width: 100%; background: #000; color: #fff; border: 1px solid red; padding: 12px; font-size: 16px; border-radius: 5px; outline: none; }
+        /* LISTA SUPERIOR DISCRETA */
+        #selector-caja { background: #111; padding: 10px; border-bottom: 2px solid red; z-index: 10; width: 100%; }
+        select { width: 100%; background: #000; color: #fff; border: 1px solid red; padding: 12px; font-size: 16px; border-radius: 8px; outline: none; }
 
-        /* Video que ocupa todo el resto */
-        #video-caja { flex: 1; display: flex; align-items: center; justify-content: center; background: #000; }
-        video { width: 100%; height: 100%; object-fit: contain; }
+        /* VIDEO QUE OCUPA TODO EL ESPACIO */
+        #video-caja { flex: 1; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #000; position: relative; }
+        video { width: 100% !important; height: 100% !important; object-fit: contain; }
 
-        /* MODO HORIZONTAL: Lista a la izquierda, Video a la derecha */
+        /* --- FIX HORIZONTAL: ESTO OBLIGA AL GIRO --- */
         @media (orientation: landscape) {
             body { flex-direction: row; }
-            #selector-caja { width: 25%; height: 100vh; border-bottom: none; border-right: 2px solid red; display: flex; align-items: center; }
-            #video-caja { width: 75%; height: 100vh; }
+            #selector-caja { width: 25vw; height: 100vh; border-bottom: none; border-right: 2px solid red; display: flex; align-items: center; }
+            #video-caja { width: 75vw; height: 100vh; }
+            video { object-fit: contain; } 
         }
     </style>
 </head>
 <body>
 
     <div id="selector-caja">
-        <select id="lista-canales"><option>Cargando canales...</option></select>
+        <select id="lista-canales"><option>⏳ Cargando canales...</option></select>
     </div>
 
     <div id="video-caja">
@@ -36,14 +37,32 @@
 
     <script>
         const video = document.getElementById('video');
-        const hls = new Hls();
+        
+        // CONFIGURACIÓN DE ALTO RENDIMIENTO (PARA QUE NO SE PEGUE)
+        const hlsConfig = {
+            maxBufferSize: 30 * 1000 * 1000, // 30MB de buffer para evitar cortes
+            maxBufferLength: 30,             // 30 segundos adelantados
+            startLevel: -1,                  // Calidad automática según internet
+            enableWorker: true               // Usa el procesador del cel para fluidez
+        };
+
+        const hls = new Hls(hlsConfig);
         const URL_M3U = 'https://raw.githubusercontent.com/lavozdemanaureapp/lavozdemanaure/main/canales.m3u';
 
         window.play = (url) => {
             if (Hls.isSupported()) {
+                hls.stopLoad();
                 hls.loadSource(url);
                 hls.attachMedia(video);
-                hls.on(Hls.Events.MANIFEST_PARSED, () => video.play());
+                hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                    video.play().catch(() => console.log("Play manual requerido"));
+                });
+                
+                // Si el link se pega, intenta reconectar automáticamente
+                hls.on(Hls.Events.ERROR, (event, data) => {
+                    if (data.fatal) hls.startLoad();
+                });
+
             } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
                 video.src = url;
             }
@@ -65,7 +84,9 @@
                     }
                 });
                 if (select.length > 0) play(select.options[0].value);
-            } catch (e) { console.error("Error al cargar M3U"); }
+            } catch (e) { 
+                console.error("Error M3U"); 
+            }
         }
 
         document.getElementById('lista-canales').onchange = (e) => play(e.target.value);
