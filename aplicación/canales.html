@@ -10,35 +10,55 @@
         :root { --rojo: #ff0000; --negro: #0c0c0c; }
         body { margin: 0; background: var(--negro); color: #fff; font-family: sans-serif; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
         
-        /* REPRODUCTOR */
+        /* SIDEBAR / MENÚ LATERAL */
+        #sidebar { position: fixed; left: -280px; top: 0; width: 260px; height: 100%; background: #000; border-right: 2px solid var(--rojo); z-index: 10001; transition: 0.3s; display: flex; flex-direction: column; align-items: center; padding-top: 20px; }
+        #sidebar.active { left: 0; }
+        .btn-regresar { width: 90%; background: var(--rojo); color: #fff; border: none; padding: 16px; margin-bottom: 25px; border-radius: 10px; cursor: pointer; font-weight: 900; text-transform: uppercase; font-size: 14px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .menu-toggle { position: absolute; top: 12px; left: 12px; z-index: 10002; background: rgba(0,0,0,0.8); color: white; border: 1px solid var(--rojo); padding: 10px; border-radius: 5px; cursor: pointer; }
+        
+        /* ÁREA DEL REPRODUCTOR */
         #player-canvas { width: 100%; aspect-ratio: 16 / 9; background: #000; position: relative; border-bottom: 2px solid var(--rojo); flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
         video { width: 100%; height: 100%; display: none; }
-        
-        /* PANEL TELEGRAM (Puente directo) */
-        #tg-bridge { display: none; text-align: center; padding: 20px; }
-        .btn-telegram { background: #0088cc; color: white; border: none; padding: 15px 25px; border-radius: 50px; font-weight: bold; text-decoration: none; display: inline-flex; align-items: center; gap: 10px; font-size: 16px; box-shadow: 0 4px 15px rgba(0,136,204,0.4); transition: 0.3s; }
-        .btn-telegram:hover { transform: scale(1.05); background: #0099ee; }
+        #tg-bridge { display: none; text-align: center; padding: 10px; }
+        .btn-telegram { background: #0088cc; color: white; border: none; padding: 12px 20px; border-radius: 50px; font-weight: bold; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-size: 14px; box-shadow: 0 4px 15px rgba(0,136,204,0.4); }
+        .btn-vid { position: absolute; bottom: 10px; right: 10px; background: var(--rojo); color: white; border: none; padding: 8px 12px; border-radius: 5px; font-size: 11px; font-weight: bold; z-index: 1000; display: flex; align-items: center; gap: 5px; cursor: pointer; }
 
-        /* INTERFAZ */
-        #interaction-area { flex: 1; display: flex; flex-direction: column; background: #050505; }
-        #channel-bar { padding: 15px; background: #111; border-bottom: 1px solid #333; text-align: center; }
-        select { width: 100%; background: #1a1a1a; color: white; border: 2px solid var(--rojo); padding: 15px; border-radius: 10px; font-size: 18px; font-weight: bold; outline: none; }
-        iframe#chat-frame { width: 100%; flex: 1; border: none; }
+        /* INTERACCIÓN (LISTA Y CHAT) */
+        #interaction-area { flex: 1; display: flex; flex-direction: column; background: #050505; overflow: hidden; }
+        #channel-bar { padding: 10px; background: #111; border-bottom: 1px solid #333; text-align: center; }
+        select { width: 100%; background: #1a1a1a; color: white; border: 2px solid var(--rojo); padding: 12px; border-radius: 8px; font-size: 16px; font-weight: bold; outline: none; }
+        iframe#chat-frame { width: 100%; flex: 1; border: none; background: #000; }
+        
+        #overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; z-index: 10000; }
     </style>
 </head>
 <body>
+
+    <div class="menu-toggle" onclick="toggleMenu()"><i class="fas fa-bars"></i></div>
+    <div id="overlay" onclick="toggleMenu()"></div>
+
+    <div id="sidebar">
+        <button class="btn-regresar" onclick="toggleMenu()"><i class="fas fa-times"></i> CERRAR MENÚ</button>
+        <img src="logo_v2.png" style="width: 100px; margin-bottom: 20px;" onerror="this.style.display='none'">
+        <div style="width: 100%; display: flex; flex-direction: column; align-items: center;">
+            <a href="index.html" style="color: white; text-decoration: none; padding: 15px; width: 100%; text-align: center; border-bottom: 1px solid #222;">RADIO EN VIVO</a>
+            <a href="canales.html" style="color: var(--rojo); text-decoration: none; padding: 15px; width: 100%; text-align: center; font-weight: bold; border-bottom: 1px solid #222;">TV EN VIVO</a>
+            <a href="programas.html" style="color: white; text-decoration: none; padding: 15px; width: 100%; text-align: center;">PROGRAMAS</a>
+        </div>
+    </div>
 
     <div id="player-canvas">
         <video id="video" playsinline autoplay controls></video>
         
         <div id="tg-bridge">
-            <i class="fab fa-telegram" style="font-size: 50px; color: #0088cc; margin-bottom: 15px; display: block;"></i>
-            <p style="margin-bottom: 20px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;">Señal en Vivo por Telegram</p>
+            <i class="fab fa-telegram" style="font-size: 40px; color: #0088cc; margin-bottom: 10px; display: block;"></i>
+            <p style="margin-bottom: 15px; font-size: 14px; font-weight: bold;">DIRECTO DISPONIBLE</p>
             <a id="tg-link" href="#" target="_blank" class="btn-telegram">
-                <i class="fas fa-play"></i> INICIAR TRANSMISIÓN
+                <i class="fas fa-play"></i> VER EN TELEGRAM
             </a>
-            <p style="font-size: 11px; color: #666; margin-top: 15px; padding: 0 20px;">Si la vista previa está bloqueada, haz clic en el botón azul para abrir el directo directamente en Telegram.</p>
         </div>
+
+        <button class="btn-vid" onclick="toggleFS()"><i class="fas fa-expand"></i> PANTALLA COMPLETA</button>
     </div>
 
     <div id="interaction-area">
@@ -52,22 +72,36 @@
         const videoHLS = document.getElementById('video');
         const tgBridge = document.getElementById('tg-bridge');
         const tgLink = document.getElementById('tg-link');
+        const canvas = document.getElementById('player-canvas');
         const hls = new Hls();
 
+        // Funciones de Interfaz
+        window.toggleMenu = () => {
+            const sb = document.getElementById('sidebar');
+            const ov = document.getElementById('overlay');
+            sb.classList.toggle('active');
+            ov.style.display = (ov.style.display === 'block') ? 'none' : 'block';
+        };
+
+        window.toggleFS = () => {
+            if (!document.fullscreenElement) {
+                canvas.requestFullscreen().catch(() => {});
+            } else {
+                document.exitFullscreen();
+            }
+        };
+
+        // Lógica de Reproducción
         window.play = (url) => {
-            // Resetear contenedores
             videoHLS.style.display = "none";
             videoHLS.pause();
             tgBridge.style.display = "none";
 
             if (url.includes('t.me/')) {
-                // Activamos el puente directo para saltar el bloqueo de "Post not found"
                 tgBridge.style.display = "block";
-                // Limpiamos el enlace para asegurar que abra el livestream
                 const canal = url.split('t.me/')[1].split('?')[0].split('/')[0];
                 tgLink.href = `https://t.me/${canal}?livestream`;
             } else {
-                // Reproducción estándar para otros canales (.m3u8)
                 videoHLS.style.display = "block";
                 if (Hls.isSupported()) {
                     hls.loadSource(url);
@@ -79,6 +113,7 @@
             }
         };
 
+        // Carga de M3U
         async function loadM3U() {
             try {
                 const r = await fetch('canales.m3u?v=' + Math.random());
@@ -95,7 +130,7 @@
                     }
                 }
                 if (select.length > 0) play(select.options[0].value);
-            } catch (e) { console.error("Error cargando la lista de canales"); }
+            } catch (e) { console.error("Error al cargar M3U"); }
         }
 
         document.getElementById('channel-select').onchange = (e) => play(e.target.value);
