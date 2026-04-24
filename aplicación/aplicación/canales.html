@@ -3,55 +3,62 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Manaure TV Pro</title>
+    <title>Manaure TV Horizontal</title>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root { --rojo: #ff0000; --negro: #0c0c0c; }
-        body { margin: 0; background: var(--negro); color: #fff; font-family: sans-serif; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        body { margin: 0; background: var(--negro); color: #fff; font-family: sans-serif; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
 
-        /* BOTÓN DE LÓGICA (VOLVER / MENÚ) */
+        /* BOTÓN VOLVER / MENÚ (SIEMPRE VISIBLE) */
         .menu-toggle { 
-            position: absolute; 
-            top: 15px; 
-            left: 15px; 
-            z-index: 20000; /* Por encima de cualquier video nativo */
-            background: var(--rojo); 
-            color: white; 
-            border: none; 
-            padding: 10px 15px;
-            border-radius: 8px; 
-            cursor: pointer; 
-            display: flex; 
-            align-items: center; 
-            gap: 8px;
-            font-size: 14px; 
-            font-weight: bold;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.8);
-            transition: 0.3s;
+            position: fixed; top: 15px; left: 15px; z-index: 20000; 
+            background: var(--rojo); color: white; border: none; 
+            padding: 10px 18px; border-radius: 8px; cursor: pointer; 
+            display: flex; align-items: center; gap: 8px; font-weight: bold;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.6);
         }
 
         /* SIDEBAR */
-        #sidebar { position: fixed; left: -280px; top: 0; width: 260px; height: 100%; background: #000; border-right: 3px solid var(--rojo); z-index: 10001; transition: 0.4s ease-in-out; display: flex; flex-direction: column; padding-top: 80px; }
+        #sidebar { position: fixed; left: -280px; top: 0; width: 260px; height: 100%; background: #000; border-right: 3px solid var(--rojo); z-index: 10001; transition: 0.3s; display: flex; flex-direction: column; padding-top: 80px; }
         #sidebar.active { left: 0; }
-        .nav-link { color: white; text-decoration: none; padding: 20px; border-bottom: 1px solid #222; font-weight: bold; display: flex; align-items: center; gap: 10px; }
+        .nav-link { color: white; text-decoration: none; padding: 20px; border-bottom: 1px solid #222; font-weight: bold; }
 
-        /* REPRODUCTOR - AJUSTE PARA NO TAPAR BOTONES */
-        #player-canvas { width: 100%; aspect-ratio: 16 / 9; background: #000; position: relative; border-bottom: 2px solid var(--rojo); flex-shrink: 0; z-index: 1; }
-        video { width: 100%; height: 100%; object-fit: contain; }
+        /* CONTENEDOR PRINCIPAL */
+        #main-container { display: flex; flex-direction: column; height: 100vh; width: 100%; }
+
+        /* REPRODUCTOR */
+        #player-canvas { width: 100%; aspect-ratio: 16 / 9; background: #000; border-bottom: 2px solid var(--rojo); z-index: 1; }
+        video { width: 100%; height: 100%; background: #000; }
 
         /* INTERACCIÓN */
-        #interaction-area { flex: 1; display: flex; flex-direction: column; background: #050505; overflow: hidden; }
+        #interaction-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
         #channel-bar { padding: 10px; background: #111; }
-        select { width: 100%; background: #000; color: white; border: 2px solid var(--rojo); padding: 12px; border-radius: 8px; font-size: 16px; font-weight: bold; }
-        iframe { width: 100%; flex: 1; border: none; background: #000; }
+        select { width: 100%; background: #000; color: white; border: 2px solid var(--rojo); padding: 10px; border-radius: 8px; font-weight: bold; }
+        iframe { width: 100%; flex: 1; border: none; }
 
         #overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; z-index: 10000; }
 
-        /* AJUSTE HORIZONTAL */
+        /* ------------------------------------------------------- */
+        /* MAGIA HORIZONTAL (PANTALLA DIVIDIDA)                   */
+        /* ------------------------------------------------------- */
         @media (orientation: landscape) {
-            #player-canvas { height: 65vh; aspect-ratio: auto; }
-            .menu-toggle { padding: 8px 12px; font-size: 12px; }
+            #main-container { flex-direction: row; } /* Video a la izquierda, Chat a la derecha */
+            
+            #player-canvas { 
+                width: 65%; /* El video ocupa el 65% del ancho */
+                height: 100vh; 
+                aspect-ratio: auto; 
+                border-bottom: none; 
+                border-right: 2px solid var(--rojo); 
+            }
+            
+            #interaction-area { 
+                width: 35%; /* El chat y la lista ocupan el 35% derecho */
+                height: 100vh; 
+            }
+
+            .menu-toggle { top: 10px; left: 10px; padding: 8px 12px; font-size: 12px; }
         }
     </style>
 </head>
@@ -64,27 +71,28 @@
     <div id="overlay" onclick="toggleMenu()"></div>
 
     <div id="sidebar">
-        <a href="index.html" class="nav-link"><i class="fas fa-radio"></i> RADIO EN VIVO</a>
-        <a href="canales.html" class="nav-link" style="color:var(--rojo)"><i class="fas fa-tv"></i> TV EN VIVO</a>
-        <a href="programas.html" class="nav-link"><i class="fas fa-calendar-alt"></i> PROGRAMACIONES</a>
+        <a href="index.html" class="nav-link">RADIO EN VIVO</a>
+        <a href="canales.html" class="nav-link" style="color:var(--rojo)">TV EN VIVO</a>
+        <a href="programas.html" class="nav-link">PROGRAMACIONES</a>
     </div>
 
-    <div id="player-canvas">
-        <video id="video" playsinline autoplay controls></video>
-    </div>
-
-    <div id="interaction-area">
-        <div id="channel-bar">
-            <select id="channel-select"><option>Cargando canales...</option></select>
+    <div id="main-container">
+        <div id="player-canvas">
+            <video id="video" playsinline autoplay controls></video>
         </div>
-        <iframe src="chat-manaure.html"></iframe>
+
+        <div id="interaction-area">
+            <div id="channel-bar">
+                <select id="channel-select"><option>Cargando canales...</option></select>
+            </div>
+            <iframe src="chat-manaure.html"></iframe>
+        </div>
     </div>
 
     <script>
         const video = document.getElementById('video');
         const hls = new Hls();
 
-        // LÓGICA DE BOTÓN CAMBIANTE A "VOLVER"
         function toggleMenu() {
             const sb = document.getElementById('sidebar');
             const ov = document.getElementById('overlay');
@@ -95,7 +103,7 @@
             
             if (sb.classList.contains('active')) {
                 ov.style.display = 'block';
-                btnText.innerText = "VOLVER"; // Cambio de texto solicitado
+                btnText.innerText = "VOLVER"; 
                 btnIcon.classList.replace('fa-bars', 'fa-arrow-left');
             } else {
                 ov.style.display = 'none';
@@ -108,7 +116,7 @@
             if (Hls.isSupported()) {
                 hls.loadSource(url);
                 hls.attachMedia(video);
-                hls.on(Hls.Events.MANIFEST_PARSED, () => video.play().catch(e=>console.log("Error")));
+                hls.on(Hls.Events.MANIFEST_PARSED, () => video.play().catch(()=> {}));
             }
         };
 
