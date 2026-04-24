@@ -133,100 +133,116 @@
             }
         };
 
-       <script>
-        const videoHLS = document.getElementById('video');
-        const videoIFRAME = document.getElementById('video-iframe');
-        const canvas = document.getElementById('player-canvas');
-        const hls = new Hls({ maxBufferLength: 30 });
-
-        // --- 1. CARGA DE CANALES (Prioridad Máxima) ---
         async function loadM3U() {
-            try {
-                const r = await fetch('canales.m3u?v=' + Math.random());
-                const t = await r.text();
-                const lines = t.split('\n');
-                const select = document.getElementById('channel-select');
-                select.innerHTML = '';
-                for (let i = 0; i < lines.length; i++) {
-                    let line = lines[i].trim();
-                    if (line.startsWith('#EXTINF')) {
-                        let name = line.split(',')[1] || "CANAL";
-                        let url = lines[i + 1] ? lines[i + 1].trim() : "";
-                        if (url.startsWith('http')) {
-                            let opt = new Option(name.toUpperCase().trim(), url);
-                            select.add(opt);
-                        }
+            // Busca esta línea en tu función loadM3U
+            const r = await fetch('canales.m3u?v=' + Math.random());
+            const t = await r.text();
+            const lines = t.split('\n');
+            const select = document.getElementById('channel-select');
+            select.innerHTML = '';
+            for (let i = 0; i < lines.length; i++) {
+                let line = lines[i].trim();
+                if (line.startsWith('#EXTINF')) {
+                    let name = line.split(',')[1] || "CANAL";
+                    let url = lines[i + 1] ? lines[i + 1].trim() : "";
+                    if (url.startsWith('http')) {
+                        let opt = new Option(name.toUpperCase().trim(), url);
+                        select.add(opt);
                     }
                 }
-                if (select.length > 0) play(select.options[0].value);
-            } catch(e) { console.log("Error cargando M3U"); }
+            }
+            if (select.length > 0) play(select.options[0].value);
         }
-
-        window.play = (url) => {
-            videoIFRAME.src = "";
-            if (url.includes('youtube.com') || url.includes('youtu.be')) {
-                let id = url.includes('v=') ? url.split('v=')[1].split('&')[0] : url.split('/').pop().split('?')[0];
-                videoHLS.style.display = 'none'; videoHLS.pause();
-                videoIFRAME.style.display = 'block';
-                videoIFRAME.src = `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&mute=1&rel=0`;
-            } else {
-                videoIFRAME.style.display = 'none'; videoHLS.style.display = 'block';
-                if (Hls.isSupported()) { 
-                    hls.loadSource(url); hls.attachMedia(videoHLS); 
-                    hls.on(Hls.Events.MANIFEST_PARSED, () => videoHLS.play().catch(()=>{}));
-                } else if (videoHLS.canPlayType('application/vnd.apple.mpegurl')) {
-                    videoHLS.src = url; videoHLS.play();
-                }
-            }
-        };
-
-        // --- 2. INTERFAZ Y MENÚ ---
-        window.toggleMenu = () => {
-            document.getElementById('sidebar').classList.toggle('active');
-            const ov = document.getElementById('overlay');
-            ov.style.display = (ov.style.display === 'block') ? 'none' : 'block';
-        };
-
-        window.toggleFS = () => {
-            if (!document.fullscreenElement) {
-                canvas.requestFullscreen?.() || canvas.webkitRequestFullscreen?.();
-            } else {
-                document.exitFullscreen?.() || document.webkitExitFullscreen?.();
-            }
-        };
 
         document.getElementById('channel-select').onchange = (e) => play(e.target.value);
-        
-        // Ejecutar carga de canales de inmediato
         loadM3U();
-
-        // --- 3. ESTADÍSTICAS (SOLO CELULAR) ---
-        if (window.innerWidth < 768) {
-            const fbase = "https://radiomanaure-default-rtdb.firebaseio.com/estadisticas/visitas_tv.json";
-            fetch(fbase).then(r => r.json()).then(v => {
-                fetch(fbase, { method: 'PUT', body: JSON.stringify((v || 0) + 1) });
-            });
-
-            window.verEstadisticasPrivadas = function() {
-                const p = document.getElementById('panelPrivado');
-                p.style.display = (p.style.display === 'none') ? 'block' : 'none';
-                if(p.style.display === 'block') {
-                    fetch(fbase).then(r => r.json()).then(d => document.getElementById('numVisitas').innerText = d || 0);
-                }
-            };
-        } else {
-            // En PC borramos el contenedor de estadísticas para que no estorbe
-            document.addEventListener("DOMContentLoaded", () => {
-                document.getElementById('btn-contenedor-secreto').style.display = 'none';
-            });
-        }
     </script>
 
-    <div id="btn-contenedor-secreto" style="text-align: center; margin-top: 20px; padding-bottom: 20px;">
-        <button onclick="verEstadisticasPrivadas()" style="background: #28a745; border: none; border-radius: 50%; width: 10px; height: 10px; cursor: pointer; opacity: 0.3; margin: 0 auto; display: block;"></button>
-        <div id="panelPrivado" style="display: none; color: #28a745; font-family: monospace; font-size: 14px;">
-            AUDIENCIA: <span id="numVisitas">0</span>
-        </div>
+<button id="btn-secreto" onclick="verEstadisticas()" style="background: #28a745; border: none; border-radius: 50%; width: 12px; height: 12px; cursor: pointer; opacity: 0.4; margin: 20px auto; display: block;"></button>
+
+<div id="stats-privadas" style="display: none; text-align: center; color: #28a745; font-family: monospace; padding-bottom: 20px;">
+    AUDIENCIA TOTAL TV: <br>
+    <span id="valor-visitas" style="font-size: 20px; font-weight: bold;">0</span>
+</div>
+
+<script>
+  // Solo se ejecuta si la pantalla es menor a 768px (Celulares y Tablets)
+  if (window.innerWidth < 768) {
+    
+    var urlDB = "https://radiomanaure-default-rtdb.firebaseio.com/estadisticas/visitas_tv.json";
+    
+    // SUMA AUTOMÁTICA SOLO EN MÓVIL
+    fetch(urlDB)
+      .then(res => res.json())
+      .then(actual => {
+        var nuevo = (actual || 0) + 1;
+        fetch(urlDB, {
+          method: 'PUT',
+          body: JSON.stringify(nuevo)
+        });
+      }).catch(e => console.log("Contador móvil en espera..."));
+
+    // Función para que tú veas el dato (puedes darle al botón desde el celular)
+    window.verEstadisticas = function() {
+      var panel = document.getElementById('panelPrivado');
+      panel.style.display = (panel.style.display === 'none') ? 'block' : 'none';
+      if(panel.style.display === 'block') {
+        fetch(urlDB)
+          .then(response => response.json())
+          .then(data => {
+            document.getElementById('numVisitas').innerText = data || 0;
+          });
+      }
+    };
+  } else {
+    // Si es PC o TV, ocultamos el botón verde para que no estorbe
+    document.addEventListener("DOMContentLoaded", function() {
+      var btn = document.getElementById('btn-contenedor-secreto');
+      if(btn) btn.style.display = 'none';
+    });
+  }
+</script>
+
+<div id="btn-contenedor-secreto" style="text-align: center; margin-top: 20px;">
+    <button onclick="verEstadisticas()" style="background: #28a745; border: none; border-radius: 50%; width: 10px; height: 10px; cursor: pointer; opacity: 0.3;"></button>
+    <div id="panelPrivado" style="display: none; color: #28a745; font-family: monospace; font-size: 14px; margin-top: 5px;">
+        AUDIENCIA MÓVIL: <span id="numVisitas">0</span>
     </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getDatabase, ref, runTransaction, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+    // Tu configuración real de radiomanaure
+    const firebaseConfig = {
+        apiKey: "AIzaSyBtkKwQlTzDgQwP_RpDPnX7WJqoyg1turk",
+        authDomain: "radiomanaure.firebaseapp.com",
+        databaseURL: "https://radiomanaure-default-rtdb.firebaseio.com",
+        projectId: "radiomanaure"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const visitasRef = ref(db, 'estadisticas/visitas_tv');
+
+    // Suma automática al entrar a la página
+    runTransaction(visitasRef, (actual) => (actual || 0) + 1);
+
+    // Función para mostrar los datos al tocar el punto verde
+    window.verEstadisticas = () => {
+        const panel = document.getElementById('stats-privadas');
+        panel.style.display = (panel.style.display === 'none') ? 'block' : 'none';
+        if(panel.style.display === 'block') {
+            onValue(visitasRef, (s) => { 
+                document.getElementById('valor-visitas').innerText = s.val() || 0; 
+            });
+        }
+    };
+</script>
+
+
+
+
 </body>
 </html>
