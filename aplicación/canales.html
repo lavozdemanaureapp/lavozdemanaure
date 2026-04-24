@@ -3,69 +3,62 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Manaure TV PRO</title>
+    <title>Manaure TV v5</title>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root { --rojo: #ff0000; --negro: #000; }
-        * { box-sizing: border-box; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { margin: 0; background: var(--negro); color: #fff; font-family: sans-serif; height: 100vh; width: 100vw; overflow: hidden; display: flex; flex-direction: column; }
 
-        /* MENÚ FLOTANTE IZQUIERDO */
+        /* BOTÓN MENÚ - Lo movemos para que no tape nada */
         .menu-toggle { 
-            position: fixed; bottom: 20px; left: 20px; z-index: 100000; 
+            position: fixed; bottom: 20px; left: 20px; z-index: 1000; 
             background: var(--rojo); color: white; border: none; 
-            width: 55px; height: 55px; border-radius: 50%; cursor: pointer; 
-            display: flex; align-items: center; justify-content: center; font-size: 22px;
-            box-shadow: 0 5px 20px rgba(255,0,0,0.6);
+            width: 50px; height: 50px; border-radius: 50%; cursor: pointer; 
+            display: flex; align-items: center; justify-content: center; font-size: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
         }
 
-        #sidebar { position: fixed; left: -280px; top: 0; width: 260px; height: 100%; background: #000; border-right: 3px solid var(--rojo); z-index: 100001; transition: 0.3s ease; display: flex; flex-direction: column; padding-top: 60px; }
+        #sidebar { position: fixed; left: -280px; top: 0; width: 260px; height: 100%; background: #000; border-right: 3px solid var(--rojo); z-index: 2000; transition: 0.3s; display: flex; flex-direction: column; padding-top: 60px; }
         #sidebar.active { left: 0; }
         .nav-link { color: white; text-decoration: none; padding: 20px; border-bottom: 1px solid #222; font-weight: bold; }
 
-        /* SELECTOR SUPERIOR */
-        #interaction-area { background: #111; padding: 10px; border-bottom: 2px solid var(--rojo); z-index: 10; }
-        select { width: 100%; background: #000; color: white; border: 2px solid var(--rojo); padding: 12px; border-radius: 8px; font-weight: bold; font-size: 17px; outline: none; }
+        /* AREA DE LISTA */
+        #interaction-area { background: #111; padding: 10px; border-bottom: 2px solid var(--rojo); width: 100%; }
+        select { width: 100%; background: #000; color: white; border: 2px solid var(--rojo); padding: 12px; border-radius: 8px; font-weight: bold; font-size: 16px; }
 
-        /* REPRODUCTOR - CONFIGURACIÓN PARA PANTALLA COMPLETA */
+        /* CONTENEDOR DEL VIDEO - CRÍTICO */
         #player-canvas { 
             flex: 1; 
-            background: #000; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            overflow: hidden; 
-            width: 100%;
-            position: relative;
-        }
-        
-        /* Asegura que el video nativo pueda expandirse */
-        video { 
             width: 100%; 
             height: 100%; 
             background: #000; 
+            display: block; 
+            position: relative;
         }
 
-        #overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; z-index: 99999; }
+        /* VIDEO NATIVO CON CONTROLES FORZADOS */
+        video { 
+            width: 100% !important; 
+            height: 100% !important; 
+            display: block;
+            object-fit: contain; 
+        }
 
-        /* MODO HORIZONTAL (LISTA IZQUIERDA / VIDEO DERECHA) */
+        #overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; z-index: 1500; }
+
+        /* MODO HORIZONTAL */
         @media (orientation: landscape) {
             body { flex-direction: row; }
-            #interaction-area { 
-                width: 25vw; height: 100vh; border-bottom: none; 
-                border-right: 2px solid var(--rojo); display: flex; align-items: center; 
-            }
-            #player-canvas { width: 75vw; height: 100vh; }
+            #interaction-area { width: 30%; height: 100vh; border-bottom: none; border-right: 2px solid var(--rojo); display: flex; align-items: center; }
+            #player-canvas { width: 70%; height: 100vh; }
         }
     </style>
 </head>
 <body>
 
-    <button class="menu-toggle" id="main-btn" onclick="toggleMenu()">
-        <i class="fas fa-bars"></i>
-    </button>
-
+    <button class="menu-toggle" onclick="toggleMenu()"><i class="fas fa-bars"></i></button>
     <div id="overlay" onclick="toggleMenu()"></div>
 
     <div id="sidebar">
@@ -75,44 +68,29 @@
     </div>
 
     <div id="interaction-area">
-        <select id="channel-select"><option>Cargando canales...</option></select>
+        <select id="channel-select"><option>Cargando...</option></select>
     </div>
 
     <div id="player-canvas">
-        <video id="video" playsinline autoplay controls></video>
+        <video id="video" controls playsinline autoplay></video>
     </div>
 
     <script>
         const video = document.getElementById('video');
-        const hls = new Hls({
-            xhrSetup: function(xhr, url) {
-                xhr.withCredentials = false;
-            }
-        });
+        const hls = new Hls();
         const M3U_URL = 'https://raw.githubusercontent.com/lavozdemanaureapp/lavozdemanaure/main/canales.m3u';
 
         function toggleMenu() {
-            const sb = document.getElementById('sidebar');
-            const ov = document.getElementById('overlay');
-            const btnIcon = document.querySelector('#main-btn i');
-            sb.classList.toggle('active');
-            if (sb.classList.contains('active')) {
-                ov.style.display = 'block';
-                btnIcon.classList.replace('fa-bars', 'fa-arrow-left');
-            } else {
-                ov.style.display = 'none';
-                btnIcon.classList.replace('fa-arrow-left', 'fa-bars');
-            }
+            document.getElementById('sidebar').classList.toggle('active');
+            document.getElementById('overlay').style.display = 
+                document.getElementById('sidebar').classList.contains('active') ? 'block' : 'none';
         }
 
         window.play = (url) => {
             if (Hls.isSupported()) {
-                hls.stopLoad();
                 hls.loadSource(url);
                 hls.attachMedia(video);
-                hls.on(Hls.Events.MANIFEST_PARSED, () => {
-                    video.play().catch(e => console.log("Auto-play blocked"));
-                });
+                hls.on(Hls.Events.MANIFEST_PARSED, () => video.play().catch(() => {}));
             } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
                 video.src = url;
             }
@@ -124,21 +102,16 @@
                 const t = await r.text();
                 const lines = t.split('\n');
                 const select = document.getElementById('channel-select');
-                select.innerHTML = ''; 
-                
-                for (let i = 0; i < lines.length; i++) {
-                    if (lines[i].startsWith('#EXTINF')) {
-                        let name = lines[i].split(',')[1] || "CANAL";
+                select.innerHTML = '';
+                lines.forEach((line, i) => {
+                    if (line.startsWith('#EXTINF')) {
+                        let name = line.split(',')[1] || "CANAL";
                         let url = lines[i+1]?.trim();
-                        if(url && url.startsWith('http')) {
-                            select.add(new Option(name.toUpperCase(), url));
-                        }
+                        if(url) select.add(new Option(name.toUpperCase(), url));
                     }
-                }
+                });
                 if (select.length > 0) play(select.options[0].value);
-            } catch (e) { 
-                document.getElementById('channel-select').innerHTML = '<option>Error de Conexión</option>';
-            }
+            } catch (e) { console.error(e); }
         }
 
         document.getElementById('channel-select').onchange = (e) => play(e.target.value);
