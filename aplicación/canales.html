@@ -3,72 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Manaure TV v5</title>
+    <title>Manaure TV Ultra-Clean</title>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root { --rojo: #ff0000; --negro: #000; }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { margin: 0; background: var(--negro); color: #fff; font-family: sans-serif; height: 100vh; width: 100vw; overflow: hidden; display: flex; flex-direction: column; }
+        body { margin: 0; background: #000; color: #fff; font-family: sans-serif; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+        
+        /* Lista arriba pero muy pequeña y discreta */
+        #interaction-area { background: #111; padding: 5px; border-bottom: 1px solid #ff0000; }
+        select { width: 100%; background: #000; color: #fff; border: 1px solid #ff0000; padding: 10px; font-size: 16px; border-radius: 5px; }
 
-        /* BOTÓN MENÚ - Lo movemos para que no tape nada */
-        .menu-toggle { 
-            position: fixed; bottom: 20px; left: 20px; z-index: 1000; 
-            background: var(--rojo); color: white; border: none; 
-            width: 50px; height: 50px; border-radius: 50%; cursor: pointer; 
-            display: flex; align-items: center; justify-content: center; font-size: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-        }
+        /* Contenedor de video que ocupa TODO el resto de la pantalla */
+        #player-canvas { flex: 1; position: relative; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+        
+        /* Video forzado a mostrar controles nativos */
+        video { width: 100% !important; height: 100% !important; object-fit: contain; }
 
-        #sidebar { position: fixed; left: -280px; top: 0; width: 260px; height: 100%; background: #000; border-right: 3px solid var(--rojo); z-index: 2000; transition: 0.3s; display: flex; flex-direction: column; padding-top: 60px; }
-        #sidebar.active { left: 0; }
-        .nav-link { color: white; text-decoration: none; padding: 20px; border-bottom: 1px solid #222; font-weight: bold; }
-
-        /* AREA DE LISTA */
-        #interaction-area { background: #111; padding: 10px; border-bottom: 2px solid var(--rojo); width: 100%; }
-        select { width: 100%; background: #000; color: white; border: 2px solid var(--rojo); padding: 12px; border-radius: 8px; font-weight: bold; font-size: 16px; }
-
-        /* CONTENEDOR DEL VIDEO - CRÍTICO */
-        #player-canvas { 
-            flex: 1; 
-            width: 100%; 
-            height: 100%; 
-            background: #000; 
-            display: block; 
-            position: relative;
-        }
-
-        /* VIDEO NATIVO CON CONTROLES FORZADOS */
-        video { 
-            width: 100% !important; 
-            height: 100% !important; 
-            display: block;
-            object-fit: contain; 
-        }
-
-        #overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; z-index: 1500; }
-
-        /* MODO HORIZONTAL */
+        /* Modo horizontal: lista a la izquierda muy delgada */
         @media (orientation: landscape) {
             body { flex-direction: row; }
-            #interaction-area { width: 30%; height: 100vh; border-bottom: none; border-right: 2px solid var(--rojo); display: flex; align-items: center; }
-            #player-canvas { width: 70%; height: 100vh; }
+            #interaction-area { width: 20%; height: 100vh; border-bottom: none; border-right: 1px solid #ff0000; display: flex; align-items: center; }
+            #player-canvas { width: 80%; height: 100vh; }
         }
     </style>
 </head>
 <body>
 
-    <button class="menu-toggle" onclick="toggleMenu()"><i class="fas fa-bars"></i></button>
-    <div id="overlay" onclick="toggleMenu()"></div>
-
-    <div id="sidebar">
-        <a href="index.html" class="nav-link">RADIO EN VIVO</a>
-        <a href="canales.html" class="nav-link" style="color:var(--rojo)">TV EN VIVO</a>
-        <a href="programas.html" class="nav-link">PROGRAMACIONES</a>
-    </div>
-
     <div id="interaction-area">
-        <select id="channel-select"><option>Cargando...</option></select>
+        <select id="channel-select"><option>Cargando canales...</option></select>
     </div>
 
     <div id="player-canvas">
@@ -80,17 +41,11 @@
         const hls = new Hls();
         const M3U_URL = 'https://raw.githubusercontent.com/lavozdemanaureapp/lavozdemanaure/main/canales.m3u';
 
-        function toggleMenu() {
-            document.getElementById('sidebar').classList.toggle('active');
-            document.getElementById('overlay').style.display = 
-                document.getElementById('sidebar').classList.contains('active') ? 'block' : 'none';
-        }
-
         window.play = (url) => {
             if (Hls.isSupported()) {
                 hls.loadSource(url);
                 hls.attachMedia(video);
-                hls.on(Hls.Events.MANIFEST_PARSED, () => video.play().catch(() => {}));
+                hls.on(Hls.Events.MANIFEST_PARSED, () => video.play());
             } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
                 video.src = url;
             }
