@@ -10,10 +10,14 @@
         :root { --rojo: #ff0000; --negro: #0c0c0c; }
         body { margin: 0; background: var(--negro); color: #fff; font-family: sans-serif; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
         
-        #player-canvas { width: 100%; aspect-ratio: 16 / 9; background: #000; position: relative; border-bottom: 2px solid var(--rojo); flex-shrink: 0; }
-        video, iframe, #telegram-container { width: 100%; height: 100%; border: none; display: block; background: #000; }
+        /* CONTENEDOR DEL REPRODUCTOR */
+        #player-canvas { width: 100%; aspect-ratio: 16 / 9; background: #000; position: relative; border-bottom: 2px solid var(--rojo); flex-shrink: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
         
-        #interaction-area { flex: 1; display: flex; flex-direction: column; background: #050505; overflow: hidden; }
+        #telegram-container { width: 100%; height: 100%; overflow: hidden; display: none; }
+        video { width: 100%; height: 100%; display: none; }
+
+        /* INTERFAZ ABAJO */
+        #interaction-area { flex: 1; display: flex; flex-direction: column; background: #050505; }
         #channel-bar { padding: 15px; background: #111; border-bottom: 1px solid #333; text-align: center; }
         select { width: 100%; background: #1a1a1a; color: white; border: 2px solid var(--rojo); padding: 15px; border-radius: 10px; font-size: 18px; font-weight: bold; outline: none; }
         
@@ -24,46 +28,50 @@
 
     <div id="player-canvas">
         <video id="video" playsinline autoplay controls></video>
-        <iframe id="video-iframe" style="display:none;" allow="autoplay; fullscreen"></iframe>
-        <div id="telegram-container" style="display:none;"></div>
+        <div id="telegram-container"></div>
     </div>
 
     <div id="interaction-area">
         <div id="channel-bar">
-            <select id="channel-select"><option>Cargando canales...</option></select>
+            <select id="channel-select"><option>Cargando lista...</option></select>
         </div>
         <iframe id="chat-frame" src="chat-manaure.html"></iframe>
     </div>
 
     <script>
         const videoHLS = document.getElementById('video');
-        const videoIFRAME = document.getElementById('video-iframe');
         const tgContainer = document.getElementById('telegram-container');
-        const hls = new Hls();
 
         window.play = (url) => {
-            // Limpieza total
-            videoHLS.style.display = 'none'; videoHLS.pause();
-            videoIFRAME.style.display = 'none'; videoIFRAME.src = "";
-            tgContainer.style.display = 'none'; tgContainer.innerHTML = "";
+            // Limpiar todo antes de cambiar de canal
+            tgContainer.innerHTML = "";
+            tgContainer.style.display = "none";
+            videoHLS.style.display = 'none';
+            videoHLS.pause();
 
             if (url.includes('t.me/')) {
-                tgContainer.style.display = 'block';
-                // Extraemos el nombre del canal (golazo92)
-                const canal = url.split('t.me/')[1].split('?')[0].split('/')[0];
+                // MÉTODO WIDGET: El que Telegram no bloquea
+                tgContainer.style.display = "block";
                 
-                // Usamos el modo embed con live=1 para que capture el livestream actual
-                tgContainer.innerHTML = `
-                    <iframe src="https://t.me/${canal}?embed=1&live=1" 
-                            style="width:100%; height:100%; border:none; background:#000;" 
-                            allow="autoplay; fullscreen">
-                    </iframe>`;
+                // Extraemos la ruta (ej: golazo92/51)
+                const postPath = url.split('t.me/')[1];
+                
+                const script = document.createElement('script');
+                script.async = true;
+                script.src = "https://telegram.org/js/telegram-widget.js?22";
+                script.setAttribute('data-telegram-post', postPath);
+                script.setAttribute('data-width', '100%');
+                script.setAttribute('data-dark', '1');
+                
+                tgContainer.appendChild(script);
             } 
             else {
+                // Lógica para canales de video normales (.m3u8)
                 videoHLS.style.display = 'block';
-                if (Hls.isSupported()) { 
-                    hls.loadSource(url); hls.attachMedia(videoHLS);
-                    hls.on(Hls.Events.MANIFEST_PARSED, () => videoHLS.play().catch(()=>{}));
+                if (Hls.isSupported()) {
+                    const hls = new Hls();
+                    hls.loadSource(url);
+                    hls.attachMedia(videoHLS);
                 }
             }
         };
@@ -85,7 +93,7 @@
                     }
                 }
                 if (select.length > 0) play(select.options[0].value);
-            } catch (e) { console.log("Error M3U"); }
+            } catch (e) { console.log("Error al cargar lista M3U"); }
         }
 
         document.getElementById('channel-select').onchange = (e) => play(e.target.value);
