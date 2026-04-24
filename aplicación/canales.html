@@ -10,69 +10,71 @@
         :root { --rojo: #ff0000; --negro: #0c0c0c; }
         body { margin: 0; background: var(--negro); color: #fff; font-family: sans-serif; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
         
-        /* ÁREA DEL REPRODUCTOR */
-        #player-canvas { width: 100%; aspect-ratio: 16 / 9; background: #000; position: relative; border-bottom: 2px solid var(--rojo); flex-shrink: 0; }
-        
-        /* Este contenedor es clave para evitar bloqueos visuales */
-        #telegram-wrapper { width: 100%; height: 100%; position: absolute; top: 0; left: 0; background: #000; display: none; }
+        /* REPRODUCTOR */
+        #player-canvas { width: 100%; aspect-ratio: 16 / 9; background: #000; position: relative; border-bottom: 2px solid var(--rojo); flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
         video { width: 100%; height: 100%; display: none; }
-        iframe { width: 100%; height: 100%; border: none; }
+        
+        /* PANEL TELEGRAM (Puente directo) */
+        #tg-bridge { display: none; text-align: center; padding: 20px; }
+        .btn-telegram { background: #0088cc; color: white; border: none; padding: 15px 25px; border-radius: 50px; font-weight: bold; text-decoration: none; display: inline-flex; align-items: center; gap: 10px; font-size: 16px; box-shadow: 0 4px 15px rgba(0,136,204,0.4); transition: 0.3s; }
+        .btn-telegram:hover { transform: scale(1.05); background: #0099ee; }
 
         /* INTERFAZ */
         #interaction-area { flex: 1; display: flex; flex-direction: column; background: #050505; }
         #channel-bar { padding: 15px; background: #111; border-bottom: 1px solid #333; text-align: center; }
-        select { width: 100%; background: #1a1a1a; color: white; border: 2px solid var(--rojo); padding: 15px; border-radius: 10px; font-size: 18px; font-weight: bold; }
-        
-        #chat-frame { width: 100%; flex: 1; border: none; }
+        select { width: 100%; background: #1a1a1a; color: white; border: 2px solid var(--rojo); padding: 15px; border-radius: 10px; font-size: 18px; font-weight: bold; outline: none; }
+        iframe#chat-frame { width: 100%; flex: 1; border: none; }
     </style>
 </head>
 <body>
 
     <div id="player-canvas">
         <video id="video" playsinline autoplay controls></video>
-        <div id="telegram-wrapper"></div>
+        
+        <div id="tg-bridge">
+            <i class="fab fa-telegram" style="font-size: 50px; color: #0088cc; margin-bottom: 15px; display: block;"></i>
+            <p style="margin-bottom: 20px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;">Señal en Vivo por Telegram</p>
+            <a id="tg-link" href="#" target="_blank" class="btn-telegram">
+                <i class="fas fa-play"></i> INICIAR TRANSMISIÓN
+            </a>
+            <p style="font-size: 11px; color: #666; margin-top: 15px; padding: 0 20px;">Si la vista previa está bloqueada, haz clic en el botón azul para abrir el directo directamente en Telegram.</p>
+        </div>
     </div>
 
     <div id="interaction-area">
         <div id="channel-bar">
-            <select id="channel-select"><option>Cargando señal...</option></select>
+            <select id="channel-select"><option>Cargando canales...</option></select>
         </div>
         <iframe id="chat-frame" src="chat-manaure.html"></iframe>
     </div>
 
     <script>
         const videoHLS = document.getElementById('video');
-        const tgWrapper = document.getElementById('telegram-wrapper');
+        const tgBridge = document.getElementById('tg-bridge');
+        const tgLink = document.getElementById('tg-link');
         const hls = new Hls();
 
         window.play = (url) => {
-            // Limpiar estados
-            tgWrapper.style.display = "none";
-            tgWrapper.innerHTML = "";
+            // Resetear contenedores
             videoHLS.style.display = "none";
             videoHLS.pause();
+            tgBridge.style.display = "none";
 
             if (url.includes('t.me/')) {
-                tgWrapper.style.display = "block";
-                
-                // Limpiamos el link para sacar solo el nombre del canal
-                const canal = url.split('t.me/')[1].split('/')[0].split('?')[0];
-                
-                // MÉTODO DE REPRODUCCIÓN POR EMBED SEGURO
-                // Añadimos parámetros que Telegram acepta mejor para livestreams
-                tgWrapper.innerHTML = `
-                    <iframe 
-                        src="https://t.me/${canal}?embed=1&live=1&user_id=0" 
-                        allow="autoplay; fullscreen; picture-in-picture" 
-                        sandbox="allow-scripts allow-same-origin allow-forms allow-presentation"
-                        style="width:100%; height:100%;">
-                    </iframe>`;
+                // Activamos el puente directo para saltar el bloqueo de "Post not found"
+                tgBridge.style.display = "block";
+                // Limpiamos el enlace para asegurar que abra el livestream
+                const canal = url.split('t.me/')[1].split('?')[0].split('/')[0];
+                tgLink.href = `https://t.me/${canal}?livestream`;
             } else {
+                // Reproducción estándar para otros canales (.m3u8)
                 videoHLS.style.display = "block";
                 if (Hls.isSupported()) {
                     hls.loadSource(url);
                     hls.attachMedia(videoHLS);
                     hls.on(Hls.Events.MANIFEST_PARSED, () => videoHLS.play().catch(()=>{}));
+                } else if (videoHLS.canPlayType('application/vnd.apple.mpegurl')) {
+                    videoHLS.src = url;
                 }
             }
         };
@@ -93,7 +95,7 @@
                     }
                 }
                 if (select.length > 0) play(select.options[0].value);
-            } catch (e) { console.error("Error cargando lista"); }
+            } catch (e) { console.error("Error cargando la lista de canales"); }
         }
 
         document.getElementById('channel-select').onchange = (e) => play(e.target.value);
