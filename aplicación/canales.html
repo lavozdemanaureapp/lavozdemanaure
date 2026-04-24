@@ -3,66 +3,115 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Manaure TV Pro Fix</title>
+    <title>Manaure TV Pro Final</title>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        body { margin: 0; background: #000; height: 100vh; width: 100vw; display: flex; flex-direction: column; font-family: sans-serif; overflow: hidden; }
-        
-        /* LISTA SUPERIOR DISCRETA */
-        #selector-caja { background: #111; padding: 10px; border-bottom: 2px solid red; z-index: 10; width: 100%; }
-        select { width: 100%; background: #000; color: #fff; border: 1px solid red; padding: 12px; font-size: 16px; border-radius: 8px; outline: none; }
+        :root { --rojo: #ff0000; --negro: #000; }
+        * { box-sizing: border-box; }
+        body { margin: 0; background: var(--negro); color: #fff; font-family: sans-serif; height: 100vh; width: 100vw; overflow: hidden; display: flex; flex-direction: column; }
 
-        /* VIDEO QUE OCUPA TODO EL ESPACIO */
-        #video-caja { flex: 1; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #000; position: relative; }
-        video { width: 100% !important; height: 100% !important; object-fit: contain; }
+        /* CABECERA CON MENÚ Y LISTA */
+        header { 
+            background: #111; 
+            padding: 10px; 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+            border-bottom: 2px solid var(--rojo);
+            z-index: 100;
+        }
 
-        /* --- FIX HORIZONTAL: ESTO OBLIGA AL GIRO --- */
+        .btn-menu { 
+            background: var(--rojo); 
+            color: white; 
+            border: none; 
+            padding: 12px; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-size: 18px;
+        }
+
+        select { 
+            flex: 1; 
+            background: #000; 
+            color: white; 
+            border: 1px solid var(--rojo); 
+            padding: 10px; 
+            border-radius: 8px; 
+            font-size: 16px; 
+            font-weight: bold;
+            outline: none;
+        }
+
+        /* REPRODUCTOR */
+        #container { flex: 1; position: relative; background: #000; display: flex; align-items: center; justify-content: center; }
+        video { width: 100%; height: 100%; object-fit: contain; }
+
+        /* BOTÓN FLOTANTE PANTALLA COMPLETA (POR SI FALLA EL NATIVO) */
+        .btn-fs {
+            position: absolute; bottom: 20px; right: 20px;
+            background: rgba(255, 0, 0, 0.7); color: white;
+            border: none; padding: 15px; border-radius: 50%;
+            cursor: pointer; z-index: 10; font-size: 20px;
+        }
+
+        /* SIDEBAR */
+        #sidebar { position: fixed; left: -280px; top: 0; width: 260px; height: 100%; background: #000; border-right: 3px solid var(--rojo); z-index: 200; transition: 0.3s; padding-top: 20px; }
+        #sidebar.active { left: 0; }
+        .nav-link { color: white; text-decoration: none; padding: 20px; display: block; border-bottom: 1px solid #222; font-weight: bold; }
+        #overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; z-index: 150; }
+
+        /* MODO HORIZONTAL */
         @media (orientation: landscape) {
-            body { flex-direction: row; }
-            #selector-caja { width: 25vw; height: 100vh; border-bottom: none; border-right: 2px solid red; display: flex; align-items: center; }
-            #video-caja { width: 75vw; height: 100vh; }
-            video { object-fit: contain; } 
+            header { padding: 5px; }
+            select { padding: 5px; font-size: 14px; }
         }
     </style>
 </head>
 <body>
 
-    <div id="selector-caja">
-        <select id="lista-canales"><option>⏳ Cargando canales...</option></select>
-    </div>
+    <header>
+        <button class="btn-menu" onclick="toggleMenu()"><i class="fas fa-bars"></i></button>
+        <select id="lista-canales"><option>Cargando...</option></select>
+    </header>
 
-    <div id="video-caja">
+    <div id="sidebar">
+        <a href="index.html" class="nav-link">RADIO EN VIVO</a>
+        <a href="canales.html" class="nav-link" style="color:var(--rojo)">TV EN VIVO</a>
+        <a href="programas.html" class="nav-link">PROGRAMACIONES</a>
+    </div>
+    <div id="overlay" onclick="toggleMenu()"></div>
+
+    <div id="container">
         <video id="video" controls playsinline autoplay></video>
+        <button class="btn-fs" onclick="goFullScreen()"><i class="fas fa-expand"></i></button>
     </div>
 
     <script>
         const video = document.getElementById('video');
-        
-        // CONFIGURACIÓN DE ALTO RENDIMIENTO (PARA QUE NO SE PEGUE)
-        const hlsConfig = {
-            maxBufferSize: 30 * 1000 * 1000, // 30MB de buffer para evitar cortes
-            maxBufferLength: 30,             // 30 segundos adelantados
-            startLevel: -1,                  // Calidad automática según internet
-            enableWorker: true               // Usa el procesador del cel para fluidez
-        };
-
-        const hls = new Hls(hlsConfig);
+        const hls = new Hls({ maxBufferSize: 30 * 1000 * 1000, maxBufferLength: 30 });
         const URL_M3U = 'https://raw.githubusercontent.com/lavozdemanaureapp/lavozdemanaure/main/canales.m3u';
+
+        function toggleMenu() {
+            const sb = document.getElementById('sidebar');
+            const ov = document.getElementById('overlay');
+            sb.classList.toggle('active');
+            ov.style.display = sb.classList.contains('active') ? 'block' : 'none';
+        }
+
+        // FUNCIÓN PARA FORZAR PANTALLA COMPLETA
+        function goFullScreen() {
+            if (video.requestFullscreen) video.requestFullscreen();
+            else if (video.webkitRequestFullscreen) video.webkitRequestFullscreen();
+            else if (video.msRequestFullscreen) video.msRequestFullscreen();
+        }
 
         window.play = (url) => {
             if (Hls.isSupported()) {
-                hls.stopLoad();
                 hls.loadSource(url);
                 hls.attachMedia(video);
-                hls.on(Hls.Events.MANIFEST_PARSED, () => {
-                    video.play().catch(() => console.log("Play manual requerido"));
-                });
-                
-                // Si el link se pega, intenta reconectar automáticamente
-                hls.on(Hls.Events.ERROR, (event, data) => {
-                    if (data.fatal) hls.startLoad();
-                });
-
+                hls.on(Hls.Events.MANIFEST_PARSED, () => video.play());
             } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
                 video.src = url;
             }
@@ -75,7 +124,6 @@
                 const lineas = texto.split('\n');
                 const select = document.getElementById('lista-canales');
                 select.innerHTML = '';
-                
                 lineas.forEach((l, i) => {
                     if (l.startsWith('#EXTINF')) {
                         let nombre = l.split(',')[1] || "CANAL";
@@ -84,9 +132,7 @@
                     }
                 });
                 if (select.length > 0) play(select.options[0].value);
-            } catch (e) { 
-                console.error("Error M3U"); 
-            }
+            } catch (e) { console.error("Error M3U"); }
         }
 
         document.getElementById('lista-canales').onchange = (e) => play(e.target.value);
