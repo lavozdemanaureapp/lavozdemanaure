@@ -3,7 +3,7 @@
 #EXTM3U
 
 #EXTINF:-1, ⚽ GOLAZO TV EN VIVO 
-https://exciting-naples-proportion-intake.trycloudflare.com/partido/index.m3u8
+https://s1327.mywebtv.cloud/hls/espn/index.m3u8?token=4tc57bd03og2RV8v5Ls6uw&expires=1777234326
 
 #EXTINF:-1 tvg-id="Venevision" tvg-logo="" group-title="NACIONALES", Venevisión Plus
 https://vod2live.univtec.com/manifest/4c41c0d8-e2e4-43cc-bd43-79afe715e1b3.m3u8
