@@ -2,33 +2,42 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Manaure TV - En Vivo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, orientation=landscape">
+    <title>Manaure TV Profesional</title>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <script src="https://www.youtube.com/iframe_api"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root { --rojo: #ff0000; --negro: #0c0c0c; }
-        body { margin: 0; background: var(--negro); color: #fff; font-family: sans-serif; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        :root { --rojo: #ff0000; --negro: #000; }
+        * { box-sizing: border-box; }
+        body { margin: 0; background: #000; color: #fff; font-family: sans-serif; height: 100vh; width: 100vw; display: flex; flex-direction: column; overflow: hidden; }
         
-        /* CONTENEDOR 16:9 HORIZONTAL */
-        #player-canvas { width: 100%; aspect-ratio: 16 / 9; background: #000; position: relative; border-bottom: 2px solid var(--rojo); flex-shrink: 0; }
-        #video, #yt-player { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; display: none; }
+        /* FUERZA LA EXTENSIÓN HORIZONTAL */
+        #player-canvas { 
+            width: 100%; 
+            background: #000; 
+            position: relative; 
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            aspect-ratio: 16 / 9; /* Mantiene proporción de TV */
+        }
+
+        video, #yt-player { width: 100%; height: 100%; object-fit: contain; display: none; }
         
-        /* CAPAS SOBRE EL VIDEO (OVERLAYS) */
-        #pub-overlay { position: absolute; top: 8px; right: 8px; width: 100px; z-index: 100; display: none; pointer-events: none; }
+        /* OVERLAYS PROFESIONALES */
+        #pub-overlay { position: absolute; top: 10px; right: 10px; width: 15%; z-index: 100; display: none; }
         #pub-overlay img { width: 100%; border: 1px solid var(--rojo); border-radius: 5px; }
         
-        #chat-overlay { position: absolute; bottom: 40px; left: 8px; width: 220px; height: 140px; z-index: 99; display: none; background: rgba(0,0,0,0.3); border-radius: 8px; overflow: hidden; pointer-events: none; }
-        #chat-overlay iframe { width: 100%; height: 100%; border: none; }
+        #chat-overlay { position: absolute; bottom: 15%; left: 10px; width: 40%; height: 30%; z-index: 99; display: none; background: rgba(0,0,0,0.4); border-radius: 10px; overflow: hidden; }
 
-        .btn-vid { position: absolute; bottom: 8px; right: 8px; background: var(--rojo); color: white; border: none; padding: 6px 10px; border-radius: 4px; font-size: 10px; font-weight: bold; z-index: 1001; cursor: pointer; }
+        .btn-fs { position: absolute; bottom: 10px; right: 10px; background: var(--rojo); color: white; border: none; padding: 10px; border-radius: 5px; font-size: 12px; z-index: 1001; cursor: pointer; font-weight: bold; }
 
-        /* INTERACCIÓN (CHAT PÚBLICO ABAJO) */
-        #interaction-area { flex: 1; display: flex; flex-direction: column; background: #050505; }
-        #channel-bar { padding: 10px; background: #111; }
-        select { width: 100%; background: #1a1a1a; color: white; border: 1px solid var(--rojo); padding: 12px; border-radius: 8px; font-size: 16px; font-weight: bold; }
-        iframe#chat-frame { width: 100%; flex: 1; border: none; background: #000; }
+        /* AREA INFERIOR */
+        #interaction-area { flex-grow: 1; display: flex; flex-direction: column; background: #0c0c0c; border-top: 2px solid var(--rojo); }
+        #channel-bar { padding: 10px; }
+        select { width: 100%; background: #1a1a1a; color: white; border: 1px solid var(--rojo); padding: 15px; border-radius: 8px; font-size: 16px; }
+        iframe#chat-frame { width: 100%; height: 100%; border: none; flex-grow: 1; }
     </style>
 </head>
 <body>
@@ -39,14 +48,14 @@
         <audio id="radio-audio" src="https://stream.zeno.fm/a0x4vvcp9whvv"></audio>
         
         <div id="pub-overlay"><img id="pub-img" src=""></div>
-        <div id="chat-overlay"><iframe src="chat-manaure.html"></iframe></div>
+        <div id="chat-overlay"><iframe src="chat-manaure.html" style="width:100%; height:100%; border:none;"></iframe></div>
         
-        <button class="btn-vid" onclick="toggleFS()"><i class="fas fa-expand"></i> PANTALLA COMPLETA</button>
+        <button class="btn-fs" onclick="toggleFS()">PANTALLA COMPLETA</button>
     </div>
 
     <div id="interaction-area">
         <div id="channel-bar">
-            <select id="channel-select"><option>Sintonizando...</option></select>
+            <select id="channel-select"><option>Cargando Canales...</option></select>
         </div>
         <iframe id="chat-frame" src="chat-manaure.html"></iframe>
     </div>
@@ -55,83 +64,86 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyBtkKwQlTzDgQwP_RpDPnX7WJqoyg1turk",
-            databaseURL: "https://radiomanaure-default-rtdb.firebaseio.com",
-            projectId: "radiomanaure"
-        };
+        const firebaseConfig = { apiKey: "AIzaSyBtkKwQlTzDgQwP_RpDPnX7WJqoyg1turk", databaseURL: "https://radiomanaure-default-rtdb.firebaseio.com", projectId: "radiomanaure" };
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
-        const videoHLS = document.getElementById('video');
-        const radioAudio = document.getElementById('radio-audio');
+        
+        const video = document.getElementById('video');
+        const radio = document.getElementById('radio-audio');
         let ytPlayer;
 
         window.onYouTubeIframeAPIReady = () => {
-            ytPlayer = new YT.Player('yt-player', { playerVars: { 'autoplay': 1, 'controls': 1 } });
+            ytPlayer = new YT.Player('yt-player', { height: '100%', width: '100%', playerVars: { 'autoplay': 1, 'rel': 0 } });
         };
 
-        const hls = new Hls({
-            enableWorker: true, lowLatencyMode: true,
-            maxBufferLength: 15, startLevel: 0,
-            abrEwmaFastLive: 1.0
-        });
+        const hls = new Hls({ enableWorker: true, lowLatencyMode: true, startLevel: 0 });
 
         window.play = (url) => {
-            videoHLS.style.display = "none"; videoHLS.pause();
+            video.style.display = "none"; video.pause();
             document.getElementById('yt-player').style.display = "none";
             if(ytPlayer && ytPlayer.stopVideo) ytPlayer.stopVideo();
 
             if (url.includes('youtube.com') || url.includes('youtu.be')) {
                 document.getElementById('yt-player').style.display = "block";
-                const id = url.split('v=')[1]?.split('&')[0] || url.split('/').pop();
+                const id = url.includes('v=') ? url.split('v=')[1].split('&')[0] : url.split('/').pop();
                 ytPlayer.loadVideoById(id);
             } else {
-                videoHLS.style.display = "block";
+                video.style.display = "block";
                 if (Hls.isSupported()) {
-                    hls.loadSource(url); hls.attachMedia(videoHLS);
+                    hls.loadSource(url); hls.attachMedia(video);
                     hls.on(Hls.Events.MANIFEST_PARSED, () => {
-                        let idx480 = 0;
-                        hls.levels.forEach((l, i) => { if(l.height <= 480) idx480 = i; });
-                        hls.autoLevelCapping = idx480;
-                        videoHLS.play();
+                        let idx = 0; hls.levels.forEach((l, i) => { if(l.height <= 480) idx = i; });
+                        hls.autoLevelCapping = idx; video.play();
                     });
                 }
             }
         };
 
-        onValue(ref(db, 'publicidad_activa'), snap => {
-            const v = snap.val();
-            document.getElementById('pub-overlay').style.display = (v && v.imagen !== 'OFF') ? 'block' : 'none';
+        // --- CARGA DE LISTA CORREGIDA ---
+        async function loadM3U() {
+            try {
+                const r = await fetch('canales.m3u?t=' + Date.now());
+                const t = await r.text();
+                const lines = t.split('\n');
+                const select = document.getElementById('channel-select');
+                select.innerHTML = ""; 
+                
+                for (let i = 0; i < lines.length; i++) {
+                    if (lines[i].includes('#EXTINF')) {
+                        const info = lines[i].split(',');
+                        const name = info[info.length - 1].trim() || "CANAL";
+                        const url = lines[i+1]?.trim();
+                        if(url && url.startsWith('http')) {
+                            const opt = new Option(name.toUpperCase(), url);
+                            select.add(opt);
+                        }
+                    }
+                }
+                if (select.length > 0) play(select.options[0].value);
+            } catch(e) { console.log("Error cargando M3U"); }
+        }
+
+        // --- MANDOS FIREBASE ---
+        onValue(ref(db, 'publicidad_activa'), s => {
+            const v = s.val();
+            document.getElementById('pub-overlay').style.display = (v?.imagen !== 'OFF') ? 'block' : 'none';
             if(v?.imagen !== 'OFF') document.getElementById('pub-img').src = v.imagen;
         });
 
-        onValue(ref(db, 'chat_visible'), snap => {
-            document.getElementById('chat-overlay').style.display = (snap.val()?.estado === 'ON') ? 'block' : 'none';
+        onValue(ref(db, 'chat_visible'), s => {
+            document.getElementById('chat-overlay').style.display = (s.val()?.estado === 'ON') ? 'block' : 'none';
         });
 
-        onValue(ref(db, 'radio_activa'), snap => {
-            if(snap.val()?.estado === 'ON') { radioAudio.play(); videoHLS.muted = true; }
-            else { radioAudio.pause(); videoHLS.muted = false; }
+        onValue(ref(db, 'radio_activa'), s => {
+            if(s.val()?.estado === 'ON') { radio.play(); video.muted = true; }
+            else { radio.pause(); video.muted = false; }
         });
 
         window.toggleFS = () => {
-            const pc = document.getElementById('player-canvas');
-            if (!document.fullscreenElement) pc.requestFullscreen(); else document.exitFullscreen();
+            const el = document.getElementById('player-canvas');
+            if (!document.fullscreenElement) el.requestFullscreen(); else document.exitFullscreen();
         };
 
-        async function loadM3U() {
-            const r = await fetch('canales.m3u?v=' + Math.random());
-            const t = await r.text();
-            const lines = t.split('\n');
-            const select = document.getElementById('channel-select');
-            select.innerHTML = '';
-            for (let i = 0; i < lines.length; i++) {
-                if (lines[i].startsWith('#EXTINF')) {
-                    select.add(new Option(lines[i].split(',')[1].toUpperCase(), lines[i+1].trim()));
-                }
-            }
-            if (select.length > 0) play(select.options[0].value);
-        }
         document.getElementById('channel-select').onchange = (e) => play(e.target.value);
         loadM3U();
     </script>
