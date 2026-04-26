@@ -2,70 +2,41 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Mando Manaure TV</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body { background: #0c0c0c; color: white; font-family: sans-serif; text-align: center; padding: 15px; }
-        .card { background: #1a1a1a; padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid #333; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
-        h2 { font-size: 14px; color: #ff0000; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        button { padding: 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 12px; transition: 0.2s; }
-        .btn-pub { background: #333; color: #ccc; }
-        .btn-pub:active { background: #ff0000; color: white; }
-        .btn-on { background: #28a745; color: white; width: 100%; }
-        .btn-off { background: #dc3545; color: white; width: 100%; }
-        .btn-main-off { background: #444; color: white; width: 100%; margin-top: 10px; padding: 10px; }
+        body { background: transparent; color: white; font-family: sans-serif; margin: 0; padding: 5px; overflow: hidden; }
+        #msg-container { height: calc(100vh - 45px); overflow-y: auto; display: flex; flex-direction: column; gap: 5px; }
+        .msg { background: rgba(255,255,255,0.1); padding: 8px; border-radius: 6px; border-left: 3px solid red; font-size: 13px; }
+        .input-area { display: flex; gap: 5px; margin-top: 5px; }
+        input { flex: 1; background: #222; border: 1px solid #444; color: white; padding: 8px; border-radius: 4px; }
+        button { background: red; color: white; border: none; padding: 0 15px; border-radius: 4px; cursor: pointer; }
     </style>
 </head>
 <body>
-
-    <img src="logo_v2.png" width="80" style="margin-bottom: 10px;">
-    <h1>MANDO TV</h1>
-    
-    <div class="card">
-        <h2>📢 PUBLICIDAD (Banners)</h2>
-        <div class="grid">
-            <button class="btn-pub" onclick="setPub('pub1.png')">MERCADO</button>
-            <button class="btn-pub" onclick="setPub('pub2.png')">REPUESTOS</button>
-            <button class="btn-pub" onclick="setPub('pub3.png')">FARMACIA</button>
-            <button class="btn-pub" onclick="setPub('pub4.png')">COMIDA</button>
-        </div>
-        <button class="btn-main-off" onclick="setPub('OFF')">✖ QUITAR PUBLICIDAD</button>
+    <div id="msg-container"></div>
+    <div class="input-area">
+        <input type="text" id="chat-in" placeholder="Tu mensaje...">
+        <button id="btn-enviar">➔</button>
     </div>
-
-    <div class="card">
-        <h2>💬 CHAT EN VIDEO</h2>
-        <div class="grid">
-            <button class="btn-on" onclick="setChat('ON')">MOSTRAR</button>
-            <button class="btn-off" onclick="setChat('OFF')">OCULTAR</button>
-        </div>
-    </div>
-
-    <div class="card">
-        <h2>🎙️ AUDIO EN VIVO (ZENO)</h2>
-        <p style="font-size: 10px; color: #888; margin-bottom: 10px;">(Silencia el video y activa tu voz)</p>
-        <div class="grid">
-            <button class="btn-on" onclick="setRadio('ON')">HABLAR</button>
-            <button class="btn-off" onclick="setRadio('OFF')">CALLAR</button>
-        </div>
-    </div>
-
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyBtkKwQlTzDgQwP_RpDPnX7WJqoyg1turk",
-            databaseURL: "https://radiomanaure-default-rtdb.firebaseio.com",
-            projectId: "radiomanaure"
-        };
-
+        import { getDatabase, ref, push, onChildAdded, serverTimestamp, query, limitToLast } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        const firebaseConfig = { apiKey: "AIzaSyBtkKwQlTzDgQwP_RpDPnX7WJqoyg1turk", databaseURL: "https://radiomanaure-default-rtdb.firebaseio.com", projectId: "radiomanaure" };
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
-
-        window.setPub = (img) => set(ref(db, 'publicidad_activa'), { imagen: img });
-        window.setChat = (est) => set(ref(db, 'chat_visible'), { estado: est });
-        window.setRadio = (est) => set(ref(db, 'radio_activa'), { estado: est });
+        const chatRef = query(ref(db, 'mensajes'), limitToLast(15));
+        onChildAdded(chatRef, (snap) => {
+            const div = document.createElement('div');
+            div.className = 'msg';
+            div.innerHTML = `<b>Oyente:</b> ${snap.val().texto}`;
+            document.getElementById('msg-container').appendChild(div);
+            document.getElementById('msg-container').scrollTop = 99999;
+        });
+        window.enviar = () => {
+            const inp = document.getElementById('chat-in');
+            if(inp.value.trim()) push(ref(db, 'mensajes'), { texto: inp.value, fecha: serverTimestamp() });
+            inp.value = "";
+        };
+        document.getElementById('btn-enviar').onclick = window.enviar;
     </script>
 </body>
 </html>

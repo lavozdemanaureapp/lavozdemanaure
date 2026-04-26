@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Manaure TV - Profesional</title>
+    <title>Manaure TV - En Vivo</title>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <script src="https://www.youtube.com/iframe_api"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -15,20 +15,20 @@
         #player-canvas { width: 100%; aspect-ratio: 16 / 9; background: #000; position: relative; border-bottom: 2px solid var(--rojo); flex-shrink: 0; }
         #video, #yt-player { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; display: none; }
         
-        /* OVERLAYS PROFESIONALES */
-        #pub-overlay { position: absolute; top: 10px; right: 10px; width: 110px; z-index: 100; display: none; pointer-events: none; }
-        #pub-overlay img { width: 100%; border: 1px solid var(--rojo); border-radius: 5px; box-shadow: 0 0 15px rgba(0,0,0,0.7); }
+        /* CAPAS SOBRE EL VIDEO (OVERLAYS) */
+        #pub-overlay { position: absolute; top: 8px; right: 8px; width: 100px; z-index: 100; display: none; pointer-events: none; }
+        #pub-overlay img { width: 100%; border: 1px solid var(--rojo); border-radius: 5px; }
         
-        #chat-overlay { position: absolute; bottom: 45px; left: 10px; width: 230px; height: 160px; z-index: 99; display: none; background: rgba(0,0,0,0.4); border-radius: 10px; overflow: hidden; pointer-events: none; }
+        #chat-overlay { position: absolute; bottom: 40px; left: 8px; width: 220px; height: 140px; z-index: 99; display: none; background: rgba(0,0,0,0.3); border-radius: 8px; overflow: hidden; pointer-events: none; }
         #chat-overlay iframe { width: 100%; height: 100%; border: none; }
 
-        .btn-vid { position: absolute; bottom: 10px; right: 10px; background: var(--rojo); color: white; border: none; padding: 8px 12px; border-radius: 5px; font-size: 11px; font-weight: bold; z-index: 1001; cursor: pointer; }
+        .btn-vid { position: absolute; bottom: 8px; right: 8px; background: var(--rojo); color: white; border: none; padding: 6px 10px; border-radius: 4px; font-size: 10px; font-weight: bold; z-index: 1001; cursor: pointer; }
 
-        /* ÁREA DE INTERACCIÓN */
+        /* INTERACCIÓN (CHAT PÚBLICO ABAJO) */
         #interaction-area { flex: 1; display: flex; flex-direction: column; background: #050505; }
-        #channel-bar { padding: 12px; background: #111; }
-        select { width: 100%; background: #1a1a1a; color: white; border: 1px solid var(--rojo); padding: 12px; border-radius: 8px; font-size: 16px; outline: none; }
-        iframe#chat-frame { width: 100%; flex: 1; border: none; }
+        #channel-bar { padding: 10px; background: #111; }
+        select { width: 100%; background: #1a1a1a; color: white; border: 1px solid var(--rojo); padding: 12px; border-radius: 8px; font-size: 16px; font-weight: bold; }
+        iframe#chat-frame { width: 100%; flex: 1; border: none; background: #000; }
     </style>
 </head>
 <body>
@@ -60,104 +60,63 @@
             databaseURL: "https://radiomanaure-default-rtdb.firebaseio.com",
             projectId: "radiomanaure"
         };
-
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         const videoHLS = document.getElementById('video');
         const radioAudio = document.getElementById('radio-audio');
         let ytPlayer;
 
-        // Configuración de YouTube
         window.onYouTubeIframeAPIReady = () => {
-            ytPlayer = new YT.Player('yt-player', {
-                playerVars: { 'autoplay': 1, 'controls': 1, 'rel': 0, 'modestbranding': 1 }
-            });
+            ytPlayer = new YT.Player('yt-player', { playerVars: { 'autoplay': 1, 'controls': 1 } });
         };
 
-        // --- OPTIMIZACIÓN AGRESIVA IPTV (M3U8) ---
         const hls = new Hls({
-            enableWorker: true,
-            lowLatencyMode: true,           // Modo baja latencia
-            manifestLoadingMaxRetry: 10,     // Más intentos si falla el link
-            maxBufferLength: 15,            // Buffer corto para móviles (15s)
-            maxMaxBufferLength: 25,
-            maxBufferSize: 30 * 1000 * 1000, // 30MB máximo para no saturar RAM
-            startLevel: 0,                  // Empieza siempre en la calidad más baja para carga instantánea
-            abrEwmaFastLive: 1.0,           // Cambia de calidad al instante si el internet baja
-            abrEwmaSlowLive: 3.0
+            enableWorker: true, lowLatencyMode: true,
+            maxBufferLength: 15, startLevel: 0,
+            abrEwmaFastLive: 1.0
         });
 
-        function getYTId(url) {
-            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
-            const match = url.match(regExp);
-            return (match && match[2].length == 11) ? match[2] : false;
-        }
-
         window.play = (url) => {
-            const ytId = getYTId(url);
-            videoHLS.style.display = "none";
-            videoHLS.pause();
+            videoHLS.style.display = "none"; videoHLS.pause();
             document.getElementById('yt-player').style.display = "none";
             if(ytPlayer && ytPlayer.stopVideo) ytPlayer.stopVideo();
 
-            if (ytId) {
+            if (url.includes('youtube.com') || url.includes('youtu.be')) {
                 document.getElementById('yt-player').style.display = "block";
-                ytPlayer.loadVideoById(ytId);
+                const id = url.split('v=')[1]?.split('&')[0] || url.split('/').pop();
+                ytPlayer.loadVideoById(id);
             } else {
                 videoHLS.style.display = "block";
                 if (Hls.isSupported()) {
-                    hls.loadSource(url);
-                    hls.attachMedia(videoHLS);
+                    hls.loadSource(url); hls.attachMedia(videoHLS);
                     hls.on(Hls.Events.MANIFEST_PARSED, () => {
-                        // CAPAR A 480p AUTOMÁTICAMENTE
                         let idx480 = 0;
                         hls.levels.forEach((l, i) => { if(l.height <= 480) idx480 = i; });
-                        hls.autoLevelCapping = idx480; 
+                        hls.autoLevelCapping = idx480;
                         videoHLS.play();
-                    });
-                    // Recuperación de errores automática
-                    hls.on(Hls.Events.ERROR, (event, data) => {
-                        if (data.fatal) {
-                            if (data.type === Hls.ErrorTypes.NETWORK_ERROR) hls.startLoad();
-                            else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) hls.recoverMediaError();
-                        }
                     });
                 }
             }
         };
 
-        // --- SINCRONIZACIÓN CON MANDO (FIREBASE) ---
-        onValue(ref(db, 'publicidad_activa'), (snap) => {
-            const val = snap.val();
-            const div = document.getElementById('pub-overlay');
-            if(val && val.imagen !== 'OFF') {
-                document.getElementById('pub-img').src = val.imagen;
-                div.style.display = 'block';
-            } else { div.style.display = 'none'; }
+        onValue(ref(db, 'publicidad_activa'), snap => {
+            const v = snap.val();
+            document.getElementById('pub-overlay').style.display = (v && v.imagen !== 'OFF') ? 'block' : 'none';
+            if(v?.imagen !== 'OFF') document.getElementById('pub-img').src = v.imagen;
         });
 
-        onValue(ref(db, 'chat_visible'), (snap) => {
-            const val = snap.val();
-            document.getElementById('chat-overlay').style.display = (val?.estado === 'ON') ? 'block' : 'none';
+        onValue(ref(db, 'chat_visible'), snap => {
+            document.getElementById('chat-overlay').style.display = (snap.val()?.estado === 'ON') ? 'block' : 'none';
         });
 
-        onValue(ref(db, 'radio_activa'), (snap) => {
-            const val = snap.val();
-            if(val?.estado === 'ON') { 
-                radioAudio.play(); 
-                videoHLS.muted = true;
-                if(ytPlayer && ytPlayer.mute) ytPlayer.mute();
-            } else { 
-                radioAudio.pause(); 
-                videoHLS.muted = false;
-                if(ytPlayer && ytPlayer.unMute) ytPlayer.unMute();
-            }
+        onValue(ref(db, 'radio_activa'), snap => {
+            if(snap.val()?.estado === 'ON') { radioAudio.play(); videoHLS.muted = true; }
+            else { radioAudio.pause(); videoHLS.muted = false; }
         });
 
         window.toggleFS = () => {
             const pc = document.getElementById('player-canvas');
-            if (!document.fullscreenElement) pc.requestFullscreen();
-            else document.exitFullscreen();
+            if (!document.fullscreenElement) pc.requestFullscreen(); else document.exitFullscreen();
         };
 
         async function loadM3U() {
@@ -168,9 +127,7 @@
             select.innerHTML = '';
             for (let i = 0; i < lines.length; i++) {
                 if (lines[i].startsWith('#EXTINF')) {
-                    let name = lines[i].split(',')[1] || "CANAL";
-                    let url = lines[i + 1]?.trim();
-                    if (url) select.add(new Option(name.toUpperCase(), url));
+                    select.add(new Option(lines[i].split(',')[1].toUpperCase(), lines[i+1].trim()));
                 }
             }
             if (select.length > 0) play(select.options[0].value);
