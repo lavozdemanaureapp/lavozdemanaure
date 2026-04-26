@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Manaure TV Pro</title>
+    <title>Manaure TV Profesional</title>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <script src="https://www.youtube.com/iframe_api"></script>
     <style>
@@ -11,7 +11,6 @@
         * { box-sizing: border-box; }
         body { margin: 0; background: #000; color: #fff; font-family: sans-serif; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
         
-        /* CONTENEDOR MAESTRO PARA PANTALLA COMPLETA */
         #master-player { 
             width: 100%; 
             aspect-ratio: 16 / 9; 
@@ -25,16 +24,25 @@
 
         video, #yt-player { width: 100% !important; height: 100% !important; object-fit: contain; }
         
-        /* CAPAS SOBRE EL VIDEO (Z-INDEX MÁXIMO) */
-        #pub-overlay { position: absolute; top: 15px; right: 15px; width: 120px; z-index: 2147483647; display: none; pointer-events: none; }
-        #pub-overlay img { width: 100%; border: 2px solid var(--rojo); border-radius: 8px; box-shadow: 0 0 15px rgba(0,0,0,0.7); }
+        /* 1. PUBLICIDAD AGRANDADA */
+        #pub-overlay { 
+            position: absolute; 
+            top: 15px; 
+            right: 15px; 
+            width: 190px; /* Tamaño solicitado */
+            z-index: 2147483647; 
+            display: none; 
+            pointer-events: none; 
+        }
+        #pub-overlay img { width: 100%; border: 3px solid var(--rojo); border-radius: 8px; box-shadow: 0 0 20px rgba(0,0,0,0.8); }
         
+        /* 2. CHAT FLOTANTE (SOLO LECTURA) */
         #chat-overlay { 
             position: absolute; 
-            bottom: 60px; 
+            bottom: 65px; 
             left: 15px; 
-            width: 280px; 
-            height: 160px; 
+            width: 300px; 
+            height: 140px; /* Altura ajustada para unos 4 mensajes */
             z-index: 2147483647; 
             display: none; 
             background: rgba(0,0,0,0.5); 
@@ -43,8 +51,15 @@
             pointer-events: none; 
             overflow: hidden;
         }
+        /* Este iframe tiene un margen negativo abajo para ocultar la caja de texto del chat */
+        #chat-overlay iframe {
+            width: 100%;
+            height: 160%; /* Más alto para que la caja de texto quede fuera del área visible */
+            border: none;
+            margin-top: -5px;
+        }
 
-        /* BOTÓN FLOTANTE PROFESIONAL */
+        /* 3. BOTÓN DINÁMICO MODO CINE / SALIR */
         .btn-fullscreen { 
             position: absolute; 
             bottom: 15px; 
@@ -52,20 +67,16 @@
             background: var(--rojo); 
             color: white; 
             border: none; 
-            padding: 10px 18px; 
-            border-radius: 25px; 
-            font-size: 12px; 
+            padding: 12px 22px; 
+            border-radius: 30px; 
+            font-size: 13px; 
             font-weight: bold; 
             z-index: 2147483647; 
             cursor: pointer;
-            box-shadow: 0 4px 10px rgba(255,0,0,0.4);
+            box-shadow: 0 4px 15px rgba(255,0,0,0.5);
+            text-transform: uppercase;
         }
 
-        /* REGLAS DE PANTALLA COMPLETA */
-        #master-player:fullscreen { width: 100vw; height: 100vh; }
-        #master-player:-webkit-full-screen { width: 100vw; height: 100vh; }
-
-        /* AREA INFERIOR (CONTROLES Y CHAT PÚBLICO) */
         #interaction-area { flex: 1; display: flex; flex-direction: column; background: #0a0a0a; border-top: 3px solid var(--rojo); }
         #channel-bar { padding: 15px; }
         select { width: 100%; background: #1a1a1a; color: white; border: 1px solid #444; padding: 15px; border-radius: 10px; font-size: 16px; font-weight: bold; color: var(--rojo); }
@@ -80,9 +91,12 @@
         <audio id="radio-audio" src="https://stream.zeno.fm/a0x4vvcp9whvv"></audio>
         
         <div id="pub-overlay"><img id="pub-img" src=""></div>
-        <div id="chat-overlay"><iframe src="chat-manaure.html" style="width:100%; height:100%; border:none;"></iframe></div>
         
-        <button class="btn-fullscreen" onclick="toggleFS()">MODO CINE / TV 📺</button>
+        <div id="chat-overlay">
+            <iframe src="chat-manaure.html"></iframe>
+        </div>
+        
+        <button id="fs-button" class="btn-fullscreen" onclick="toggleFS()">MODO CINE</button>
     </div>
 
     <div id="interaction-area">
@@ -102,6 +116,7 @@
         
         const video = document.getElementById('video');
         const radio = document.getElementById('radio-audio');
+        const fsButton = document.getElementById('fs-button');
         let ytPlayer;
 
         window.onYouTubeIframeAPIReady = () => {
@@ -128,20 +143,28 @@
             }
         };
 
-        // --- PANTALLA COMPLETA TOTAL (CON OVERLAYS) ---
+        // --- LÓGICA DE PANTALLA COMPLETA Y BOTÓN DINÁMICO ---
         window.toggleFS = () => {
             const el = document.getElementById('master-player');
             if (!document.fullscreenElement) {
                 if (el.requestFullscreen) el.requestFullscreen();
                 else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
-                // Forzar horizontal
-                if (screen.orientation && screen.orientation.lock) {
-                    screen.orientation.lock("landscape").catch(() => {});
-                }
+                if (screen.orientation && screen.orientation.lock) screen.orientation.lock("landscape").catch(()=>{});
             } else {
                 document.exitFullscreen();
             }
         };
+
+        // Escuchar cambios de pantalla completa para cambiar el texto del botón
+        document.addEventListener('fullscreenchange', () => {
+            if (document.fullscreenElement) {
+                fsButton.innerText = "SALIR";
+                fsButton.style.background = "#333"; // Color más discreto al estar dentro
+            } else {
+                fsButton.innerText = "MODO CINE";
+                fsButton.style.background = "var(--rojo)";
+            }
+        });
 
         async function loadM3U() {
             const url = "https://raw.githubusercontent.com/lavozdemanaureapp/lavozdemanaure/main/canales.m3u";
@@ -162,7 +185,6 @@
             } catch (e) { console.error(e); }
         }
 
-        // --- MANDOS DESDE FIREBASE ---
         onValue(ref(db, 'publicidad_activa'), s => {
             const v = s.val();
             document.getElementById('pub-overlay').style.display = (v?.imagen !== 'OFF') ? 'block' : 'none';
