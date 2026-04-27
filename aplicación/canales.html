@@ -104,14 +104,23 @@
     const pubOverlay = document.getElementById('pub-overlay');
     const hls = new Hls({ enableWorker: true, lowLatencyMode: true });
 
-    // --- MANDO VOZ ---
+   // --- MANDO VOZ (CORREGIDO PARA YOUTUBE) ---
     onValue(ref(db, 'radio_activa'), snap => {
-        if (snap.val()?.estado === 'ON') { 
-            radio.play().catch(()=>{}); vid.muted = true;
-            if(yt.style.display === "block" && !yt.src.includes('mute=1')) yt.src += "&mute=1";
+        const estadoVoz = snap.val()?.estado;
+        
+        if (estadoVoz === 'ON') { 
+            // Suena la radio encima
+            radio.play().catch(()=>{}); 
+            
+            // Silencia solo si es archivo m3u8 (el video nativo)
+            vid.muted = true; 
+            
+            // A YouTube no lo tocamos para que NO se reinicie el video
         } else { 
-            radio.pause(); vid.muted = false; 
-            if(yt.style.display === "block") yt.src = yt.src.replace("&mute=1", "");
+            // Al apagar el micro
+            radio.pause(); 
+            vid.muted = false; 
+            // YouTube sigue corriendo fluido
         }
     });
 
