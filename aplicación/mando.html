@@ -3,66 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mando Manaure Pro - Audio Control</title>
+    <title>Mando Manaure Pro - 10 Pubs</title>
     <style>
-        body { background: #0b0b0b; color: white; font-family: sans-serif; text-align: center; padding: 15px; margin: 0; }
-        h1 { font-size: 1rem; color: #444; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 2px; }
+        body { background: #0b0b0b; color: white; font-family: 'Segoe UI', Arial, sans-serif; text-align: center; padding: 15px; margin: 0; }
+        h1 { font-size: 0.9rem; color: #555; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 2px; }
         
-        /* MONITOR DE AUDIENCIA */
+        /* CONTADOR DE AUDIENCIA FIREBASE */
         .audiencia-card { 
             background: linear-gradient(145deg, #000, #1a0000); 
             border: 2px solid #ff0000; padding: 20px; border-radius: 20px; 
-            margin-bottom: 20px; box-shadow: 0 0 20px rgba(255,0,0,0.3);
+            margin-bottom: 20px; box-shadow: 0 0 25px rgba(255,0,0,0.4);
         }
-        #audiencia-total { font-size: 60px; font-weight: bold; color: #ff0000; margin: 5px 0; }
+        #audiencia-total { font-size: 80px; font-weight: bold; color: #ff0000; margin: 5px 0; line-height: 1; }
+        .label-audiencia { font-size: 13px; color: #ff4d4d; font-weight: bold; text-transform: uppercase; }
 
-        /* PLAYER DE AUDIO VISIBLE */
-        .audio-card { background: #222; border: 2px solid #ffcc00; border-radius: 12px; padding: 15px; margin-bottom: 15px; }
-        audio { width: 100%; height: 40px; margin-top: 10px; }
+        /* SECCIONES DE CONTROL */
+        .card { background: #1a1a1a; padding: 15px; border-radius: 15px; margin-bottom: 15px; border: 1px solid #333; }
+        h3 { font-size: 0.85rem; margin-top: 0; color: #ffcc00; text-transform: uppercase; margin-bottom: 15px; border-bottom: 1px solid #333; padding-bottom: 5px; }
         
-        .card { background: #1a1a1a; padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid #333; }
-        h3 { font-size: 0.85rem; margin-top: 0; color: #ffcc00; text-transform: uppercase; margin-bottom: 12px; }
-        
-        .grid-pub { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
-        button { padding: 14px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; font-size: 14px; transition: 0.1s; }
-        
-        .btn-main { width: 48%; height: 60px; font-size: 16px; }
-        .on { background: #1e7e34; color: white; border-bottom: 4px solid #155d27; }
-        .off { background: #bd2130; color: white; border-bottom: 4px solid #8c1924; }
-        
-        .btn-pub { background: #333; color: #fff; width: 100%; border: 1px solid #444; }
-        .btn-quitar-pub { background: #444; color: white; width: 100%; margin-top: 15px; padding: 18px; font-size: 16px; border: 2px dashed #666; }
+        /* BOTONES DE VOZ */
+        .flex-voz { display: flex; justify-content: space-between; gap: 10px; }
+        .btn-voz { flex: 1; height: 75px; font-size: 18px; border-radius: 12px; border: none; font-weight: bold; cursor: pointer; color: white; }
+        .on { background: #1e7e34; border-bottom: 5px solid #114d1f; }
+        .on:active { transform: translateY(3px); border-bottom: 2px solid #114d1f; }
+        .off { background: #bd2130; border-bottom: 5px solid #7d1620; }
+        .off:active { transform: translateY(3px); border-bottom: 2px solid #7d1620; }
 
-        .status-msg { font-size: 12px; margin-top: 10px; font-weight: bold; }
-        .active-mic { color: #00ff00; }
-        .muted-mic { color: #ff4444; }
+        /* GRID DE 10 PUBLICIDADES */
+        .grid-pub { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+        .btn-pub { 
+            background: #2a2a2a; color: #fff; padding: 18px; border-radius: 10px; 
+            border: 1px solid #444; font-weight: bold; font-size: 15px;
+            box-shadow: 0 4px 0 #000;
+        }
+        .btn-pub:active { background: #ffcc00; color: #000; transform: translateY(2px); box-shadow: 0 2px 0 #000; }
+        
+        .btn-quitar { 
+            background: #444; color: white; width: 100%; margin-top: 20px; 
+            padding: 20px; font-size: 18px; border-radius: 12px; border: 2px dashed #777;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
 
-    <h1>CENTRO DE CONTROL MANAURE</h1>
+    <h1>MANAURE TV - PANEL OFICIAL</h1>
 
     <div class="audiencia-card">
-        <div style="font-size: 11px; color: #ff4d4d; font-weight: bold;">OYENTES CONECTADOS</div>
+        <div class="label-audiencia">Usuarios Conectados</div>
         <div id="audiencia-total">0</div>
-    </div>
-
-    <div class="audio-card">
-        <h3>Señal de la Emisora (Retorno)</h3>
-        <audio id="radio-audio" controls src="https://stream.zeno.fm/a0x4vvcp9whvv"></audio>
+        <div style="font-size: 11px; color: #00ff00; letter-spacing: 1px;">● FIREBASE LIVE DATA</div>
     </div>
 
     <div class="card">
-        <h3>Control de Transmisión</h3>
-        <div style="display: flex; justify-content: space-between;">
-            <button class="on btn-main" onclick="setRadio('ON')">🎤 HABLAR<br>(Mute Video)</button>
-            <button class="off btn-main" onclick="setRadio('OFF')">🔇 CALLAR<br>(Audio Video)</button>
+        <h3>Control de Voz (Micrófono)</h3>
+        <div class="flex-voz">
+            <button class="on btn-voz" onclick="setRadio('ON')">🎤 ENTRAR</button>
+            <button class="off btn-voz" onclick="setRadio('OFF')">🔇 SALIR</button>
         </div>
-        <div id="status-text" class="status-msg muted-mic">ESTADO: AUDIO DE VIDEO ACTIVO</div>
     </div>
 
     <div class="card">
-        <h3>Publicidad Directa</h3>
+        <h3>Lanzar Publicidad (1-10)</h3>
         <div class="grid-pub">
             <button class="btn-pub" onclick="setPub('publicidad1.png')">PUB 1</button>
             <button class="btn-pub" onclick="setPub('publicidad2.png')">PUB 2</button>
@@ -75,13 +77,14 @@
             <button class="btn-pub" onclick="setPub('publicidad9.png')">PUB 9</button>
             <button class="btn-pub" onclick="setPub('publicidad10.png')">PUB 10</button>
         </div>
-        <button class="off btn-quitar-pub" onclick="setPub('OFF')">QUITAR PUBLICIDAD</button>
+        <button class="off btn-quitar" onclick="setPub('OFF')">QUITAR IMAGEN</button>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
+        // CONFIGURACIÓN DE TU FIREBASE
         const firebaseConfig = { 
             apiKey: "AIzaSyBtkKwQlTzDgQwP_RpDPnX7WJqoyg1turk", 
             databaseURL: "https://radiomanaure-default-rtdb.firebaseio.com", 
@@ -91,37 +94,23 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // --- LÓGICA DE MANDO ---
+        // --- FUNCIONES DE MANDO ---
         window.setRadio = (est) => {
             set(ref(db, 'radio_activa'), { estado: est });
-            const status = document.getElementById('status-text');
-            if(est === 'ON') {
-                status.innerText = "ESTADO: TRANSMITIENDO VOZ (VIDEO MUTEADO)";
-                status.className = "status-msg active-mic";
-            } else {
-                status.innerText = "ESTADO: AUDIO DE VIDEO ACTIVO";
-                status.className = "status-msg muted-mic";
-            }
         };
 
-        window.setPub = (img) => set(ref(db, 'publicidad_activa'), { imagen: img });
+        window.setPub = (img) => {
+            set(ref(db, 'publicidad_activa'), { imagen: img });
+        };
 
-        // --- AUDIENCIA REAL-TIME ---
-        onValue(ref(db, 'audiencia'), (snap) => {
-            const num = snap.exists() ? Object.keys(snap.val()).length : 0;
-            document.getElementById('audiencia-total').innerText = num;
-        });
-
-        // Sincronizar el estado visual del mando con Firebase por si se cambia desde otro lado
-        onValue(ref(db, 'radio_activa'), (snap) => {
-            const est = snap.val()?.estado;
-            const status = document.getElementById('status-text');
-            if(est === 'ON') {
-                status.innerText = "ESTADO: TRANSMITIENDO VOZ (VIDEO MUTEADO)";
-                status.className = "status-msg active-mic";
+        // --- LÓGICA DE AUDIENCIA ---
+        // Escucha la rama 'audiencia' y cuenta los nodos activos
+        onValue(ref(db, 'audiencia'), (snapshot) => {
+            if (snapshot.exists()) {
+                const total = Object.keys(snapshot.val()).length;
+                document.getElementById('audiencia-total').innerText = total;
             } else {
-                status.innerText = "ESTADO: AUDIO DE VIDEO ACTIVO";
-                status.className = "status-msg muted-mic";
+                document.getElementById('audiencia-total').innerText = "0";
             }
         });
     </script>
