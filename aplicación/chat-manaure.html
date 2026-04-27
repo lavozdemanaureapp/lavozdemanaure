@@ -20,6 +20,7 @@
         const urlParams = new URLSearchParams(window.location.search);
         const esModoCine = urlParams.get('modo') === 'cine';
 
+        // --- CONTADOR DE AUDIENCIA (Solo 1 vez por dispositivo) ---
         if (!esModoCine && !window.location.href.includes('mando.html')) {
             const sessionId = localStorage.getItem('manaure_session') || Math.random().toString(36).substring(7);
             localStorage.setItem('manaure_session', sessionId);
@@ -28,7 +29,7 @@
             onDisconnect(presenciaRef).remove();
         }
 
-        // --- FORZAMOS LOS ÚLTIMOS 5 ---
+        // --- LÓGICA DE MENSAJES ---
         const limite = esModoCine ? 5 : 50;
         const mensajesRef = query(ref(db, 'mensajes'), limitToLast(limite));
         
@@ -42,7 +43,6 @@
                 div.innerHTML = `<span>${dato.usuario}:</span> ${dato.texto}`;
                 contenedor.appendChild(div);
             });
-            // Esto asegura que siempre veamos los de abajo (los más nuevos)
             window.scrollTo(0, document.body.scrollHeight);
         });
 
@@ -56,45 +56,74 @@
         };
     </script>
     <style>
-        body { margin: 0; padding: 2px; background: transparent !important; color: white; font-family: sans-serif; overflow: hidden; }
-        #mensajes { display: flex; flex-direction: column; gap: 2px; }
+        /* FONDO GENERAL TRANSPARENTE */
+        html, body { background: transparent !important; margin: 0; padding: 0; overflow: hidden; }
+        
+        body { padding: 5px; color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        
+        #mensajes { display: flex; flex-direction: column; gap: 4px; }
 
-        /* MODO NORMAL (EL DE ABAJO) */
+        /* --- MODO NORMAL (EL CHAT DE ABAJO) --- */
         .mensaje-item { 
-            background: #1a1a1a; 
-            padding: 8px; 
-            border-radius: 6px; 
+            background: rgba(20, 20, 20, 0.95); 
+            padding: 10px; 
+            border-radius: 8px; 
             font-size: 14px; 
             border-left: 4px solid #ff0000;
             margin-bottom: 2px;
+            border: 1px solid #333;
         }
 
-        /* --- MODO CINE (SOBRE EL VIDEO) --- */
+        /* --- MODO CINE (SOBRE EL VIDEO - EFECTO CRISTAL) --- */
         .mensaje-item.cine { 
-            background: rgba(0, 0, 0, 0.15) !important; /* FONDO MUY CLARITO, CASI INVISIBLE */
+            background: rgba(0, 0, 0, 0.2) !important; /* FONDO MUY CLARITO */
             border: none !important;
-            padding: 2px 6px !important; 
+            padding: 3px 8px !important; 
             border-left: 3px solid #ff0000 !important; 
-            font-size: 12px; /* Un pelín más pequeño para que quepan los 5 sin cortarse */
+            font-size: 13px !important; 
             margin: 0 !important;
-            line-height: 1.1 !important;
-            text-shadow: 1px 1px 2px #000; /* Sombra para que se lea sobre el video */
+            line-height: 1.2 !important;
+            /* CONTORNO NEGRO PARA LAS LETRAS */
+            text-shadow: 
+                -1px -1px 0 #000,  
+                 1px -1px 0 #000,
+                -1px  1px 0 #000,
+                 1px  1px 0 #000,
+                 2px  2px 4px rgba(0,0,0,0.9) !important;
         }
 
-        .mensaje-item span { color: #ff0000; font-weight: bold; margin-right: 4px; text-transform: uppercase; }
+        .mensaje-item span { color: #ff0000; font-weight: bold; margin-right: 5px; text-transform: uppercase; }
 
-        #input-area { position: fixed; bottom: 0; left: 0; width: 100%; background: #111; padding: 10px; display: flex; gap: 5px; border-top: 1px solid #333; box-sizing: border-box; }
+        /* AREA DE ENTRADA (Se oculta en modo cine) */
+        #input-area { 
+            position: fixed; bottom: 0; left: 0; width: 100%; 
+            background: #111; padding: 10px; display: flex; gap: 5px; 
+            border-top: 1px solid #333; box-sizing: border-box; 
+        }
         input { background: #222; border: 1px solid #444; color: white; padding: 10px; border-radius: 5px; font-size: 14px; }
         #user { width: 30%; } #texto { flex: 1; }
         button { background: #ff0000; color: white; border: none; padding: 10px 15px; border-radius: 5px; font-weight: bold; }
+
+        /* Ocultar input si es modo cine */
+        .cine-hidden { display: none !important; }
     </style>
 </head>
 <body>
+
     <div id="mensajes"></div>
+
+    <script>
+        // Ocultar el área de escritura si estamos en modo cine
+        if (new URLSearchParams(window.location.search).get('modo') === 'cine') {
+            document.write('<style>#input-area { display: none !important; }</style>');
+        }
+    </script>
+
     <div id="input-area">
         <input type="text" id="user" placeholder="Nombre">
         <input type="text" id="texto" placeholder="Mensaje..." onkeypress="if(event.key==='Enter') enviarMsg()">
         <button onclick="enviarMsg()">OK</button>
     </div>
+
 </body>
 </html>
