@@ -7,49 +7,59 @@
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <style>
         :root { --rojo: #ff0000; }
-        * { box-sizing: border-box; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { margin: 0; background: #000; color: #fff; font-family: sans-serif; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
         
-        #master-player { width: 100%; aspect-ratio: 16 / 9; background: #000; position: relative; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+        #master-player { width: 100%; aspect-ratio: 16 / 9; background: #000; position: relative; flex-shrink: 0; z-index: 10; }
         
         /* Contenedores de Video */
-        video, #yt-frame { width: 100% !important; height: 100% !important; border: none; }
-        #yt-frame { display: none; }
+        #video, #yt-frame { position: absolute; top: 0; left: 0; width: 100% !important; height: 100% !important; border: none; z-index: 11; }
+        #yt-frame { display: none; background: #000; }
 
         /* PUBLICIDAD */
-        #pub-overlay { position: absolute; top: 10px; right: 10px; width: 160px; z-index: 100; display: none; }
+        #pub-overlay { position: absolute; top: 10px; right: 10px; width: 120px; z-index: 20; display: none; pointer-events: none; }
         #pub-overlay img { width: 100%; border: 2px solid var(--rojo); border-radius: 5px; }
 
-        /* CHAT MODO CINE (Solo último mensaje, bien legible) */
+        /* CHAT TRANSPARENTE (Solo último mensaje) */
         #chat-overlay { 
             position: absolute; 
-            bottom: 60px; 
+            bottom: 55px; 
             left: 5%; 
             width: 90%; 
-            height: 50px; /* Altura para un solo mensaje */
-            z-index: 100; 
+            height: 45px; 
+            z-index: 20; 
             display: none; 
             overflow: hidden; 
-            background: rgba(0,0,0,0.6) !important; /* Fondo oscuro traslúcido para leer bien */
-            border-radius: 10px;
-            border-left: 5px solid var(--rojo);
-            pointer-events: none; 
+            /* TOTALMENTE TRANSPARENTE */
+            background: transparent !important; 
+            border: none;
+            pointer-events: none;
+            /* Sombra de texto para que se lea bien sobre cualquier fondo */
+            filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.8));
         }
-        #chat-overlay iframe { width: 100%; height: 200%; margin-top: -145px; border: none; } /* Ajustado para ver el final */
+        /* Ajuste fino para ver solo la última línea del chat */
+        #chat-overlay iframe { 
+            width: 100%; 
+            height: 400px; 
+            margin-top: -345px; 
+            border: none; 
+            background: transparent !important;
+        }
 
-        .btn-fullscreen { position: absolute; bottom: 10px; right: 10px; background: var(--rojo); color: white; border: none; padding: 10px 18px; border-radius: 20px; font-size: 11px; font-weight: bold; z-index: 101; cursor: pointer; }
+        .btn-fullscreen { position: absolute; bottom: 10px; right: 10px; background: var(--rojo); color: white; border: none; padding: 8px 15px; border-radius: 15px; font-size: 10px; font-weight: bold; z-index: 30; cursor: pointer; text-transform: uppercase; }
 
-        #interaction-area { flex: 1; display: flex; flex-direction: column; background: #0a0a0a; border-top: 2px solid var(--rojo); }
+        #interaction-area { flex: 1; display: flex; flex-direction: column; background: #0a0a0a; border-top: 2px solid var(--rojo); z-index: 5; }
         #channel-bar { padding: 10px; }
-        select { width: 100%; background: #1a1a1a; color: #fff; border: 1px solid var(--rojo); padding: 12px; border-radius: 8px; font-size: 15px; }
+        select { width: 100%; background: #1a1a1a; color: #fff; border: 1px solid var(--rojo); padding: 12px; border-radius: 8px; font-size: 16px; appearance: none; }
         #chat-frame { width: 100%; flex: 1; border: none; }
     </style>
 </head>
 <body>
 
     <div id="master-player">
-        <iframe id="yt-frame" allow="autoplay; fullscreen" allowfullscreen></iframe>
-        <video id="video" playsinline autoplay controls></video>
+        <video id="video" playsinline autoplay controls muted></video>
+        <iframe id="yt-frame" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
+        
         <audio id="radio-audio" src="https://stream.zeno.fm/a0x4vvcp9whvv"></audio>
         
         <div id="pub-overlay"><img id="pub-img" src=""></div>
@@ -75,8 +85,6 @@
         const video = document.getElementById('video');
         const ytFrame = document.getElementById('yt-frame');
         const radio = document.getElementById('radio-audio');
-        const fsButton = document.getElementById('fs-button');
-
         const hls = new Hls({ enableWorker: true, lowLatencyMode: true });
 
         function getYoutubeID(url) {
@@ -88,25 +96,25 @@
         }
 
         window.play = (url) => {
-            // Limpieza
             video.pause();
             video.style.display = "none";
             ytFrame.style.display = "none";
-            ytFrame.src = "";
+            ytFrame.src = ""; 
             hls.detachMedia();
 
             const ytId = getYoutubeID(url);
 
             if (ytId) {
-                // MODO IFRAME DIRECTO (Indestructible)
                 ytFrame.style.display = "block";
-                ytFrame.src = `https://www.youtube.com/embed/${ytId}?autoplay=1&rel=0&modestbranding=1`;
+                ytFrame.src = `https://www.youtube.com/embed/${ytId}?autoplay=1&modestbranding=1&rel=0`;
             } else {
                 video.style.display = "block";
                 if (url.includes('.m3u8')) {
                     if (Hls.isSupported()) {
                         hls.loadSource(url); hls.attachMedia(video);
-                        hls.on(Hls.Events.MANIFEST_PARSED, () => video.play());
+                        hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                            video.play().catch(() => { video.muted = true; video.play(); });
+                        });
                     }
                 } else {
                     video.src = url;
@@ -126,10 +134,10 @@
         document.addEventListener('fullscreenchange', () => {
             const chatCine = document.getElementById('chat-cine-iframe');
             if (document.fullscreenElement) {
-                fsButton.innerText = "SALIR";
+                document.getElementById('fs-button').innerText = "SALIR";
                 chatCine.src = "chat-manaure.html?modo=cine";
             } else {
-                fsButton.innerText = "MODO CINE";
+                document.getElementById('fs-button').innerText = "MODO CINE";
                 chatCine.src = "chat-manaure.html";
             }
         });
