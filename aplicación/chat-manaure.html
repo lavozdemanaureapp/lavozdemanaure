@@ -29,7 +29,7 @@
             onDisconnect(presenciaRef).remove();
         }
 
-        // --- LÓGICA DE MENSAJES (ÚLTIMOS 3 PARA CINE) ---
+        // --- MENSAJES (3 PARA CINE, 50 PARA NORMAL) ---
         const limite = esModoCine ? 3 : 50;
         const mensajesRef = query(ref(db, 'mensajes'), limitToLast(limite));
         
@@ -43,6 +43,7 @@
                 div.innerHTML = `<span>${dato.usuario}:</span> ${dato.texto}`;
                 contenedor.appendChild(div);
             });
+            // Auto-scroll al final solo al recibir mensaje nuevo
             window.scrollTo(0, document.body.scrollHeight);
         });
 
@@ -56,13 +57,31 @@
         };
     </script>
     <style>
-        html, body { background: transparent !important; margin: 0; padding: 0; overflow: hidden; }
-        body { padding: 5px; color: white; font-family: sans-serif; }
-        #mensajes { display: flex; flex-direction: column; gap: 4px; }
+        /* CONFIGURACIÓN DE PANTALLA */
+        html, body { 
+            background: transparent !important; 
+            margin: 0; 
+            padding: 0; 
+            height: 100%;
+        }
 
-        /* MODO NORMAL (CHAT DE ABAJO) */
+        body { 
+            padding: 5px; 
+            color: white; 
+            font-family: sans-serif; 
+            overflow-y: auto; /* ACTIVA EL SCROLL PARA EL CHAT GRANDE */
+            scrollbar-width: thin;
+            scrollbar-color: #ff0000 #111;
+        }
+
+        /* BLOQUEO DE SCROLL SOLO EN MODO CINE */
+        body.modo-cine { overflow: hidden !important; }
+
+        #mensajes { display: flex; flex-direction: column; gap: 5px; padding-bottom: 70px; }
+
+        /* --- ESTILO CHAT NORMAL (CON FONDO OSCURO) --- */
         .mensaje-item { 
-            background: rgba(26, 26, 26, 0.95); 
+            background: rgba(20, 20, 20, 0.9); 
             padding: 10px; 
             border-radius: 8px; 
             font-size: 14px; 
@@ -70,43 +89,43 @@
             margin-bottom: 2px;
         }
 
-        /* --- MODO CINE (SOBRE EL VIDEO - CASI INVISIBLE) --- */
+        /* --- MODO CINE (ULTRA ACLARADO - FONDO AL 5%) --- */
         .mensaje-item.cine { 
-            background: rgba(0, 0, 0, 0.1) !important; /* FONDO AL 10% (MUY CLARO) */
+            background: rgba(0, 0, 0, 0.05) !important; /* CASI INVISIBLE */
             border: none !important;
             padding: 2px 8px !important; 
             border-left: 3px solid #ff0000 !important; 
             font-size: 13px !important; 
-            margin: 0 !important;
-            line-height: 1.2 !important;
-            /* CONTORNO FUERTE EN LAS LETRAS PARA QUE SE LEAN */
-            text-shadow: 
-                -1px -1px 2px #000,  
-                 1px -1px 2px #000,
-                -1px  1px 2px #000,
-                 1px  1px 2px #000 !important;
+            margin-bottom: 2px !important;
+            line-height: 1.1 !important;
+            /* CONTORNO DE LETRA PARA QUE NO SE PIERDA */
+            text-shadow: 1px 1px 2px #000, -1px -1px 2px #000, 1px -1px 2px #000 !important;
         }
 
         .mensaje-item span { color: #ff0000; font-weight: bold; margin-right: 5px; text-transform: uppercase; }
 
+        /* INPUT AREA */
         #input-area { 
             position: fixed; bottom: 0; left: 0; width: 100%; 
             background: #111; padding: 10px; display: flex; gap: 5px; 
             border-top: 1px solid #333; box-sizing: border-box; 
         }
-        input { background: #222; border: 1px solid #444; color: white; padding: 10px; border-radius: 5px; }
-        #user { width: 30%; } #texto { flex: 1; }
+        input { background: #222; border: 1px solid #444; color: white; padding: 10px; border-radius: 5px; flex: 1; }
+        #user { width: 80px; flex: none; }
         button { background: #ff0000; color: white; border: none; padding: 10px 15px; border-radius: 5px; font-weight: bold; }
     </style>
 </head>
-<body>
+<body id="cuerpo">
     <div id="mensajes"></div>
+
     <script>
-        // Ocultar input en modo cine
-        if (new URLSearchParams(window.location.search).get('modo') === 'cine') {
-            document.write('<style>#input-area { display: none !important; }</style>');
+        const esCine = new URLSearchParams(window.location.search).get('modo') === 'cine';
+        if (esCine) {
+            document.getElementById('cuerpo').classList.add('modo-cine');
+            document.write('<style>#input-area { display: none !important; } #mensajes { padding-bottom: 0; }</style>');
         }
     </script>
+
     <div id="input-area">
         <input type="text" id="user" placeholder="Nombre">
         <input type="text" id="texto" placeholder="Mensaje..." onkeypress="if(event.key==='Enter') enviarMsg()">
