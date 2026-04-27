@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MANAURE TV - REPARADO</title>
+    <title>MANAURE TV - FINAL PRO</title>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <style>
         :root { --oro: #ffcc00; --rojo: #ff0000; --oscuro: #1a1a1a; }
@@ -23,16 +23,38 @@
         
         #exit-fs { 
             position: absolute; top: 15px; left: 15px; z-index: 999; 
-            background: var(--rojo); color: white; padding: 10px; border-radius: 8px; display: none; font-weight: bold; 
+            background: var(--rojo); color: white; padding: 10px; border-radius: 8px; display: none; font-weight: bold; border: 2px solid white;
         }
 
-        #pub-overlay { position: absolute; top: 10px; right: 10px; width: 110px; z-index: 100; display: none; }
+        /* PUBLICIDAD DINÁMICA - MEJORADA */
+        #pub-overlay { 
+            position: absolute; 
+            top: 10px; 
+            right: 10px; 
+            width: 110px; /* Tamaño normal */
+            z-index: 100; 
+            display: none; 
+            transition: all 0.4s ease-in-out; 
+            cursor: pointer;
+        }
+        #pub-overlay img { 
+            width: 100%; 
+            border-radius: 8px; 
+            border: 2px solid var(--oro); 
+            box-shadow: 0 0 15px rgba(0,0,0,0.7);
+        }
 
-        /* CONTROLES: ASEGURAMOS QUE SE VEAN */
+        /* Cuando está en pantalla completa, la publicidad se agranda sola */
+        :fullscreen #pub-overlay, :-webkit-full-screen #pub-overlay {
+            width: 200px; 
+            top: 20px;
+            right: 20px;
+        }
+
+        /* CONTROLES */
         #controls { 
             padding: 10px; background: var(--oscuro); 
             flex-shrink: 0; border-bottom: 2px solid var(--oro);
-            display: block !important; /* Forzamos visibilidad */
         }
         
         .selector-wrapper { 
@@ -58,6 +80,7 @@
             width: 100%; padding: 12px; background: var(--oro); color: #000; 
             border: none; border-radius: 8px; font-weight: bold; 
             text-transform: uppercase; font-size: 14px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
         }
 
         /* CHAT Y MENÚ */
@@ -76,7 +99,10 @@
         <video id="vid" playsinline controls autoplay muted></video>
         <iframe id="yt" style="display:none" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
         <audio id="radio-audio" src="https://stream.zeno.fm/a0x4vvcp9whvv"></audio>
-        <div id="pub-overlay"><img id="pub-img" src="" style="width:100%; border-radius:8px; border:2px solid gold;"></div>
+        
+        <div id="pub-overlay" onclick="this.style.width = (this.style.width === '250px') ? '110px' : '250px'">
+            <img id="pub-img" src="">
+        </div>
     </div>
 
     <div id="controls">
@@ -124,6 +150,7 @@
         } else { radio.pause(); vid.muted = false; }
     });
 
+    // PUBLICIDAD CON CONTROL DE TAMAÑO
     onValue(ref(db, 'publicidad_activa'), snap => {
         const d = snap.val();
         const overlay = document.getElementById('pub-overlay');
@@ -133,17 +160,12 @@
         } else { overlay.style.display = 'none'; }
     });
 
-    // CAMBIO DE CANAL (FIX YOUTUBE)
+    // CAMBIO DE CANAL
     window.cambiarCanal = (url) => {
         vid.pause(); vid.style.display = "none"; yt.style.display = "none"; yt.src = ""; hls.detachMedia();
-        
         if (url.includes('youtu')) {
-            let id = "";
-            if(url.includes('v=')) { id = url.split('v=')[1].split('&')[0]; }
-            else { id = url.split('/').pop().split('?')[0]; }
-            
+            let id = url.includes('v=') ? url.split('v=')[1].split('&')[0] : url.split('/').pop().split('?')[0];
             yt.style.display = "block";
-            // El parámetro origin y enablejsapi ayudan a que no se salga de la app
             yt.src = `https://www.youtube.com/embed/${id}?autoplay=1&rel=0&modestbranding=1&enablejsapi=1`;
         } else {
             vid.style.display = "block";
@@ -169,18 +191,24 @@
 
     window.toggleFS = () => {
         const container = document.getElementById('video-container');
+        const pub = document.getElementById('pub-overlay');
         if (!document.fullscreenElement && !document.webkitFullscreenElement) {
             if (container.requestFullscreen) { container.requestFullscreen(); }
             else if (container.webkitRequestFullscreen) { container.webkitRequestFullscreen(); }
             document.getElementById('exit-fs').style.display = "block";
+            pub.style.width = "220px"; // Se agranda al ampliar
         } else {
             if (document.exitFullscreen) { document.exitFullscreen(); }
             else if (document.webkitExitFullscreen) { document.webkitExitFullscreen(); }
+            pub.style.width = "110px"; // Vuelve a su tamaño normal
         }
     };
     
     document.addEventListener('fullscreenchange', () => {
-        if (!document.fullscreenElement) document.getElementById('exit-fs').style.display = "none";
+        if (!document.fullscreenElement) {
+            document.getElementById('exit-fs').style.display = "none";
+            document.getElementById('pub-overlay').style.width = "110px";
+        }
     });
 </script>
 </body>
