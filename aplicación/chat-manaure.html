@@ -20,7 +20,6 @@
         const urlParams = new URLSearchParams(window.location.search);
         const esModoCine = urlParams.get('modo') === 'cine';
 
-        // --- CONTADOR (Solo cuenta en modo normal) ---
         if (!esModoCine && !window.location.href.includes('mando.html')) {
             const sessionId = localStorage.getItem('manaure_session') || Math.random().toString(36).substring(7);
             localStorage.setItem('manaure_session', sessionId);
@@ -29,7 +28,7 @@
             onDisconnect(presenciaRef).remove();
         }
 
-        // --- MENSAJES (5 para cine, 50 para normal) ---
+        // --- FORZAMOS LOS ÚLTIMOS 5 ---
         const limite = esModoCine ? 5 : 50;
         const mensajesRef = query(ref(db, 'mensajes'), limitToLast(limite));
         
@@ -39,11 +38,11 @@
             snapshot.forEach((hijo) => {
                 const dato = hijo.val();
                 const div = document.createElement('div');
-                // Si es modo cine, le asignamos la clase 'cine'
                 div.className = esModoCine ? 'mensaje-item cine' : 'mensaje-item';
                 div.innerHTML = `<span>${dato.usuario}:</span> ${dato.texto}`;
                 contenedor.appendChild(div);
             });
+            // Esto asegura que siempre veamos los de abajo (los más nuevos)
             window.scrollTo(0, document.body.scrollHeight);
         });
 
@@ -57,43 +56,33 @@
         };
     </script>
     <style>
-        body { margin: 0; padding: 5px; background: transparent !important; color: white; font-family: sans-serif; overflow: hidden; }
-        #mensajes { display: flex; flex-direction: column; gap: 5px; }
+        body { margin: 0; padding: 2px; background: transparent !important; color: white; font-family: sans-serif; overflow: hidden; }
+        #mensajes { display: flex; flex-direction: column; gap: 2px; }
 
-        /* --- MODO NORMAL (EL DE ABAJO) --- */
-        /* Con fondo oscuro para que se vea ordenado */
+        /* MODO NORMAL (EL DE ABAJO) */
         .mensaje-item { 
             background: #1a1a1a; 
-            padding: 10px; 
-            border-radius: 8px; 
+            padding: 8px; 
+            border-radius: 6px; 
             font-size: 14px; 
             border-left: 4px solid #ff0000;
             margin-bottom: 2px;
-            border: 1px solid #333;
         }
 
         /* --- MODO CINE (SOBRE EL VIDEO) --- */
-        /* TOTALMENTE TRANSPARENTE, SOLO TEXTO */
         .mensaje-item.cine { 
-            background: transparent !important; 
+            background: rgba(0, 0, 0, 0.15) !important; /* FONDO MUY CLARITO, CASI INVISIBLE */
             border: none !important;
-            padding: 0px 5px; 
+            padding: 2px 6px !important; 
             border-left: 3px solid #ff0000 !important; 
-            font-size: 13px; 
-            margin: 0;
-            line-height: 1.2;
-            /* Sombra de contorno para que las letras se vean en cualquier color de video */
-            text-shadow: 
-                -1px -1px 0 #000,  
-                 1px -1px 0 #000,
-                -1px  1px 0 #000,
-                 1px  1px 0 #000,
-                 2px  2px 4px rgba(0,0,0,0.8);
+            font-size: 12px; /* Un pelín más pequeño para que quepan los 5 sin cortarse */
+            margin: 0 !important;
+            line-height: 1.1 !important;
+            text-shadow: 1px 1px 2px #000; /* Sombra para que se lea sobre el video */
         }
 
-        .mensaje-item span { color: #ff0000; font-weight: bold; margin-right: 5px; text-transform: uppercase; }
+        .mensaje-item span { color: #ff0000; font-weight: bold; margin-right: 4px; text-transform: uppercase; }
 
-        /* AREA DE ENTRADA */
         #input-area { position: fixed; bottom: 0; left: 0; width: 100%; background: #111; padding: 10px; display: flex; gap: 5px; border-top: 1px solid #333; box-sizing: border-box; }
         input { background: #222; border: 1px solid #444; color: white; padding: 10px; border-radius: 5px; font-size: 14px; }
         #user { width: 30%; } #texto { flex: 1; }
