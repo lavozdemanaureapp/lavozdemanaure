@@ -3,38 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MANAURE TV - TURBO</title>
+    <title>MANAURE TV - CONSOLIDADO</title>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <style>
-        body { margin: 0; background: #000; color: #fff; font-family: sans-serif; overflow: hidden; }
-        #video-container { width: 100%; aspect-ratio: 16 / 9; background: #111; position: relative; }
-        video, iframe { position: absolute; top: 0; left: 0; width: 100% !important; height: 100% !important; border: none; }
-        #exit-fs { position: absolute; top: 15px; left: 15px; z-index: 999; background: rgba(255, 0, 0, 0.8); color: white; border: none; padding: 12px 18px; border-radius: 8px; font-weight: bold; display: none; cursor: pointer; font-size: 14px; }
-        #pub-overlay { position: absolute; top: 15px; right: 15px; width: 120px; z-index: 998; display: none; pointer-events: none; }
-        #pub-overlay img { width: 100%; border: 1px solid #ffcc00; border-radius: 5px; }
-        #controls { padding: 20px; background: #0a0a0a; display: flex; flex-direction: column; gap: 15px; }
-        select { width: 100%; padding: 15px; background: #222; color: #ffcc00; border: 2px solid #ffcc00; border-radius: 10px; font-size: 18px; font-weight: bold; }
-        .btn-ampliar { padding: 18px; background: #ffcc00; color: #000; border: none; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
+        :root { --oro: #ffcc00; --rojo: #ff0000; }
+        body { margin: 0; background: #000; color: #fff; font-family: sans-serif; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        
+        /* VIDEO (16:9) */
+        #video-container { width: 100%; aspect-ratio: 16 / 9; background: #111; position: relative; flex-shrink: 0; }
+        video, iframe { position: absolute; top: 0; left: 0; width: 100% !important; height: 100% !important; border: none; z-index: 5; }
+        
+        /* PUBLICIDAD EN ESQUINA (No tapa el juego) */
+        #pub-overlay { 
+            position: absolute; top: 10px; right: 10px; width: 110px; 
+            z-index: 100; display: none; pointer-events: none; 
+            animation: fadeIn 0.5s ease;
+        }
+        #pub-overlay img { width: 100%; border: 2px solid var(--oro); border-radius: 8px; box-shadow: 0 0 15px #000; }
+
+        /* BOTÓN SALIDA MODO CINE */
+        #exit-fs { 
+            position: absolute; top: 10px; left: 10px; z-index: 101; 
+            background: var(--rojo); color: white; border: none; 
+            padding: 10px 15px; border-radius: 5px; font-weight: bold; 
+            display: none; cursor: pointer;
+        }
+
+        /* CONTROLES */
+        #controls { padding: 10px; background: #1a1a1a; border-bottom: 2px solid var(--oro); flex-shrink: 0; }
+        select { width: 100%; padding: 12px; background: #2a2a2a; color: var(--oro); border: 1px solid #444; border-radius: 8px; font-size: 16px; font-weight: bold; margin-bottom: 8px; outline: none; }
+        .btn-fs { width: 100%; padding: 12px; background: var(--oro); color: #000; border: none; border-radius: 8px; font-weight: bold; text-transform: uppercase; font-size: 13px; }
+
+        /* CHAT (FONDO BLANCO DEBAJO) */
+        #chat-frame { flex: 1; width: 100%; border: none; background: #fff; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body>
 
     <div id="video-container">
-        <button id="exit-fs" onclick="toggleFS()">❌ SALIR DEL MODO CINE</button>
+        <button id="exit-fs" onclick="toggleFS()">❌ SALIR</button>
         <video id="vid" playsinline controls autoplay muted></video>
         <iframe id="yt" style="display:none" allow="autoplay; fullscreen" allowfullscreen></iframe>
+        
         <audio id="radio-audio" src="https://stream.zeno.fm/a0x4vvcp9whvv"></audio>
+        
         <div id="pub-overlay"><img id="pub-img" src=""></div>
     </div>
 
     <div id="controls">
-        <select id="lista" onchange="cambiarCanal(this.value)"><option>OPTIMIZANDO SEÑAL...</option></select>
-        <button class="btn-ampliar" onclick="toggleFS()">AMPLIAR PANTALLA 📺</button>
+        <select id="lista" onchange="cambiarCanal(this.value)"><option>CARGANDO CANALES...</option></select>
+        <button class="btn-fs" onclick="toggleFS()">Ampliar Pantalla 📺</button>
     </div>
+
+    <iframe id="chat-frame" src="chat-partido.html"></iframe>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getDatabase, ref, onValue, push, onDisconnect, set } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    import { getDatabase, ref, onValue, push, set, onDisconnect } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
     const firebaseConfig = { 
         apiKey: "AIzaSyBtkKwQlTzDgQwP_RpDPnX7WJqoyg1turk", 
@@ -47,21 +74,21 @@
     const vid = document.getElementById('vid');
     const yt = document.getElementById('yt');
     const radio = document.getElementById('radio-audio');
+    const hls = new Hls({ enableWorker: true, lowLatencyMode: true, backBufferLength: 0 });
 
-    // --- CONFIGURACIÓN DE ALTA VELOCIDAD (TURBO) ---
-    const hls = new Hls({ 
-        enableWorker: true, 
-        lowLatencyMode: true, // Modo baja latencia
-        backBufferLength: 0,  // No guarda lo que ya pasó
-        maxBufferLength: 10,  // Solo guarda 10 segundos de video adelante
-        maxMaxBufferLength: 15,
-        manifestLoadingMaxRetry: 5,
-        levelLoadingMaxRetry: 5,
-        fragLoadingMaxRetry: 5,
-        startLevel: -1 // Auto calidad para que no se pegue
+    // --- MANDO FIREBASE (Muteo y Publicidad) ---
+    onValue(ref(db, 'radio_activa'), snap => {
+        if (snap.val()?.estado === 'ON') { 
+            radio.play().catch(()=>{}); 
+            vid.muted = true; // Mutea video m3u8
+            if(yt.style.display === "block" && !yt.src.includes('mute=1')) yt.src += "&mute=1";
+        } else { 
+            radio.pause(); 
+            vid.muted = false; 
+            if(yt.style.display === "block") yt.src = yt.src.replace("&mute=1", "");
+        }
     });
 
-    // --- MANDO FIREBASE ---
     onValue(ref(db, 'publicidad_activa'), snap => {
         const d = snap.val();
         const div = document.getElementById('pub-overlay');
@@ -71,37 +98,24 @@
         } else { div.style.display = 'none'; }
     });
 
-    onValue(ref(db, 'radio_activa'), snap => {
-        if (snap.val()?.estado === 'ON') { radio.play(); vid.muted = true; } 
-        else { radio.pause(); vid.muted = false; }
-    });
-
+    // Contador de Audiencia
     const miConex = push(ref(db, 'audiencia'));
     onDisconnect(miConex).remove();
     set(miConex, true);
 
-    // --- MANEJO DE SEÑAL ---
+    // --- GESTIÓN DE SEÑAL ---
     window.cambiarCanal = (url) => {
-        vid.pause(); vid.style.display = "none";
-        yt.style.display = "none"; yt.src = "";
-        hls.detachMedia();
-
+        vid.pause(); vid.style.display = "none"; yt.style.display = "none"; yt.src = ""; hls.detachMedia();
         if (url.includes('youtu')) {
             let id = url.split('v=')[1] || url.split('/').pop();
             yt.style.display = "block";
-            yt.src = `https://www.youtube.com/embed/${id.split('&')[0]}?autoplay=1&rel=0`;
+            yt.src = `https://www.youtube.com/embed/${id.split('&')[0]}?autoplay=1&rel=0&modestbranding=1`;
         } else {
             vid.style.display = "block";
             if (Hls.isSupported()) {
-                hls.loadSource(url); 
-                hls.attachMedia(vid);
-                hls.on(Hls.Events.MANIFEST_PARSED, () => vid.play().catch(() => {}));
-                
-                // Si hay error por red lenta, intenta recuperar de inmediato
-                hls.on(Hls.Events.ERROR, (event, data) => {
-                    if (data.fatal) hls.startLoad();
-                });
-            } else { vid.src = url; vid.play().catch(() => {}); }
+                hls.loadSource(url); hls.attachMedia(vid);
+                hls.on(Hls.Events.MANIFEST_PARSED, () => vid.play().catch(()=>{}));
+            } else { vid.src = url; vid.play().catch(()=>{}); }
         }
     };
 
@@ -111,13 +125,13 @@
             select.innerHTML = "";
             data.split('\n').forEach((line, i, arr) => {
                 if (line.includes('#EXTINF')) {
-                    let opt = new Option(line.split(',')[1].trim().toUpperCase(), arr[i+1].trim());
-                    select.add(opt);
+                    select.add(new Option(line.split(',')[1].trim().toUpperCase(), arr[i+1].trim()));
                 }
             });
             if(select.length > 0) cambiarCanal(select.value);
         });
 
+    // --- PANTALLA COMPLETA ---
     window.toggleFS = () => {
         const container = document.getElementById('video-container');
         const btnExit = document.getElementById('exit-fs');
@@ -131,6 +145,11 @@
             if (screen.orientation && screen.orientation.unlock) screen.orientation.unlock();
         }
     };
+    
+    // Auto-limpieza de botón si el usuario usa el gesto del celular
+    document.addEventListener('fullscreenchange', () => {
+        if (!document.fullscreenElement) document.getElementById('exit-fs').style.display = "none";
+    });
 </script>
 </body>
 </html>
