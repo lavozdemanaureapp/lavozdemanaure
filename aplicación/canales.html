@@ -193,7 +193,7 @@
             if(select.length > 0) cambiarCanal(select.value);
         });
 
-   window.toggleFS = () => {
+  window.toggleFS = () => {
         const container = document.getElementById('video-container');
         const btnExit = document.getElementById('exit-fs');
         
@@ -201,18 +201,18 @@
             container.requestFullscreen().catch(() => {});
             btnExit.style.display = "block";
             
-            // --- PUBLICIDAD MÁS GRANDE (350px) ---
-            pubOverlay.style.width = "350px"; 
-            // ------------------------------------
+            // Volvemos al tamaño que te gustaba
+            pubOverlay.style.width = "180px"; 
             
             if (screen.orientation && screen.orientation.lock) screen.orientation.lock("landscape").catch(() => {});
         } else {
             document.exitFullscreen();
             btnExit.style.display = "none";
             
-            // Vuelve al tamaño normal
+            // Tamaño normal fuera de pantalla completa
             pubOverlay.style.width = "110px"; 
         }
+    };
     };
     });
 </script>
