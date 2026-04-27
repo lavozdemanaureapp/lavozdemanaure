@@ -3,43 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Manaure TV Ultra</title>
+    <title>Manaure TV Pro</title>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <style>
         :root { --rojo: #ff0000; }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { margin: 0; background: #000; color: #fff; font-family: sans-serif; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
         
-        #master-player { width: 100%; aspect-ratio: 16 / 9; background: #000; position: relative; flex-shrink: 0; z-index: 10; }
-        video, iframe { position: absolute; top: 0; left: 0; width: 100% !important; height: 100% !important; border: none; z-index: 11; }
+        #master-player { width: 100%; aspect-ratio: 16 / 9; background: #000; position: relative; flex-shrink: 0; }
+        video, #yt-frame { position: absolute; top: 0; left: 0; width: 100% !important; height: 100% !important; border: none; }
 
-        /* CHAT INVISIBLE - SOLO TEXTO FLOTANTE */
+        /* CHAT FLOTANTE TRANSPARENTE */
         #chat-overlay { 
-            position: absolute; bottom: 50px; left: 5%; width: 90%; height: 45px; 
-            z-index: 20; display: none; overflow: hidden; 
+            position: absolute; bottom: 45px; left: 5%; width: 90%; height: 45px; 
+            z-index: 100; display: none; overflow: hidden; 
             background: transparent !important; pointer-events: none;
-            filter: drop-shadow(2px 2px 2px rgba(0,0,0,1)); /* Sombra para leer sobre blanco */
         }
-        #chat-overlay iframe { width: 100%; height: 500px; margin-top: -450px; background: transparent !important; border: none; }
+        #chat-overlay iframe { 
+            width: 100%; height: 500px; margin-top: -455px; 
+            background: transparent !important; border: none;
+            filter: drop-shadow(2px 2px 2px #000); /* Para que las letras resalten */
+        }
 
-        .btn-fs { position: absolute; bottom: 10px; right: 10px; background: var(--rojo); color: white; border: none; padding: 8px 15px; border-radius: 15px; font-size: 10px; font-weight: bold; z-index: 30; cursor: pointer; }
+        .btn-fs { position: absolute; bottom: 10px; right: 10px; background: var(--rojo); color: white; border: none; padding: 8px 12px; border-radius: 5px; font-size: 10px; font-weight: bold; z-index: 101; cursor: pointer; }
 
-        #ui { flex: 1; display: flex; flex-direction: column; background: #0a0a0a; border-top: 2px solid var(--rojo); }
+        #interaction { flex: 1; display: flex; flex-direction: column; background: #0a0a0a; border-top: 2px solid var(--rojo); }
         #bar { padding: 10px; }
-        select { width: 100%; background: #1a1a1a; color: #fff; border: 1px solid var(--rojo); padding: 12px; border-radius: 8px; font-size: 16px; font-weight: bold; }
+        select { width: 100%; background: #1a1a1a; color: #fff; border: 1px solid var(--rojo); padding: 12px; border-radius: 8px; font-size: 16px; }
         #chat-main { width: 100%; flex: 1; border: none; }
     </style>
 </head>
 <body>
 
     <div id="master-player">
-        <video id="video" playsinline autoplay controls muted></video>
-        <iframe id="yt-frame" allow="autoplay; fullscreen" allowfullscreen style="display:none"></iframe>
+        <video id="video" playsinline controls autoplay muted></video>
+        <iframe id="yt-frame" style="display:none" allow="autoplay; fullscreen" allowfullscreen></iframe>
+        
         <div id="chat-overlay"><iframe id="chat-cine-frame" src="chat-manaure.html"></iframe></div>
         <button class="btn-fs" onclick="toggleFS()">MODO CINE</button>
     </div>
 
-    <div id="ui">
+    <div id="interaction">
         <div id="bar">
             <select id="lista"><option>Cargando Canales...</option></select>
         </div>
@@ -56,23 +59,22 @@
         
         const video = document.getElementById('video');
         const yt = document.getElementById('yt-frame');
-
-        // --- MOTOR DE VELOCIDAD EXTREMA (M3U8) ---
         const hls = new Hls({
             enableWorker: true,
-            lowLatencyMode: true, // Modo latencia baja
-            backBufferLength: 30, // Limpia memoria vieja para que no se pegue
-            maxBufferLength: 10,  // Carga solo 10 segundos adelante (evita saturar el internet)
-            manifestLoadingMaxRetry: 10,
-            levelLoadingMaxRetry: 10
+            lowLatencyMode: true,
+            maxBufferLength: 10
         });
 
+        // Detector de YouTube mejorado
         function getYTID(url) {
-            const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|live\/))([^?&"'>]+)/);
-            return (m && m[1].length === 11) ? m[1] : null;
+            if (!url) return null;
+            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=|live\/)([^#&?]*).*/;
+            const match = url.match(regExp);
+            return (match && match[2].length === 11) ? match[2] : null;
         }
 
         window.play = (url) => {
+            // Limpiar ambos reproductores
             video.pause();
             video.style.display = "none";
             yt.style.display = "none";
@@ -83,15 +85,15 @@
 
             if (id) {
                 yt.style.display = "block";
-                yt.src = `https://www.youtube.com/embed/${id}?autoplay=1&rel=0&modestbranding=1`;
+                // Añadimos el origin para evitar bloqueos de seguridad
+                const origin = window.location.origin;
+                yt.src = `https://www.youtube.com/embed/${id}?autoplay=1&rel=0&modestbranding=1&origin=${origin}`;
             } else {
                 video.style.display = "block";
                 if (url.includes('.m3u8')) {
                     hls.loadSource(url);
                     hls.attachMedia(video);
-                    hls.on(Hls.Events.MANIFEST_PARSED, () => {
-                        video.play().catch(() => { video.muted = true; video.play(); });
-                    });
+                    hls.on(Hls.Events.MANIFEST_PARSED, () => video.play());
                 } else {
                     video.src = url;
                     video.play().catch(() => { video.muted = true; video.play(); });
@@ -105,27 +107,31 @@
             else document.exitFullscreen();
         };
 
-        // Carga rápida de lista
+        // Cargar lista M3U
         fetch("https://raw.githubusercontent.com/lavozdemanaureapp/lavozdemanaure/main/canales.m3u")
-        .then(r => r.text()).then(t => {
-            const s = document.getElementById('lista');
-            s.innerHTML = "";
-            const lines = t.split('\n');
-            lines.forEach((line, i) => {
-                if (line.includes('#EXTINF')) {
-                    const name = line.split(',')[1].trim();
-                    const url = lines[i+1]?.trim();
-                    if (url?.startsWith('http')) s.add(new Option(name.toUpperCase(), url));
-                }
+            .then(res => res.text())
+            .then(data => {
+                const select = document.getElementById('lista');
+                select.innerHTML = "";
+                const lines = data.split('\n');
+                lines.forEach((line, i) => {
+                    if (line.includes('#EXTINF')) {
+                        const name = line.split(',')[1].trim();
+                        const url = lines[i+1]?.trim();
+                        if (url && url.startsWith('http')) {
+                            select.add(new Option(name.toUpperCase(), url));
+                        }
+                    }
+                });
+                if (select.length > 0) play(select.value);
             });
-            if (s.length > 0) play(s.value);
-        });
 
         document.getElementById('lista').onchange = (e) => play(e.target.value);
 
-        // Firebase: Visibilidad del Chat Flotante
+        // Firebase: Visibilidad Chat Flotante
         onValue(ref(db, 'chat_visible'), snap => {
-            document.getElementById('chat-overlay').style.display = (snap.val()?.estado === 'ON') ? 'block' : 'none';
+            const estado = snap.val()?.estado;
+            document.getElementById('chat-overlay').style.display = (estado === 'ON') ? 'block' : 'none';
         });
     </script>
 </body>
