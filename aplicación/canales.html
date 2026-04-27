@@ -14,19 +14,23 @@
         video, iframe { position: absolute; top: 0; left: 0; width: 100% !important; height: 100% !important; border: none; z-index: 5; }
         
         /* PUBLICIDAD DINÁMICA */
+/* PUBLICIDAD CON EL MARCO ORO */
         #pub-overlay { 
-            position: absolute; top: 10px; right: 10px; width: 110px; 
-            z-index: 100; display: none; transition: width 0.3s ease;
+            position: absolute; 
+            top: 10px; 
+            right: 10px; 
+            width: 110px; 
+            z-index: 100; 
+            display: none; 
+            transition: width 0.3s ease;
         }
-      #pub-overlay { 
-    position: absolute; 
-    top: 15px; /* Bajamos un pelín más */
-    right: 15px; 
-    width: 110px; 
-    z-index: 100; 
-    display: none; 
-    transition: all 0.3s ease-in-out; /* Animación suave al crecer */
-}
+
+        #pub-overlay img { 
+            width: 100%; 
+            border: 3px solid var(--oro); /* Aquí está tu línea amarilla bonita */
+            border-radius: 8px; 
+            box-shadow: 0 0 15px rgba(0,0,0,0.7); 
+        }
         
         #exit-fs { position: absolute; top: 10px; left: 10px; z-index: 101; background: var(--rojo); color: white; border: none; padding: 10px; border-radius: 5px; display: none; font-weight: bold; }
 
@@ -200,21 +204,15 @@
         if (!document.fullscreenElement) {
             container.requestFullscreen().catch(() => {});
             btnExit.style.display = "block";
-            
-            // Volvemos al tamaño que te gustaba
             pubOverlay.style.width = "180px"; 
-            
             if (screen.orientation && screen.orientation.lock) screen.orientation.lock("landscape").catch(() => {});
         } else {
             document.exitFullscreen();
             btnExit.style.display = "none";
-            
-            // Tamaño normal fuera de pantalla completa
             pubOverlay.style.width = "110px"; 
         }
     };
 
-    // Resetear tamaño si salen con el botón nativo del cel
     document.addEventListener('fullscreenchange', () => {
         if (!document.fullscreenElement) {
             document.getElementById('exit-fs').style.display = "none";
