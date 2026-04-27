@@ -29,13 +29,15 @@
             onDisconnect(presenciaRef).remove();
         }
 
-        // --- MENSAJES (3 PARA CINE, 50 PARA NORMAL) ---
+        // --- LÓGICA DE MENSAJES (CORREGIDA PARA ÚLTIMOS) ---
         const limite = esModoCine ? 3 : 50;
         const mensajesRef = query(ref(db, 'mensajes'), limitToLast(limite));
         
         onValue(mensajesRef, (snapshot) => {
             const contenedor = document.getElementById('mensajes');
             contenedor.innerHTML = ''; 
+            
+            // Leemos los mensajes y nos aseguramos de que bajen al final
             snapshot.forEach((hijo) => {
                 const dato = hijo.val();
                 const div = document.createElement('div');
@@ -43,10 +45,10 @@
                 div.innerHTML = `<span>${dato.usuario}:</span> ${dato.texto}`;
                 contenedor.appendChild(div);
             });
-            // FORZAR EL SCROLL AL FINAL CON UN PEQUEÑO RETRASO PARA QUE CARGUE BIEN
-            setTimeout(() => {
-                window.scrollTo(0, document.body.scrollHeight);
-            }, 100);
+            
+            // TRUCO FINAL: Forzar el scroll hasta abajo del todo
+            window.scrollTo(0, document.body.scrollHeight);
+            document.documentElement.scrollTop = document.documentElement.scrollHeight;
         });
 
         window.enviarMsg = () => {
@@ -59,65 +61,64 @@
         };
     </script>
     <style>
-        /* MATAMOS EL FONDO NEGRO DE TODA LA WEB */
+        /* TRANSPARENCIA RADICAL */
         html, body { 
-            background: transparent !important; /* TRANSPARENCIA TOTAL */
+            background: transparent !important; 
             margin: 0; 
             padding: 0; 
-            height: 100%;
             color: white;
             font-family: sans-serif;
         }
 
         body { 
             overflow-y: auto; 
-            display: flex;
-            flex-direction: column;
+            overflow-x: hidden;
         }
 
-        /* Si es modo cine, prohibido el scroll para que no salgan barras feas */
+        /* En modo cine, nada de barras de scroll visibles */
         body.modo-cine { overflow: hidden !important; }
 
         #mensajes { 
             display: flex; 
             flex-direction: column; 
-            gap: 5px; 
-            padding: 10px;
-            padding-bottom: 80px; /* Espacio para que el último mensaje no se tape con el input */
+            gap: 4px; 
+            padding: 8px;
+            /* El relleno de abajo es para que el último mensaje no se esconda */
+            padding-bottom: 85px; 
         }
 
         .modo-cine #mensajes { padding-bottom: 5px; }
 
-        /* --- MENSAJES EN PANTALLA NORMAL --- */
+        /* MENSAJE NORMAL */
         .mensaje-item.normal { 
-            background: rgba(30, 30, 30, 0.8); /* Gris muy suave, no negro puro */
-            padding: 10px; 
+            background: rgba(40, 40, 40, 0.7); 
+            padding: 8px 12px; 
             border-radius: 8px; 
             border-left: 5px solid #ff0000;
-            font-size: 14px;
+            margin-bottom: 3px;
         }
 
-        /* --- MENSAJES EN MODO CINE (CRISTALINOS) --- */
+        /* MODO CINE (CASI INVISIBLE SOBRE EL VIDEO) */
         .mensaje-item.cine { 
-            background: rgba(0, 0, 0, 0.1) !important; /* FONDO CASI INEXISTENTE */
-            padding: 4px 10px !important; 
+            background: rgba(0, 0, 0, 0.1) !important; 
+            border: none !important;
+            padding: 3px 8px !important; 
             border-left: 4px solid #ff0000 !important; 
             font-size: 13px !important;
             line-height: 1.2;
-            text-shadow: 2px 2px 4px #000; /* Letras con sombra para que se vean */
+            text-shadow: 2px 2px 3px #000;
         }
 
         .mensaje-item span { color: #ff0000; font-weight: bold; margin-right: 5px; text-transform: uppercase; }
 
-        /* AREA DE ENTRADA */
         #input-area { 
             position: fixed; bottom: 0; left: 0; width: 100%; 
-            background: rgba(15, 15, 15, 0.95); /* El input sí tiene fondo para ver qué escribes */
+            background: #111; 
             padding: 12px; display: flex; gap: 8px; 
             border-top: 1px solid #333; box-sizing: border-box; 
         }
         input { background: #222; border: 1px solid #444; color: white; padding: 10px; border-radius: 5px; flex: 1; }
-        #user { width: 80px; flex: none; }
+        #user { width: 85px; flex: none; }
         button { background: #ff0000; color: white; border: none; padding: 10px 15px; border-radius: 5px; font-weight: bold; }
     </style>
 </head>
