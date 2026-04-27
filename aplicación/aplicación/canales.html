@@ -5,32 +5,50 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Manaure TV Pro</title>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-    <script src="https://www.youtube.com/iframe_api"></script>
     <style>
         :root { --rojo: #ff0000; }
         * { box-sizing: border-box; }
         body { margin: 0; background: #000; color: #fff; font-family: sans-serif; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
-        #master-player { width: 100%; aspect-ratio: 16 / 9; background: #000; position: relative; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
-        video, #yt-placeholder { width: 100% !important; height: 100% !important; object-fit: contain; }
-        #yt-placeholder { display: none; }
         
-        /* PUBLICIDAD Y CHAT */
-        #pub-overlay { position: absolute; top: 15px; right: 15px; width: 190px; z-index: 100; display: none; pointer-events: none; }
-        #pub-overlay img { width: 100%; border: 3px solid var(--rojo); border-radius: 8px; }
-        #chat-overlay { position: absolute; bottom: 75px; left: 15px; width: 300px; height: 180px; z-index: 100; display: none; overflow: hidden; background: transparent; pointer-events: none; }
-        #chat-overlay iframe { width: 100%; height: 100%; border: none; }
+        #master-player { width: 100%; aspect-ratio: 16 / 9; background: #000; position: relative; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+        
+        /* Contenedores de Video */
+        video, #yt-frame { width: 100% !important; height: 100% !important; border: none; }
+        #yt-frame { display: none; }
 
-        .btn-fullscreen { position: absolute; bottom: 15px; right: 15px; background: var(--rojo); color: white; border: none; padding: 12px 22px; border-radius: 30px; font-size: 13px; font-weight: bold; z-index: 101; cursor: pointer; text-transform: uppercase; }
-        #interaction-area { flex: 1; display: flex; flex-direction: column; background: #0a0a0a; border-top: 3px solid var(--rojo); }
-        #channel-bar { padding: 15px; }
-        select { width: 100%; background: #1a1a1a; color: var(--rojo); border: 1px solid #444; padding: 15px; border-radius: 10px; font-size: 16px; font-weight: bold; }
-        iframe#chat-frame { width: 100%; flex: 1; border: none; }
+        /* PUBLICIDAD */
+        #pub-overlay { position: absolute; top: 10px; right: 10px; width: 160px; z-index: 100; display: none; }
+        #pub-overlay img { width: 100%; border: 2px solid var(--rojo); border-radius: 5px; }
+
+        /* CHAT MODO CINE (Solo último mensaje, bien legible) */
+        #chat-overlay { 
+            position: absolute; 
+            bottom: 60px; 
+            left: 5%; 
+            width: 90%; 
+            height: 50px; /* Altura para un solo mensaje */
+            z-index: 100; 
+            display: none; 
+            overflow: hidden; 
+            background: rgba(0,0,0,0.6) !important; /* Fondo oscuro traslúcido para leer bien */
+            border-radius: 10px;
+            border-left: 5px solid var(--rojo);
+            pointer-events: none; 
+        }
+        #chat-overlay iframe { width: 100%; height: 200%; margin-top: -145px; border: none; } /* Ajustado para ver el final */
+
+        .btn-fullscreen { position: absolute; bottom: 10px; right: 10px; background: var(--rojo); color: white; border: none; padding: 10px 18px; border-radius: 20px; font-size: 11px; font-weight: bold; z-index: 101; cursor: pointer; }
+
+        #interaction-area { flex: 1; display: flex; flex-direction: column; background: #0a0a0a; border-top: 2px solid var(--rojo); }
+        #channel-bar { padding: 10px; }
+        select { width: 100%; background: #1a1a1a; color: #fff; border: 1px solid var(--rojo); padding: 12px; border-radius: 8px; font-size: 15px; }
+        #chat-frame { width: 100%; flex: 1; border: none; }
     </style>
 </head>
 <body>
 
     <div id="master-player">
-        <div id="yt-placeholder"></div>
+        <iframe id="yt-frame" allow="autoplay; fullscreen" allowfullscreen></iframe>
         <video id="video" playsinline autoplay controls></video>
         <audio id="radio-audio" src="https://stream.zeno.fm/a0x4vvcp9whvv"></audio>
         
@@ -55,13 +73,11 @@
         const db = getDatabase(app);
         
         const video = document.getElementById('video');
+        const ytFrame = document.getElementById('yt-frame');
         const radio = document.getElementById('radio-audio');
         const fsButton = document.getElementById('fs-button');
-        const ytPlaceholder = document.getElementById('yt-placeholder');
-        let ytPlayer = null;
 
-        // Motor HLS Pro
-        const hls = new Hls({ enableWorker: true, lowLatencyMode: true, liveSyncDurationCount: 2 });
+        const hls = new Hls({ enableWorker: true, lowLatencyMode: true });
 
         function getYoutubeID(url) {
             const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=|live\/)([^#&?]*).*/;
@@ -72,43 +88,20 @@
         }
 
         window.play = (url) => {
-            // 1. Limpieza absoluta
+            // Limpieza
             video.pause();
             video.style.display = "none";
+            ytFrame.style.display = "none";
+            ytFrame.src = "";
             hls.detachMedia();
-            
-            // Destruir el reproductor de YouTube anterior si existe
-            if (ytPlayer) {
-                ytPlayer.destroy();
-                ytPlayer = null;
-            }
-            ytPlaceholder.style.display = "none";
-            ytPlaceholder.innerHTML = ""; // Limpiar el div
 
             const ytId = getYoutubeID(url);
 
             if (ytId) {
-                // 2. MODO YOUTUBE (Reconstrucción total)
-                ytPlaceholder.style.display = "block";
-                // Crear un nuevo div interno para que la API lo reemplace
-                const newDiv = document.createElement('div');
-                newDiv.id = 'yt-internal';
-                ytPlaceholder.appendChild(newDiv);
-
-                ytPlayer = new YT.Player('yt-internal', {
-                    height: '100%',
-                    width: '100%',
-                    videoId: ytId,
-                    playerVars: { 
-                        'autoplay': 1, 
-                        'controls': 1, 
-                        'rel': 0, 
-                        'modestbranding': 1,
-                        'origin': window.location.origin 
-                    }
-                });
+                // MODO IFRAME DIRECTO (Indestructible)
+                ytFrame.style.display = "block";
+                ytFrame.src = `https://www.youtube.com/embed/${ytId}?autoplay=1&rel=0&modestbranding=1`;
             } else {
-                // 3. MODO VIDEO / M3U8 / MP4
                 video.style.display = "block";
                 if (url.includes('.m3u8')) {
                     if (Hls.isSupported()) {
@@ -122,7 +115,6 @@
             }
         };
 
-        // Pantalla completa y Chat
         window.toggleFS = () => {
             const el = document.getElementById('master-player');
             if (!document.fullscreenElement) {
@@ -142,7 +134,6 @@
             }
         });
 
-        // Carga de M3U
         async function loadM3U() {
             const url = "https://raw.githubusercontent.com/lavozdemanaureapp/lavozdemanaure/main/canales.m3u";
             try {
@@ -162,7 +153,6 @@
             } catch (e) { console.error(e); }
         }
 
-        // Firebase Listeners
         onValue(ref(db, 'publicidad_activa'), s => {
             const v = s.val();
             document.getElementById('pub-overlay').style.display = (v?.imagen && v.imagen !== 'OFF') ? 'block' : 'none';
