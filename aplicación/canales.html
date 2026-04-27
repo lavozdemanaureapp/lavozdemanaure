@@ -193,7 +193,7 @@
             if(select.length > 0) cambiarCanal(select.value);
         });
 
-  window.toggleFS = () => {
+ window.toggleFS = () => {
         const container = document.getElementById('video-container');
         const btnExit = document.getElementById('exit-fs');
         
@@ -213,7 +213,13 @@
             pubOverlay.style.width = "110px"; 
         }
     };
-    };
+
+    // Resetear tamaño si salen con el botón nativo del cel
+    document.addEventListener('fullscreenchange', () => {
+        if (!document.fullscreenElement) {
+            document.getElementById('exit-fs').style.display = "none";
+            pubOverlay.style.width = "110px";
+        }
     });
 </script>
 </body>
