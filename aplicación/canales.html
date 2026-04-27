@@ -126,6 +126,14 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
+// --- CÓDIGO PARA QUE EL MANDO CUENTE ---
+const sessionId = localStorage.getItem('manaure_session') || Math.random().toString(36).substring(7);
+localStorage.setItem('manaure_session', sessionId);
+const presenciaRef = ref(db, 'audiencia/' + sessionId);
+set(presenciaRef, true);
+onDisconnect(presenciaRef).remove();
+// ---------------------------------------
+
     const vid = document.getElementById('vid');
     const yt = document.getElementById('yt');
     const radio = document.getElementById('radio-audio');
