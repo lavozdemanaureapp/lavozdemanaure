@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MANAURE TV - FIX PANTALLA</title>
+    <title>MANAURE TV - PRO</title>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <style>
         :root { --oro: #ffcc00; --rojo: #ff0000; --oscuro: #1a1a1a; }
@@ -11,43 +11,66 @@
         html, body { 
             margin: 0; padding: 0; background: #000; height: 100vh; 
             display: flex; flex-direction: column; overflow: hidden; 
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
         }
         
-        /* CONTENEDOR DE VIDEO - IMPORTANTE */
+        /* VIDEO AREA */
         #video-container { 
             width: 100%; aspect-ratio: 16 / 9; background: #000; 
             position: relative; flex-shrink: 0; z-index: 10;
         }
-        
         video, iframe { position: absolute; top: 0; left: 0; width: 100% !important; height: 100% !important; border: none; }
         
-        /* BOTÓN DE SALIDA (Solo visible en pantalla completa) */
         #exit-fs { 
             position: absolute; top: 15px; left: 15px; z-index: 999; 
             background: var(--rojo); color: white; border: 2px solid white; 
-            padding: 12px; border-radius: 8px; display: none; font-weight: bold; 
+            padding: 10px; border-radius: 8px; display: none; font-weight: bold; 
         }
 
-        /* PUBLICIDAD */
-        #pub-overlay { position: absolute; top: 10px; right: 10px; width: 110px; z-index: 100; display: none; transition: width 0.3s ease; }
+        #pub-overlay { position: absolute; top: 10px; right: 10px; width: 110px; z-index: 100; display: none; }
         #pub-overlay img { width: 100%; border: 2px solid var(--oro); border-radius: 8px; }
 
-        /* CONTROLES */
-        #controls { padding: 8px; background: var(--oscuro); flex-shrink: 0; border-bottom: 2px solid var(--oro); }
-        .selector-wrapper { display: flex; align-items: center; background: #2a2a2a; border-radius: 8px; overflow: hidden; border: 1px solid #444; margin-bottom: 6px; position: relative; }
-        .label-canales { background: var(--oro); color: #000; padding: 10px; font-weight: bold; font-size: 12px; text-transform: uppercase; }
-        select { flex: 1; padding: 10px; background: transparent; color: var(--oro); border: none; font-weight: bold; font-size: 15px; outline: none; appearance: none; cursor: pointer; z-index: 2; }
-        .selector-wrapper::after { content: '▼'; position: absolute; right: 12px; color: var(--oro); font-size: 12px; pointer-events: none; }
+        /* CONTROLES ESTILO PROFESIONAL */
+        #controls { padding: 12px; background: var(--oscuro); flex-shrink: 0; border-bottom: 2px solid var(--oro); }
         
-        .btn-fs { 
-            width: 100%; padding: 12px; background: var(--oro); color: #000; 
-            border: none; border-radius: 8px; font-weight: bold; 
-            text-transform: uppercase; font-size: 14px; cursor: pointer;
+        /* Selector Dividido */
+        .selector-wrapper { 
+            display: flex; align-items: center; background: #000; 
+            border-radius: 8px; overflow: hidden; border: 2px solid #444; 
+            margin-bottom: 10px; position: relative;
+        }
+        .label-canales { 
+            background: var(--oro); color: #000; padding: 12px 15px; 
+            font-weight: bold; font-size: 14px; text-transform: uppercase; 
+        }
+        select { 
+            flex: 1; padding: 12px; background: #000; color: var(--oro); 
+            border: none; font-weight: bold; font-size: 16px; outline: none; 
+            appearance: none; cursor: pointer;
+        }
+        .selector-wrapper::after { 
+            content: '▼'; position: absolute; right: 15px; color: var(--oro); 
+            font-size: 12px; pointer-events: none; 
         }
 
-        /* CHAT */
+        /* Botón Ampliar con Icono TV */
+        .btn-fs { 
+            width: 100%; padding: 14px; background: var(--oro); color: #000; 
+            border: none; border-radius: 8px; font-weight: 900; 
+            text-transform: uppercase; font-size: 15px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+        }
+
+        /* CHAT ESTILO YOUTUBE (IFRAME) */
         #chat-frame { flex: 1; width: 100%; border: none; background: #fff; }
-        .btn-menu { width: 100%; padding: 10px; background: #222; color: #fff; border: none; text-align: center; font-weight: bold; text-decoration: none; display: block; font-size: 12px; }
+
+        /* BOTÓN MENÚ AL FINAL */
+        .btn-menu { 
+            width: 100%; padding: 15px; background: #222; color: #fff; 
+            border: none; text-align: center; font-weight: bold; 
+            text-decoration: none; display: block; font-size: 13px;
+            text-transform: uppercase; letter-spacing: 1px;
+        }
     </style>
 </head>
 <body>
@@ -63,14 +86,19 @@
     <div id="controls">
         <div class="selector-wrapper">
             <div class="label-canales">CANALES</div>
-            <select id="lista" onchange="cambiarCanal(this.value)"><option>CARGANDO...</option></select>
+            <select id="lista" onchange="cambiarCanal(this.value)">
+                <option>CARGANDO...</option>
+            </select>
         </div>
-        <button class="btn-fs" onclick="toggleFS()">📺 AMPLIAR PANTALLA</button>
+        
+        <button class="btn-fs" onclick="toggleFS()">
+            📺 AMPLIAR PANTALLA
+        </button>
     </div>
 
     <iframe id="chat-frame" src="chat-partido.html"></iframe>
 
-    <a href="index.html" class="btn-menu">🏠 VOLVER AL INICIO</a>
+    <a href="index.html" class="btn-menu">🏠 VOLVER AL MENÚ PRINCIPAL</a>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
@@ -84,7 +112,7 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    // --- CONTADOR DE AUDIENCIA ---
+    // CONTADOR DE AUDIENCIA
     const sessionId = localStorage.getItem('manaure_session') || Math.random().toString(36).substring(7);
     localStorage.setItem('manaure_session', sessionId);
     const presenciaRef = ref(db, 'audiencia/' + sessionId);
@@ -97,7 +125,7 @@
     const pubOverlay = document.getElementById('pub-overlay');
     const hls = new Hls({ enableWorker: true, lowLatencyMode: true });
 
-    // --- MANDO VOZ Y PUBLICIDAD (IGUAL QUE ANTES) ---
+    // LÓGICA MANDO
     onValue(ref(db, 'radio_activa'), snap => {
         if (snap.val()?.estado === 'ON') { 
             radio.play().catch(()=>{}); vid.muted = true;
@@ -113,13 +141,13 @@
         } else { pubOverlay.style.display = 'none'; }
     });
 
-    // --- LÓGICA DE VIDEO ---
+    // CAMBIO DE CANAL
     window.cambiarCanal = (url) => {
         vid.pause(); vid.style.display = "none"; yt.style.display = "none"; yt.src = ""; hls.detachMedia();
         if (url.includes('youtu')) {
             let id = url.split('v=')[1] || url.split('/').pop();
             yt.style.display = "block";
-            yt.src = `https://www.youtube.com/embed/${id.split('&')[0]}?autoplay=1&rel=0&controls=1&showinfo=0`;
+            yt.src = `https://www.youtube.com/embed/${id.split('&')[0]}?autoplay=1&rel=0&controls=1`;
         } else {
             vid.style.display = "block";
             if (Hls.isSupported()) {
@@ -141,43 +169,29 @@
             if(select.length > 0) cambiarCanal(select.value);
         });
 
-    // --- FUNCIÓN DE PANTALLA COMPLETA REPARADA ---
+    // PANTALLA COMPLETA
     window.toggleFS = () => {
         const container = document.getElementById('video-container');
-        const btnExit = document.getElementById('exit-fs');
-
-        if (!document.fullscreenElement && !document.webkitFullscreenElement && !document.mozFullScreenElement && !document.msFullscreenElement) {
-            // Intentar entrar en pantalla completa (soporte para todos los navegadores)
+        if (!document.fullscreenElement && !document.webkitFullscreenElement) {
             if (container.requestFullscreen) { container.requestFullscreen(); }
             else if (container.webkitRequestFullscreen) { container.webkitRequestFullscreen(); }
-            else if (container.mozRequestFullScreen) { container.mozRequestFullScreen(); }
-            else if (container.msRequestFullscreen) { container.msRequestFullscreen(); }
-            
-            btnExit.style.display = "block";
-            pubOverlay.style.width = "180px";
+            document.getElementById('exit-fs').style.display = "block";
             if (screen.orientation && screen.orientation.lock) {
                 screen.orientation.lock("landscape").catch(() => {});
             }
         } else {
-            // Salir de pantalla completa
             if (document.exitFullscreen) { document.exitFullscreen(); }
             else if (document.webkitExitFullscreen) { document.webkitExitFullscreen(); }
-            else if (document.mozCancelFullScreen) { document.mozCancelFullScreen(); }
-            else if (document.msExitFullscreen) { document.msExitFullscreen(); }
         }
     };
     
-    // Detectar cambios para limpiar el botón de salida
-    const fsChangeHandler = () => {
-        const btnExit = document.getElementById('exit-fs');
+    const fsHandler = () => {
         if (!document.fullscreenElement && !document.webkitFullscreenElement) {
-            btnExit.style.display = "none";
-            pubOverlay.style.width = "110px";
+            document.getElementById('exit-fs').style.display = "none";
         }
     };
-
-    document.addEventListener('fullscreenchange', fsChangeHandler);
-    document.addEventListener('webkitfullscreenchange', fsChangeHandler);
+    document.addEventListener('fullscreenchange', fsHandler);
+    document.addEventListener('webkitfullscreenchange', fsHandler);
 </script>
 </body>
 </html>
