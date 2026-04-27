@@ -3,122 +3,189 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MANAURE TV LIVE</title>
+    <title>Manaure TV Pro - Modo Estadio</title>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <style>
-        body { margin: 0; background: #000; color: #fff; font-family: sans-serif; overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
-        #reproductor { width: 100%; aspect-ratio: 16/9; background: #111; position: relative; border-bottom: 2px solid #ffcc00; }
-        video, iframe { position: absolute; top: 0; left: 0; width: 100% !important; height: 100% !important; border: none; z-index: 5; }
+        :root { --rojo: #ff0000; --oro: #ffcc00; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { margin: 0; background: #000; color: #fff; font-family: sans-serif; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
         
-        #controles { padding: 15px; background: #1a1a1a; flex-shrink: 0; }
-        select { width: 100%; padding: 15px; background: #333; color: #ffcc00; border: 1px solid #ffcc00; border-radius: 8px; font-size: 18px; font-weight: bold; outline: none; }
+        /* ZONA DE VIDEO CON RELACIÓN 16:9 */
+        #player-box { width: 100%; aspect-ratio: 16 / 9; background: #000; position: relative; flex-shrink: 0; z-index: 10; }
+        video, #yt-frame { position: absolute; top: 0; left: 0; width: 100% !important; height: 100% !important; border: none; z-index: 11; }
+
+        /* PUBLICIDAD (Obedece al mando) */
+        #pub-overlay { position: absolute; top: 10px; right: 10px; width: 140px; z-index: 100; display: none; pointer-events: none; }
+        #pub-overlay img { width: 100%; border: 1px solid var(--oro); border-radius: 8px; box-shadow: 0 0 15px #000; }
+
+        /* BOTÓN MODO CINE (AMPLIAR) */
+        .btn-fs { position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,0.6); color: var(--oro); border: 1px solid var(--oro); padding: 8px 12px; border-radius: 5px; font-size: 10px; font-weight: bold; z-index: 101; cursor: pointer; text-transform: uppercase; }
+
+        /* INTERFAZ INFERIOR */
+        #interface { flex: 1; display: flex; flex-direction: column; background: #0f0f0f; border-top: 2px solid var(--oro); z-index: 5; }
+        #bar { padding: 10px; background: #1a1a1a; }
+        select { width: 100%; background: #222; color: #fff; border: 1px solid #444; padding: 12px; border-radius: 8px; font-size: 16px; font-weight: bold; outline: none; }
+        select:focus { border-color: var(--oro); }
         
-        #chat-partido { flex: 1; width: 100%; border: none; background: #000; }
-        .error-msg { position: absolute; top: 40%; width: 100%; text-align: center; color: red; font-size: 12px; z-index: 1; }
+        /* CONTENEDOR DEL CHAT PARTIDO */
+        #chat-container { flex: 1; display: flex; flex-direction: column; }
+        #chat-header { padding: 8px 15px; font-size: 11px; font-weight: bold; color: #777; border-bottom: 1px solid #222; background: #111; }
+        #chat-main { width: 100%; flex: 1; border: none; background: #000; }
     </style>
 </head>
 <body>
 
-<div id="reproductor">
-    <div class="error-msg" id="status">Cargando sistema...</div>
-    <video id="vid" playsinline controls autoplay muted style="display:none"></video>
-    <iframe id="yt" allow="autoplay; fullscreen" allowfullscreen style="display:none"></iframe>
-</div>
-
-<div id="controles">
-    <select id="lista" onchange="conectar(this.value)">
-        <option>Esperando lista...</option>
-    </select>
-</div>
-
-<iframe id="chat-partido" src="chat-partido.html"></iframe>
-
-<script>
-    const vid = document.getElementById('vid');
-    const yt = document.getElementById('yt');
-    const status = document.getElementById('status');
-    const hls = new Hls({
-        enableWorker: true,
-        xhrSetup: function(xhr) { xhr.withCredentials = false; } // Evita bloqueos de seguridad
-    });
-
-    function conectar(url) {
-        if(!url) return;
-        status.innerText = "Conectando señal...";
+    <div id="player-box">
+        <video id="video" playsinline controls autoplay muted></video>
+        <iframe id="yt-frame" style="display:none" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
         
-        // Reset
-        vid.pause();
-        vid.style.display = "none";
-        yt.style.display = "none";
-        yt.src = "";
-        hls.detachMedia();
+        <audio id="radio-audio" src="https://stream.zeno.fm/a0x4vvcp9whvv"></audio>
 
-        // Es YouTube?
-        if (url.includes('youtu')) {
-            let id = "";
-            if (url.includes('v=')) id = url.split('v=')[1].split('&')[0];
-            else if (url.includes('live/')) id = url.split('live/')[1].split('?')[0];
-            else id = url.split('/').pop();
+        <div id="pub-overlay"><img id="pub-img" src=""></div>
+        
+        <button id="fs-button" class="btn-fs" onclick="toggleFS()">Ampliar Pantalla</button>
+    </div>
 
-            yt.style.display = "block";
-            yt.src = "https://www.youtube.com/embed/" + id + "?autoplay=1&modestbranding=1";
-            status.innerText = "";
-        } 
-        // Es M3U8?
-        else {
-            vid.style.display = "block";
-            if (Hls.isSupported()) {
-                hls.loadSource(url);
-                hls.attachMedia(vid);
-                hls.on(Hls.Events.MANIFEST_PARSED, () => {
-                    vid.play().catch(e => {
-                        status.innerText = "Toca Play para iniciar audio";
-                        vid.muted = true; vid.play();
-                    });
-                    status.innerText = "";
-                });
+    <div id="interface">
+        <div id="bar">
+            <select id="lista-canales"><option>Conectando señal...</option></select>
+        </div>
+        
+        <div id="chat-container">
+            <div id="chat-header">● CHAT EN VIVO - MODO PARTIDO</div>
+            <iframe id="chat-main" src="chat-partido.html"></iframe>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, onValue, set, push, onDisconnect } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        const firebaseConfig = { 
+            apiKey: "AIzaSyBtkKwQlTzDgQwP_RpDPnX7WJqoyg1turk", 
+            databaseURL: "https://radiomanaure-default-rtdb.firebaseio.com", 
+            projectId: "radiomanaure" 
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        
+        const video = document.getElementById('video');
+        const yt = document.getElementById('yt-frame');
+        const radio = document.getElementById('radio-audio');
+        const fsButton = document.getElementById('fs-button');
+
+        // Motor HLS optimizado
+        const hls = new Hls({ enableWorker: true, lowLatencyMode: true, maxBufferLength: 4 });
+
+        function getYTID(url) {
+            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=|live\/)([^#&?]*).*/;
+            const match = url.match(regExp);
+            return (match && match[2].length === 11) ? match[2] : null;
+        }
+
+        window.play = (url) => {
+            video.pause(); video.style.display = "none";
+            yt.style.display = "none"; yt.src = "";
+            hls.detachMedia();
+
+            const ytId = getYTID(url);
+
+            if (ytId) {
+                yt.style.display = "block";
+                yt.src = `https://www.youtube.com/embed/${ytId}?autoplay=1&rel=0&modestbranding=1&controls=1&origin=${window.location.origin}`;
             } else {
-                vid.src = url;
-                vid.play();
-                status.innerText = "";
+                video.style.display = "block";
+                if (Hls.isSupported() && url.includes('.m3u8')) {
+                    hls.loadSource(url); hls.attachMedia(video);
+                    hls.on(Hls.Events.MANIFEST_PARSED, () => video.play().catch(()=>{}));
+                } else { video.src = url; video.play().catch(()=>{}); }
             }
-        }
-    }
+        };
 
-    // CARGAR LISTA CON GESTOR DE ERRORES
-    async function cargarLista() {
-        const githubURL = "https://raw.githubusercontent.com/lavozdemanaureapp/lavozdemanaure/main/canales.m3u";
-        try {
-            const resp = await fetch(githubURL);
-            if(!resp.ok) throw new Error("Error en GitHub");
-            const texto = await resp.text();
-            
-            const select = document.getElementById('lista');
-            select.innerHTML = "";
-            
-            const lineas = texto.split('\n');
-            lineas.forEach((linea, i) => {
-                if (linea.includes('#EXTINF')) {
-                    const nombre = linea.split(',')[1].trim();
-                    const link = lineas[i+1].trim();
-                    if(link.startsWith('http')) {
-                        let opt = new Option(nombre.toUpperCase(), link);
-                        select.add(opt);
+        // Carga de lista
+        fetch("https://raw.githubusercontent.com/lavozdemanaureapp/lavozdemanaure/main/canales.m3u")
+            .then(res => res.text()).then(data => {
+                const select = document.getElementById('lista-canales');
+                select.innerHTML = "";
+                const lines = data.split('\n');
+                lines.forEach((line, i) => {
+                    if (line.includes('#EXTINF')) {
+                        const name = line.split(',')[1].trim();
+                        const url = lines[i+1]?.trim();
+                        if (url?.startsWith('http')) select.add(new Option(name.toUpperCase(), url));
                     }
-                }
+                });
+                if (select.length > 0) play(select.value);
             });
+
+        document.getElementById('lista-canales').onchange = (e) => play(e.target.value);
+
+        // --- ÓRDENES DEL MANDO FIREBASE ---
+        onValue(ref(db, 'publicidad_activa'), snap => {
+            const d = snap.val();
+            const overlay = document.getElementById('pub-overlay');
+            if (d?.imagen && d.imagen !== 'OFF') {
+                document.getElementById('pub-img').src = d.imagen;
+                overlay.style.display = 'block';
+            } else { overlay.style.display = 'none'; }
+        });
+
+        onValue(ref(db, 'radio_activa'), snap => {
+            if (snap.val()?.estado === 'ON') { radio.play(); video.muted = true; }
+            else { radio.pause(); video.muted = false; }
+        });
+
+        // --- CONTEO DE AUDIENCIA ---
+        const miConexion = push(ref(db, 'audiencia'));
+        onDisconnect(miConexion).remove();
+        set(miConexion, true);
+
+        // --- LA MAGIA DEL GIRO AUTOMÁTICO ---
+        window.toggleFS = () => {
+            const p = document.getElementById('player-box');
             
-            if (select.length > 0) conectar(select.value);
-            else status.innerText = "Lista vacía";
+            if (!document.fullscreenElement) {
+                // 1. Entrar en pantalla completa
+                if (p.requestFullscreen) p.requestFullscreen();
+                else if (p.webkitRequestFullscreen) p.webkitRequestFullscreen(); // Safari/iOS
 
-        } catch (e) {
-            status.innerText = "ERROR: No se pudo leer la lista de canales";
-            console.error(e);
-        }
-    }
+                // 2. FORZAR ORIENTACIÓN HORIZONTAL
+                if (screen.orientation && screen.orientation.lock) {
+                    screen.orientation.lock("landscape").catch((e) => {
+                        console.log("El giro automático requiere interacción del usuario o permiso.");
+                    });
+                }
+            } else {
+                // Salir de pantalla completa
+                if (document.exitFullscreen) document.exitFullscreen();
+                else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
 
-    cargarLista();
-</script>
+                // 3. SOLTAR ORIENTACIÓN (volver a normal)
+                if (screen.orientation && screen.orientation.unlock) {
+                    screen.orientation.unlock();
+                }
+            }
+        };
 
+        // Escuchar cambios de pantalla completa para ajustar el texto del botón
+        document.addEventListener('fullscreenchange', () => {
+            if (document.fullscreenElement) {
+                fsButton.innerText = "Salir";
+                fsButton.style.background = "#333";
+            } else {
+                fsButton.innerText = "Ampliar Pantalla";
+                fsButton.style.background = "rgba(0,0,0,0.6)";
+            }
+        });
+        document.addEventListener('webkitfullscreenchange', () => { // Safari
+            if (document.webkitFullscreenElement) {
+                fsButton.innerText = "Salir";
+                fsButton.style.background = "#333";
+            } else {
+                fsButton.innerText = "Ampliar Pantalla";
+                fsButton.style.background = "rgba(0,0,0,0.6)";
+            }
+        });
+    </script>
 </body>
 </html>
