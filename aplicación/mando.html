@@ -3,68 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mando Manaure Pro - 10 Pubs</title>
+    <title>Mando Manaure Final</title>
     <style>
-        body { background: #0b0b0b; color: white; font-family: 'Segoe UI', Arial, sans-serif; text-align: center; padding: 15px; margin: 0; }
-        h1 { font-size: 0.9rem; color: #555; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 2px; }
-        
-        /* CONTADOR DE AUDIENCIA FIREBASE */
+        body { background: #0b0b0b; color: white; font-family: sans-serif; text-align: center; padding: 15px; margin: 0; }
         .audiencia-card { 
             background: linear-gradient(145deg, #000, #1a0000); 
             border: 2px solid #ff0000; padding: 20px; border-radius: 20px; 
-            margin-bottom: 20px; box-shadow: 0 0 25px rgba(255,0,0,0.4);
+            margin-bottom: 20px; box-shadow: 0 0 25px rgba(255,0,0,0.5);
         }
-        #audiencia-total { font-size: 80px; font-weight: bold; color: #ff0000; margin: 5px 0; line-height: 1; }
-        .label-audiencia { font-size: 13px; color: #ff4d4d; font-weight: bold; text-transform: uppercase; }
-
-        /* SECCIONES DE CONTROL */
+        #audiencia-total { font-size: 85px; font-weight: bold; color: #ff0000; line-height: 1; }
         .card { background: #1a1a1a; padding: 15px; border-radius: 15px; margin-bottom: 15px; border: 1px solid #333; }
-        h3 { font-size: 0.85rem; margin-top: 0; color: #ffcc00; text-transform: uppercase; margin-bottom: 15px; border-bottom: 1px solid #333; padding-bottom: 5px; }
-        
-        /* BOTONES DE VOZ */
-        .flex-voz { display: flex; justify-content: space-between; gap: 10px; }
-        .btn-voz { flex: 1; height: 75px; font-size: 18px; border-radius: 12px; border: none; font-weight: bold; cursor: pointer; color: white; }
+        .flex-voz { display: flex; gap: 10px; }
+        .btn-voz { flex: 1; height: 70px; font-size: 18px; border-radius: 12px; border: none; font-weight: bold; color: white; }
         .on { background: #1e7e34; border-bottom: 5px solid #114d1f; }
-        .on:active { transform: translateY(3px); border-bottom: 2px solid #114d1f; }
         .off { background: #bd2130; border-bottom: 5px solid #7d1620; }
-        .off:active { transform: translateY(3px); border-bottom: 2px solid #7d1620; }
-
-        /* GRID DE 10 PUBLICIDADES */
-        .grid-pub { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
-        .btn-pub { 
-            background: #2a2a2a; color: #fff; padding: 18px; border-radius: 10px; 
-            border: 1px solid #444; font-weight: bold; font-size: 15px;
-            box-shadow: 0 4px 0 #000;
-        }
-        .btn-pub:active { background: #ffcc00; color: #000; transform: translateY(2px); box-shadow: 0 2px 0 #000; }
-        
-        .btn-quitar { 
-            background: #444; color: white; width: 100%; margin-top: 20px; 
-            padding: 20px; font-size: 18px; border-radius: 12px; border: 2px dashed #777;
-            font-weight: bold;
-        }
+        .grid-pub { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+        .btn-pub { background: #2a2a2a; color: #fff; padding: 15px; border-radius: 10px; border: 1px solid #444; font-weight: bold; }
+        .btn-quitar { background: #444; color: white; width: 100%; margin-top: 15px; padding: 15px; border-radius: 10px; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <h1>MANAURE TV - PANEL OFICIAL</h1>
-
     <div class="audiencia-card">
-        <div class="label-audiencia">Usuarios Conectados</div>
+        <div style="font-size: 14px; color: #ff4d4d; font-weight: bold;">OYENTES EN VIVO</div>
         <div id="audiencia-total">0</div>
-        <div style="font-size: 11px; color: #00ff00; letter-spacing: 1px;">● FIREBASE LIVE DATA</div>
     </div>
 
     <div class="card">
-        <h3>Control de Voz (Micrófono)</h3>
+        <h3 style="color: #ffcc00; font-size: 0.8rem;">VOZ / MICRÓFONO</h3>
         <div class="flex-voz">
-            <button class="on btn-voz" onclick="setRadio('ON')">🎤 ENTRAR</button>
-            <button class="off btn-voz" onclick="setRadio('OFF')">🔇 SALIR</button>
+            <button class="on" onclick="setRadio('ON')">🎤 ENTRAR</button>
+            <button class="off" onclick="setRadio('OFF')">🔇 SALIR</button>
         </div>
     </div>
 
     <div class="card">
-        <h3>Lanzar Publicidad (1-10)</h3>
+        <h3 style="color: #ffcc00; font-size: 0.8rem;">PUBLICIDAD 1-10</h3>
         <div class="grid-pub">
             <button class="btn-pub" onclick="setPub('publicidad1.png')">PUB 1</button>
             <button class="btn-pub" onclick="setPub('publicidad2.png')">PUB 2</button>
@@ -77,14 +51,13 @@
             <button class="btn-pub" onclick="setPub('publicidad9.png')">PUB 9</button>
             <button class="btn-pub" onclick="setPub('publicidad10.png')">PUB 10</button>
         </div>
-        <button class="off btn-quitar" onclick="setPub('OFF')">QUITAR IMAGEN</button>
+        <button class="btn-quitar" onclick="setPub('OFF')">QUITAR PUB</button>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-        // CONFIGURACIÓN DE TU FIREBASE
         const firebaseConfig = { 
             apiKey: "AIzaSyBtkKwQlTzDgQwP_RpDPnX7WJqoyg1turk", 
             databaseURL: "https://radiomanaure-default-rtdb.firebaseio.com", 
@@ -94,24 +67,23 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // --- FUNCIONES DE MANDO ---
-        window.setRadio = (est) => {
-            set(ref(db, 'radio_activa'), { estado: est });
-        };
+        window.setRadio = (est) => set(ref(db, 'radio_activa'), { estado: est });
+        window.setPub = (img) => set(ref(db, 'publicidad_activa'), { imagen: img });
 
-        window.setPub = (img) => {
-            set(ref(db, 'publicidad_activa'), { imagen: img });
-        };
-
-        // --- LÓGICA DE AUDIENCIA ---
-        // Escucha la rama 'audiencia' y cuenta los nodos activos
+        // --- EL CONTADOR DE LA VERDAD ---
+        // Escuchamos la rama 'audiencia' y forzamos el conteo
         onValue(ref(db, 'audiencia'), (snapshot) => {
             if (snapshot.exists()) {
-                const total = Object.keys(snapshot.val()).length;
-                document.getElementById('audiencia-total').innerText = total;
+                const data = snapshot.val();
+                // Contamos cuántas personas hay realmente en la lista
+                const cantidad = Object.keys(data).length;
+                document.getElementById('audiencia-total').innerText = cantidad;
+                console.log("Audiencia actualizada:", cantidad);
             } else {
                 document.getElementById('audiencia-total').innerText = "0";
             }
+        }, (error) => {
+            console.error("Error de Firebase:", error);
         });
     </script>
 </body>
