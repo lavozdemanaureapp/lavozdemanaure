@@ -3,45 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mando Manaure Pro</title>
+    <title>Mando Manaure Pro - Audio Control</title>
     <style>
-        body { background: #111; color: white; font-family: sans-serif; text-align: center; padding: 15px; margin: 0; }
-        h1 { font-size: 1.2rem; color: #666; margin-bottom: 15px; }
+        body { background: #0b0b0b; color: white; font-family: sans-serif; text-align: center; padding: 15px; margin: 0; }
+        h1 { font-size: 1rem; color: #444; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 2px; }
         
-        /* CUADRO DE AUDIENCIA */
+        /* MONITOR DE AUDIENCIA */
         .audiencia-card { 
-            background: #000; 
-            border: 2px solid #ff0000; 
-            padding: 15px; 
-            border-radius: 15px; 
-            margin-bottom: 20px;
-            box-shadow: 0 0 15px rgba(255,0,0,0.2);
+            background: linear-gradient(145deg, #000, #1a0000); 
+            border: 2px solid #ff0000; padding: 20px; border-radius: 20px; 
+            margin-bottom: 20px; box-shadow: 0 0 20px rgba(255,0,0,0.3);
         }
-        .audiencia-label { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: #aaa; }
-        #audiencia-total { font-size: 45px; font-weight: bold; color: #ff0000; margin: 5px 0; }
+        #audiencia-total { font-size: 60px; font-weight: bold; color: #ff0000; margin: 5px 0; }
 
-        .card { background: #222; padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid #333; }
-        h3 { font-size: 0.9rem; margin-top: 0; color: #ddd; text-transform: uppercase; }
+        /* PLAYER DE AUDIO VISIBLE */
+        .audio-card { background: #222; border: 2px solid #ffcc00; border-radius: 12px; padding: 15px; margin-bottom: 15px; }
+        audio { width: 100%; height: 40px; margin-top: 10px; }
         
-        .grid-pub { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+        .card { background: #1a1a1a; padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid #333; }
+        h3 { font-size: 0.85rem; margin-top: 0; color: #ffcc00; text-transform: uppercase; margin-bottom: 12px; }
         
-        button { 
-            padding: 12px; 
-            border-radius: 8px; 
-            border: none; 
-            cursor: pointer; 
-            font-weight: bold; 
-            font-size: 14px;
-            transition: 0.2s;
-        }
+        .grid-pub { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+        button { padding: 14px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; font-size: 14px; transition: 0.1s; }
         
-        .btn-main { width: 48%; }
-        .on { background: #28a745; color: white; }
-        .off { background: #dc3545; color: white; }
-        .btn-pub { background: #444; color: white; width: 100%; }
-        .btn-pub:active { background: #ff0000; }
+        .btn-main { width: 48%; height: 60px; font-size: 16px; }
+        .on { background: #1e7e34; color: white; border-bottom: 4px solid #155d27; }
+        .off { background: #bd2130; color: white; border-bottom: 4px solid #8c1924; }
         
-        .btn-quitar-pub { background: #555; color: white; width: 100%; margin-top: 10px; padding: 15px; }
+        .btn-pub { background: #333; color: #fff; width: 100%; border: 1px solid #444; }
+        .btn-quitar-pub { background: #444; color: white; width: 100%; margin-top: 15px; padding: 18px; font-size: 16px; border: 2px dashed #666; }
+
+        .status-msg { font-size: 12px; margin-top: 10px; font-weight: bold; }
+        .active-mic { color: #00ff00; }
+        .muted-mic { color: #ff4444; }
     </style>
 </head>
 <body>
@@ -49,25 +43,26 @@
     <h1>CENTRO DE CONTROL MANAURE</h1>
 
     <div class="audiencia-card">
-        <div class="audiencia-label">Oyentes Conectados</div>
+        <div style="font-size: 11px; color: #ff4d4d; font-weight: bold;">OYENTES CONECTADOS</div>
         <div id="audiencia-total">0</div>
-        <div class="audiencia-label">En Tiempo Real</div>
+    </div>
+
+    <div class="audio-card">
+        <h3>Señal de la Emisora (Retorno)</h3>
+        <audio id="radio-audio" controls src="https://stream.zeno.fm/a0x4vvcp9whvv"></audio>
     </div>
 
     <div class="card">
-        <h3>Chat en Pantalla</h3>
-        <button class="on btn-main" onclick="setChat('ON')">ACTIVAR</button>
-        <button class="off btn-main" onclick="setChat('OFF')">QUITAR</button>
+        <h3>Control de Transmisión</h3>
+        <div style="display: flex; justify-content: space-between;">
+            <button class="on btn-main" onclick="setRadio('ON')">🎤 HABLAR<br>(Mute Video)</button>
+            <button class="off btn-main" onclick="setRadio('OFF')">🔇 CALLAR<br>(Audio Video)</button>
+        </div>
+        <div id="status-text" class="status-msg muted-mic">ESTADO: AUDIO DE VIDEO ACTIVO</div>
     </div>
 
     <div class="card">
-        <h3>Voz Radio (Silencia Video)</h3>
-        <button class="on btn-main" onclick="setRadio('ON')">HABLAR</button>
-        <button class="off btn-main" onclick="setRadio('OFF')">CALLAR</button>
-    </div>
-
-    <div class="card">
-        <h3>Lanzar Publicidad</h3>
+        <h3>Publicidad Directa</h3>
         <div class="grid-pub">
             <button class="btn-pub" onclick="setPub('publicidad1.png')">PUB 1</button>
             <button class="btn-pub" onclick="setPub('publicidad2.png')">PUB 2</button>
@@ -96,16 +91,38 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // --- FUNCIONES DE MANDO ---
-        window.setChat = (est) => set(ref(db, 'chat_visible'), { estado: est });
-        window.setRadio = (est) => set(ref(db, 'radio_activa'), { estado: est });
+        // --- LÓGICA DE MANDO ---
+        window.setRadio = (est) => {
+            set(ref(db, 'radio_activa'), { estado: est });
+            const status = document.getElementById('status-text');
+            if(est === 'ON') {
+                status.innerText = "ESTADO: TRANSMITIENDO VOZ (VIDEO MUTEADO)";
+                status.className = "status-msg active-mic";
+            } else {
+                status.innerText = "ESTADO: AUDIO DE VIDEO ACTIVO";
+                status.className = "status-msg muted-mic";
+            }
+        };
+
         window.setPub = (img) => set(ref(db, 'publicidad_activa'), { imagen: img });
 
-        // --- LÓGICA DE AUDIENCIA EN TIEMPO REAL ---
-        const audienciaRef = ref(db, 'audiencia');
-        onValue(audienciaRef, (snapshot) => {
-            const num = snapshot.exists() ? Object.keys(snapshot.val()).length : 0;
+        // --- AUDIENCIA REAL-TIME ---
+        onValue(ref(db, 'audiencia'), (snap) => {
+            const num = snap.exists() ? Object.keys(snap.val()).length : 0;
             document.getElementById('audiencia-total').innerText = num;
+        });
+
+        // Sincronizar el estado visual del mando con Firebase por si se cambia desde otro lado
+        onValue(ref(db, 'radio_activa'), (snap) => {
+            const est = snap.val()?.estado;
+            const status = document.getElementById('status-text');
+            if(est === 'ON') {
+                status.innerText = "ESTADO: TRANSMITIENDO VOZ (VIDEO MUTEADO)";
+                status.className = "status-msg active-mic";
+            } else {
+                status.innerText = "ESTADO: AUDIO DE VIDEO ACTIVO";
+                status.className = "status-msg muted-mic";
+            }
         });
     </script>
 </body>
