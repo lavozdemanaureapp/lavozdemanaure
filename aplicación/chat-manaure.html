@@ -20,7 +20,7 @@
         const urlParams = new URLSearchParams(window.location.search);
         const esModoCine = urlParams.get('modo') === 'cine';
 
-        // --- CONTADOR ---
+        // --- CONTADOR (Evita duplicados) ---
         if (!esModoCine && !window.location.href.includes('mando.html')) {
             const sessionId = localStorage.getItem('manaure_session') || Math.random().toString(36).substring(7);
             localStorage.setItem('manaure_session', sessionId);
@@ -29,15 +29,13 @@
             onDisconnect(presenciaRef).remove();
         }
 
-        // --- LÓGICA DE MENSAJES (CORREGIDA PARA ÚLTIMOS) ---
+        // --- MENSAJES (Los últimos 3 para el video) ---
         const limite = esModoCine ? 3 : 50;
         const mensajesRef = query(ref(db, 'mensajes'), limitToLast(limite));
         
         onValue(mensajesRef, (snapshot) => {
             const contenedor = document.getElementById('mensajes');
             contenedor.innerHTML = ''; 
-            
-            // Leemos los mensajes y nos aseguramos de que bajen al final
             snapshot.forEach((hijo) => {
                 const dato = hijo.val();
                 const div = document.createElement('div');
@@ -45,10 +43,8 @@
                 div.innerHTML = `<span>${dato.usuario}:</span> ${dato.texto}`;
                 contenedor.appendChild(div);
             });
-            
-            // TRUCO FINAL: Forzar el scroll hasta abajo del todo
+            // Bajar el scroll al último mensaje
             window.scrollTo(0, document.body.scrollHeight);
-            document.documentElement.scrollTop = document.documentElement.scrollHeight;
         });
 
         window.enviarMsg = () => {
@@ -61,56 +57,53 @@
         };
     </script>
     <style>
-        /* TRANSPARENCIA RADICAL */
+        /* FONDO TOTALMENTE TRANSPARENTE */
         html, body { 
             background: transparent !important; 
             margin: 0; 
             padding: 0; 
             color: white;
-            font-family: sans-serif;
+            font-family: 'Segoe UI', Tahoma, sans-serif;
         }
 
         body { 
-            overflow-y: auto; 
-            overflow-x: hidden;
+            overflow-y: auto; /* Activa el scroll en modo normal */
         }
 
-        /* En modo cine, nada de barras de scroll visibles */
         body.modo-cine { overflow: hidden !important; }
 
         #mensajes { 
             display: flex; 
             flex-direction: column; 
-            gap: 4px; 
-            padding: 8px;
-            /* El relleno de abajo es para que el último mensaje no se esconda */
-            padding-bottom: 85px; 
+            gap: 6px; 
+            padding: 10px;
+            /* El espacio de abajo es para que el último mensaje llegue justo arriba del input */
+            padding-bottom: 75px; 
         }
 
-        .modo-cine #mensajes { padding-bottom: 5px; }
-
-        /* MENSAJE NORMAL */
-        .mensaje-item.normal { 
-            background: rgba(40, 40, 40, 0.7); 
-            padding: 8px 12px; 
-            border-radius: 8px; 
-            border-left: 5px solid #ff0000;
-            margin-bottom: 3px;
-        }
-
-        /* MODO CINE (CASI INVISIBLE SOBRE EL VIDEO) */
+        /* AJUSTE PARA MODO CINE (SIN FONDO NEGRO) */
         .mensaje-item.cine { 
-            background: rgba(0, 0, 0, 0.1) !important; 
+            background: rgba(0, 0, 0, 0.15) !important; /* Casi invisible */
             border: none !important;
-            padding: 3px 8px !important; 
+            padding: 4px 10px !important; 
             border-left: 4px solid #ff0000 !important; 
             font-size: 13px !important;
             line-height: 1.2;
-            text-shadow: 2px 2px 3px #000;
+            text-shadow: 2px 2px 3px #000; /* Sombra para leer sobre el video */
+            margin-bottom: 2px !important;
+        }
+
+        /* MENSAJE NORMAL (PANTALLA COMPLETA) */
+        .mensaje-item.normal { 
+            background: rgba(35, 35, 35, 0.8); 
+            padding: 10px; 
+            border-radius: 8px; 
+            border-left: 5px solid #ff0000;
         }
 
         .mensaje-item span { color: #ff0000; font-weight: bold; margin-right: 5px; text-transform: uppercase; }
 
+        /* AREA DE ENVIAR MENSAJE (Solo modo normal) */
         #input-area { 
             position: fixed; bottom: 0; left: 0; width: 100%; 
             background: #111; 
@@ -129,7 +122,7 @@
         const esCine = new URLSearchParams(window.location.search).get('modo') === 'cine';
         if (esCine) {
             document.getElementById('cuerpo').classList.add('modo-cine');
-            document.write('<style>#input-area { display: none !important; }</style>');
+            document.write('<style>#input-area { display: none !important; } #mensajes { padding-bottom: 0 !important; }</style>');
         }
     </script>
 
