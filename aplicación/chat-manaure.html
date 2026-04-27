@@ -20,7 +20,7 @@
         const urlParams = new URLSearchParams(window.location.search);
         const esModoCine = urlParams.get('modo') === 'cine';
 
-        // --- CONTADOR (Solo en modo normal) ---
+        // --- CONTADOR ---
         if (!esModoCine && !window.location.href.includes('mando.html')) {
             const sessionId = localStorage.getItem('manaure_session') || Math.random().toString(36).substring(7);
             localStorage.setItem('manaure_session', sessionId);
@@ -39,12 +39,14 @@
             snapshot.forEach((hijo) => {
                 const dato = hijo.val();
                 const div = document.createElement('div');
-                div.className = esModoCine ? 'mensaje-item cine' : 'mensaje-item';
+                div.className = esModoCine ? 'mensaje-item cine' : 'mensaje-item normal';
                 div.innerHTML = `<span>${dato.usuario}:</span> ${dato.texto}`;
                 contenedor.appendChild(div);
             });
-            // Auto-scroll al final solo al recibir mensaje nuevo
-            window.scrollTo(0, document.body.scrollHeight);
+            // FORZAR EL SCROLL AL FINAL CON UN PEQUEÑO RETRASO PARA QUE CARGUE BIEN
+            setTimeout(() => {
+                window.scrollTo(0, document.body.scrollHeight);
+            }, 100);
         });
 
         window.enviarMsg = () => {
@@ -57,57 +59,61 @@
         };
     </script>
     <style>
-        /* CONFIGURACIÓN DE PANTALLA */
+        /* MATAMOS EL FONDO NEGRO DE TODA LA WEB */
         html, body { 
-            background: transparent !important; 
+            background: transparent !important; /* TRANSPARENCIA TOTAL */
             margin: 0; 
             padding: 0; 
             height: 100%;
+            color: white;
+            font-family: sans-serif;
         }
 
         body { 
-            padding: 5px; 
-            color: white; 
-            font-family: sans-serif; 
-            overflow-y: auto; /* ACTIVA EL SCROLL PARA EL CHAT GRANDE */
-            scrollbar-width: thin;
-            scrollbar-color: #ff0000 #111;
+            overflow-y: auto; 
+            display: flex;
+            flex-direction: column;
         }
 
-        /* BLOQUEO DE SCROLL SOLO EN MODO CINE */
+        /* Si es modo cine, prohibido el scroll para que no salgan barras feas */
         body.modo-cine { overflow: hidden !important; }
 
-        #mensajes { display: flex; flex-direction: column; gap: 5px; padding-bottom: 70px; }
-
-        /* --- ESTILO CHAT NORMAL (CON FONDO OSCURO) --- */
-        .mensaje-item { 
-            background: rgba(20, 20, 20, 0.9); 
-            padding: 10px; 
-            border-radius: 8px; 
-            font-size: 14px; 
-            border-left: 4px solid #ff0000;
-            margin-bottom: 2px;
+        #mensajes { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 5px; 
+            padding: 10px;
+            padding-bottom: 80px; /* Espacio para que el último mensaje no se tape con el input */
         }
 
-        /* --- MODO CINE (ULTRA ACLARADO - FONDO AL 5%) --- */
+        .modo-cine #mensajes { padding-bottom: 5px; }
+
+        /* --- MENSAJES EN PANTALLA NORMAL --- */
+        .mensaje-item.normal { 
+            background: rgba(30, 30, 30, 0.8); /* Gris muy suave, no negro puro */
+            padding: 10px; 
+            border-radius: 8px; 
+            border-left: 5px solid #ff0000;
+            font-size: 14px;
+        }
+
+        /* --- MENSAJES EN MODO CINE (CRISTALINOS) --- */
         .mensaje-item.cine { 
-            background: rgba(0, 0, 0, 0.05) !important; /* CASI INVISIBLE */
-            border: none !important;
-            padding: 2px 8px !important; 
-            border-left: 3px solid #ff0000 !important; 
-            font-size: 13px !important; 
-            margin-bottom: 2px !important;
-            line-height: 1.1 !important;
-            /* CONTORNO DE LETRA PARA QUE NO SE PIERDA */
-            text-shadow: 1px 1px 2px #000, -1px -1px 2px #000, 1px -1px 2px #000 !important;
+            background: rgba(0, 0, 0, 0.1) !important; /* FONDO CASI INEXISTENTE */
+            padding: 4px 10px !important; 
+            border-left: 4px solid #ff0000 !important; 
+            font-size: 13px !important;
+            line-height: 1.2;
+            text-shadow: 2px 2px 4px #000; /* Letras con sombra para que se vean */
         }
 
         .mensaje-item span { color: #ff0000; font-weight: bold; margin-right: 5px; text-transform: uppercase; }
 
-        /* INPUT AREA */
+        /* AREA DE ENTRADA */
         #input-area { 
             position: fixed; bottom: 0; left: 0; width: 100%; 
-            background: #111; padding: 10px; display: flex; gap: 5px; 
+            background: rgba(15, 15, 15, 0.95); /* El input sí tiene fondo para ver qué escribes */
+            padding: 12px; display: flex; gap: 8px; 
             border-top: 1px solid #333; box-sizing: border-box; 
         }
         input { background: #222; border: 1px solid #444; color: white; padding: 10px; border-radius: 5px; flex: 1; }
@@ -122,7 +128,7 @@
         const esCine = new URLSearchParams(window.location.search).get('modo') === 'cine';
         if (esCine) {
             document.getElementById('cuerpo').classList.add('modo-cine');
-            document.write('<style>#input-area { display: none !important; } #mensajes { padding-bottom: 0; }</style>');
+            document.write('<style>#input-area { display: none !important; }</style>');
         }
     </script>
 
