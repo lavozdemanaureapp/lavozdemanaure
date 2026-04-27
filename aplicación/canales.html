@@ -193,26 +193,27 @@
             if(select.length > 0) cambiarCanal(select.value);
         });
 
-    window.toggleFS = () => {
+   window.toggleFS = () => {
         const container = document.getElementById('video-container');
         const btnExit = document.getElementById('exit-fs');
+        
         if (!document.fullscreenElement) {
             container.requestFullscreen().catch(() => {});
             btnExit.style.display = "block";
-            pubOverlay.style.width = "180px";
+            
+            // --- PUBLICIDAD MÁS GRANDE (350px) ---
+            pubOverlay.style.width = "350px"; 
+            // ------------------------------------
+            
             if (screen.orientation && screen.orientation.lock) screen.orientation.lock("landscape").catch(() => {});
         } else {
             document.exitFullscreen();
             btnExit.style.display = "none";
-            pubOverlay.style.width = "110px";
+            
+            // Vuelve al tamaño normal
+            pubOverlay.style.width = "110px"; 
         }
     };
-    
-    document.addEventListener('fullscreenchange', () => {
-        if (!document.fullscreenElement) {
-            document.getElementById('exit-fs').style.display = "none";
-            pubOverlay.style.width = "110px";
-        }
     });
 </script>
 </body>
