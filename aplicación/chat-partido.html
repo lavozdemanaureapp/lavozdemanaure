@@ -3,76 +3,183 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Chat Partido Manaure</title>
+    <title>MANAURE TV - PRO FINAL</title>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <style>
-        body { margin: 0; background: #0f0f0f; color: #fff; font-family: sans-serif; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        :root { --oro: #ffcc00; --rojo: #ff0000; --oscuro: #1a1a1a; }
+        body { margin: 0; background: #000; color: #333; font-family: sans-serif; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
         
-        /* Contenedor de mensajes */
-        #mensajes { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 8px; scroll-behavior: smooth; }
-        
-        /* Estilo burbuja tipo YouTube */
-        .msg { display: flex; align-items: flex-start; gap: 8px; font-size: 14px; line-height: 1.4; animation: fadeIn 0.3s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-        
-        .user { font-weight: bold; color: #aaa; min-width: fit-content; }
-        .text { color: #efefef; word-break: break-word; }
-        
-        /* Input de mensaje */
-        #input-area { padding: 10px; background: #181818; border-top: 1px solid #333; display: flex; gap: 8px; }
-        input { flex: 1; background: #2a2a2a; border: 1px solid #444; color: #fff; padding: 10px; border-radius: 20px; outline: none; font-size: 14px; }
-        input:focus { border-color: #ffcc00; }
-        button { background: #ffcc00; color: #000; border: none; padding: 8px 15px; border-radius: 20px; font-weight: bold; cursor: pointer; }
+        /* VIDEO AREA */
+        #video-container { width: 100%; aspect-ratio: 16 / 9; background: #111; position: relative; flex-shrink: 0; }
+        video, iframe { position: absolute; top: 0; left: 0; width: 100% !important; height: 100% !important; border: none; z-index: 5; }
+        #pub-overlay { position: absolute; top: 10px; right: 10px; width: 110px; z-index: 100; display: none; transition: width 0.3s ease; }
+        #pub-overlay img { width: 100%; border: 2px solid var(--oro); border-radius: 8px; box-shadow: 0 0 15px #000; }
+        #exit-fs { position: absolute; top: 10px; left: 10px; z-index: 101; background: var(--rojo); color: white; border: none; padding: 10px; border-radius: 5px; display: none; font-weight: bold; }
+
+        /* CONTROLES */
+        #controls { padding: 10px; background: var(--oscuro); flex-shrink: 0; border-bottom: 2px solid var(--oro); }
+        .selector-wrapper { display: flex; align-items: center; background: #2a2a2a; border-radius: 8px; overflow: hidden; border: 1px solid #444; margin-bottom: 8px; position: relative; }
+        .label-canales { background: var(--oro); color: #000; padding: 12px; font-weight: bold; font-size: 13px; text-transform: uppercase; }
+        select { flex: 1; padding: 12px 35px 12px 12px; background: transparent; color: var(--oro); border: none; font-weight: bold; font-size: 16px; outline: none; appearance: none; cursor: pointer; z-index: 2; }
+        .selector-wrapper::after { content: '▼'; position: absolute; right: 12px; color: var(--oro); font-size: 12px; pointer-events: none; }
+        .btn-fs { width: 100%; padding: 12px; background: var(--oro); color: #000; border: none; border-radius: 8px; font-weight: bold; text-transform: uppercase; }
+
+        /* CHAT SECTION */
+        #chat-section { flex: 1; display: flex; flex-direction: column; background: #ffffff; overflow: hidden; }
+        #mensajes { flex: 1; overflow-y: scroll; padding: 15px; display: flex; flex-direction: column; gap: 10px; background: #fff; -webkit-overflow-scrolling: touch; }
+        .msg { font-size: 14px; border-bottom: 1px solid #eee; padding-bottom: 5px; color: #111; }
+        .user { font-weight: bold; color: #cc0000; margin-right: 5px; }
+
+        /* INPUT AREA */
+        #input-area { padding: 10px; background: #f8f8f8; border-top: 1px solid #ddd; display: flex; gap: 8px; flex-shrink: 0; }
+        .inp-nombre { width: 25%; background: #fff; border: 1px solid #ccc; padding: 8px; border-radius: 5px; color: #000; }
+        .inp-msg { flex: 1; background: #fff; border: 1px solid #ccc; padding: 8px; border-radius: 5px; color: #000; }
+        .btn-send { background: var(--oro); border: none; padding: 8px 15px; border-radius: 5px; font-weight: bold; }
+        .btn-menu { width: 100%; padding: 12px; background: #222; color: #fff; border: none; text-align: center; font-weight: bold; text-decoration: none; display: block; flex-shrink: 0; font-size: 13px; }
     </style>
 </head>
 <body>
 
-    <div id="mensajes"></div>
-
-    <div id="input-area">
-        <input type="text" id="user-input" placeholder="Nombre..." style="width: 30%;">
-        <input type="text" id="msg-input" placeholder="Di algo...">
-        <button id="send-btn">➤</button>
+    <div id="video-container">
+        <button id="exit-fs" onclick="toggleFS()">❌ SALIR</button>
+        <video id="vid" playsinline controls autoplay muted></video>
+        <iframe id="yt" style="display:none" allow="autoplay; fullscreen" allowfullscreen></iframe>
+        <audio id="radio-audio" src="https://stream.zeno.fm/a0x4vvcp9whvv"></audio>
+        <div id="pub-overlay"><img id="pub-img" src=""></div>
     </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, push, onChildAdded, query, limitToLast } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    <div id="controls">
+        <div class="selector-wrapper">
+            <div class="label-canales">CANALES</div>
+            <select id="lista" onchange="cambiarCanal(this.value)"><option>CARGANDO...</option></select>
+        </div>
+        <button class="btn-fs" onclick="toggleFS()">Ampliar Pantalla 📺</button>
+    </div>
 
-        const firebaseConfig = { databaseURL: "https://radiomanaure-default-rtdb.firebaseio.com" };
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
-        
-        // REFERENCIA INDEPENDIENTE: "chat_partido"
-        const chatRef = ref(db, 'chat_partido');
+    <div id="chat-section">
+        <div id="mensajes"></div>
+        <div id="input-area">
+            <input type="text" id="user-input" class="inp-nombre" placeholder="Nombre">
+            <input type="text" id="msg-input" class="inp-msg" placeholder="Comenta...">
+            <button id="send-btn" class="btn-send">➤</button>
+        </div>
+        <a href="index.html" class="btn-menu">🏠 VOLVER AL INICIO</a>
+    </div>
 
-        const box = document.getElementById('mensajes');
-        const userInp = document.getElementById('user-input');
-        const msgInp = document.getElementById('msg-input');
-        const btn = document.getElementById('send-btn');
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getDatabase, ref, onValue, push, set, onDisconnect, query, limitToLast, onChildAdded } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-        // Enviar mensaje
-        const enviar = () => {
-            const user = userInp.value.trim() || "Anónimo";
-            const text = msgInp.value.trim();
-            if(text) {
-                push(chatRef, { user, text, time: Date.now() });
-                msgInp.value = "";
-            }
-        };
+    const firebaseConfig = { 
+        apiKey: "AIzaSyBtkKwQlTzDgQwP_RpDPnX7WJqoyg1turk", 
+        databaseURL: "https://radiomanaure-default-rtdb.firebaseio.com", 
+        projectId: "radiomanaure" 
+    };
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
 
-        btn.onclick = enviar;
-        msgInp.onkeypress = (e) => { if(e.key === 'Enter') enviar(); };
+    // --- LÓGICA DE AUDIENCIA (CONTADOR RESTAURADO) ---
+    const sessionId = localStorage.getItem('manaure_session') || Math.random().toString(36).substring(7);
+    localStorage.setItem('manaure_session', sessionId);
+    const presenciaRef = ref(db, 'audiencia/' + sessionId);
+    set(presenciaRef, true);
+    onDisconnect(presenciaRef).remove(); // Resta cuando el usuario cierra
 
-        // Recibir mensajes (Últimos 50 para que sea rápido)
-        const q = query(chatRef, limitToLast(50));
-        onChildAdded(q, (snap) => {
-            const data = snap.val();
-            const div = document.createElement('div');
-            div.className = 'msg';
-            div.innerHTML = `<span class="user">${data.user}:</span> <span class="text">${data.text}</span>`;
-            box.appendChild(div);
-            box.scrollTop = box.scrollHeight; // Auto-scroll al último
+    const vid = document.getElementById('vid');
+    const yt = document.getElementById('yt');
+    const radio = document.getElementById('radio-audio');
+    const pubOverlay = document.getElementById('pub-overlay');
+    const hls = new Hls({ enableWorker: true, lowLatencyMode: true });
+
+    // --- MANDO VOZ ---
+    onValue(ref(db, 'radio_activa'), snap => {
+        if (snap.val()?.estado === 'ON') { 
+            radio.play().catch(()=>{}); vid.muted = true;
+            if(yt.style.display === "block" && !yt.src.includes('mute=1')) yt.src += "&mute=1";
+        } else { radio.pause(); vid.muted = false; if(yt.style.display === "block") yt.src = yt.src.replace("&mute=1", ""); }
+    });
+
+    // --- PUBLICIDAD ---
+    onValue(ref(db, 'publicidad_activa'), snap => {
+        const d = snap.val();
+        if (d?.imagen && d.imagen !== 'OFF') {
+            document.getElementById('pub-img').src = d.imagen;
+            pubOverlay.style.display = 'block';
+        } else { pubOverlay.style.display = 'none'; }
+    });
+
+    // --- CHAT ---
+    const chatRef = ref(db, 'chat_partido');
+    const box = document.getElementById('mensajes');
+    const userInp = document.getElementById('user-input');
+    const msgInp = document.getElementById('msg-input');
+    const btnSend = document.getElementById('send-btn');
+
+    const enviar = () => {
+        const user = userInp.value.trim() || "Anónimo";
+        const text = msgInp.value.trim();
+        if(text) { push(chatRef, { user, text, time: Date.now() }); msgInp.value = ""; }
+    };
+    btnSend.onclick = enviar;
+    msgInp.onkeypress = (e) => { if(e.key === 'Enter') enviar(); };
+
+    onChildAdded(query(chatRef, limitToLast(50)), (snap) => {
+        const data = snap.val();
+        const div = document.createElement('div');
+        div.className = 'msg';
+        div.innerHTML = `<span class="user">${data.user}:</span><span class="text">${data.text}</span>`;
+        box.appendChild(div);
+    });
+
+    // --- VIDEO ---
+    window.cambiarCanal = (url) => {
+        vid.pause(); vid.style.display = "none"; yt.style.display = "none"; yt.src = ""; hls.detachMedia();
+        if (url.includes('youtu')) {
+            let id = url.split('v=')[1] || url.split('/').pop();
+            yt.style.display = "block";
+            yt.src = `https://www.youtube.com/embed/${id.split('&')[0]}?autoplay=1&rel=0`;
+        } else {
+            vid.style.display = "block";
+            if (Hls.isSupported()) {
+                hls.loadSource(url); hls.attachMedia(vid);
+                hls.on(Hls.Events.MANIFEST_PARSED, () => vid.play().catch(()=>{}));
+            } else { vid.src = url; vid.play().catch(()=>{}); }
+        }
+    };
+
+    fetch("https://raw.githubusercontent.com/lavozdemanaureapp/lavozdemanaure/main/canales.m3u")
+        .then(r => r.text()).then(data => {
+            const select = document.getElementById('lista');
+            select.innerHTML = "";
+            data.split('\n').forEach((line, i, arr) => {
+                if (line.includes('#EXTINF')) {
+                    select.add(new Option(line.split(',')[1].trim().toUpperCase(), arr[i+1].trim()));
+                }
+            });
+            if(select.length > 0) cambiarCanal(select.value);
         });
-    </script>
+
+    window.toggleFS = () => {
+        const container = document.getElementById('video-container');
+        const btnExit = document.getElementById('exit-fs');
+        if (!document.fullscreenElement) {
+            container.requestFullscreen().catch(() => {});
+            btnExit.style.display = "block";
+            pubOverlay.style.width = "180px";
+            if (screen.orientation && screen.orientation.lock) screen.orientation.lock("landscape").catch(() => {});
+        } else {
+            document.exitFullscreen();
+            btnExit.style.display = "none";
+            pubOverlay.style.width = "110px";
+        }
+    };
+    
+    document.addEventListener('fullscreenchange', () => {
+        if (!document.fullscreenElement) {
+            document.getElementById('exit-fs').style.display = "none";
+            pubOverlay.style.width = "110px";
+        }
+    });
+</script>
 </body>
 </html>
