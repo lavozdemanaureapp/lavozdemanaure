@@ -117,7 +117,8 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getDatabase, ref, onValue, push, query, limitToLast, onChildAdded, set, onDisconnect } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    import { getDatabase, ref, onValue, push, query, limitToLast, onChildAdded } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
     const firebaseConfig = { 
         apiKey: "AIzaSyBtkKwQlTzDgQwP_RpDPnX7WJqoyg1turk", 
         databaseURL: "https://radiomanaure-default-rtdb.firebaseio.com", 
@@ -125,14 +126,6 @@
     };
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-
-// --- CÓDIGO PARA QUE EL MANDO CUENTE ---
-const sessionId = localStorage.getItem('manaure_session') || Math.random().toString(36).substring(7);
-localStorage.setItem('manaure_session', sessionId);
-const presenciaRef = ref(db, 'audiencia/' + sessionId);
-set(presenciaRef, true);
-onDisconnect(presenciaRef).remove();
-// ---------------------------------------
 
     const vid = document.getElementById('vid');
     const yt = document.getElementById('yt');
