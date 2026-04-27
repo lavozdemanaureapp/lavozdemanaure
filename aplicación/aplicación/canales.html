@@ -3,84 +3,96 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MANAURE TV - FULL EXTENDED</title>
+    <title>MANAURE TV - MODO PRO</title>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <style>
         :root { --oro: #ffcc00; --rojo: #ff0000; --oscuro: #1a1a1a; }
+        body { margin: 0; background: #000; color: #333; font-family: sans-serif; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
         
-        html, body { 
-            margin: 0; padding: 0; background: #000; height: 100vh; 
-            display: flex; flex-direction: column; overflow: hidden; 
-            font-family: sans-serif;
-        }
+        /* VIDEO AREA */
+        #video-container { width: 100%; aspect-ratio: 16 / 9; background: #111; position: relative; flex-shrink: 0; }
+        video, iframe { position: absolute; top: 0; left: 0; width: 100% !important; height: 100% !important; border: none; z-index: 5; }
         
-        /* CONTENEDOR MAESTRO - IGUAL AL QUE ME PASASTE */
-        #master-player { 
-            width: 100%; aspect-ratio: 16 / 9; background: #000; 
-            position: relative; flex-shrink: 0; z-index: 10;
-            display: flex; align-items: center; justify-content: center;
-        }
-
-        /* ESTIRAR VIDEO AL MÁXIMO */
-        video, iframe#yt { 
-            width: 100% !important; height: 100% !important; 
-            object-fit: cover; /* Cambiado a cover para no dejar bordes negros */
-            border: none;
-        }
-        
-        /* PUBLICIDAD GRANDE (190px como pediste) */
+        /* PUBLICIDAD DINÁMICA (Aumenta en Fullscreen vía JS) */
         #pub-overlay { 
-            position: absolute; top: 15px; right: 15px; width: 190px; 
-            z-index: 100; display: none; transition: all 0.3s ease;
+            position: absolute; top: 10px; right: 10px; width: 110px; 
+            z-index: 100; display: none; transition: width 0.3s ease;
         }
-        #pub-overlay img { width: 100%; border-radius: 8px; border: 3px solid var(--oro); box-shadow: 0 0 15px rgba(0,0,0,0.8); }
+        #pub-overlay img { width: 100%; border: 2px solid var(--oro); border-radius: 8px; box-shadow: 0 0 15px #000; }
+        
+        #exit-fs { position: absolute; top: 10px; left: 10px; z-index: 101; background: var(--rojo); color: white; border: none; padding: 10px; border-radius: 5px; display: none; font-weight: bold; }
 
-        /* CONTROLES ESTILO MANAURE (AMARILLO/NEGRO) */
+        /* BARRA DE SELECCIÓN CON FLECHA */
         #controls { padding: 10px; background: var(--oscuro); flex-shrink: 0; border-bottom: 2px solid var(--oro); }
         
         .selector-wrapper { 
-            display: flex; align-items: center; background: #000; 
-            border-radius: 8px; overflow: hidden; border: 2px solid #444; 
-            margin-bottom: 8px; position: relative;
+            display: flex; 
+            align-items: center; 
+            background: #2a2a2a; 
+            border-radius: 8px; 
+            overflow: hidden;
+            border: 1px solid #444;
+            margin-bottom: 8px;
+            position: relative;
         }
+
         .label-canales { 
-            background: var(--oro); color: #000; padding: 10px 12px; 
-            font-weight: bold; font-size: 13px; text-transform: uppercase; 
+            background: var(--oro); 
+            color: #000; 
+            padding: 12px 12px; 
+            font-weight: bold; 
+            font-size: 13px;
+            text-transform: uppercase;
         }
+
         select { 
-            flex: 1; padding: 10px; background: #000; color: var(--oro); 
-            border: none; font-weight: bold; font-size: 15px; outline: none; 
-            appearance: none; cursor: pointer;
+            flex: 1; 
+            padding: 12px 35px 12px 12px; /* Espacio a la derecha para la flecha */
+            background: transparent; 
+            color: var(--oro); 
+            border: none; 
+            font-weight: bold; 
+            font-size: 16px;
+            outline: none;
+            appearance: none; /* Quitamos flecha nativa fea */
+            cursor: pointer;
+            z-index: 2;
         }
 
-        .btn-fs { 
-            width: 100%; padding: 14px; background: var(--oro); color: #000; 
-            border: none; border-radius: 30px; font-weight: 900; 
-            text-transform: uppercase; font-size: 14px; cursor: pointer;
-            box-shadow: 0 4px 15px rgba(255,204,0,0.3);
+        /* Flecha personalizada */
+        .selector-wrapper::after {
+            content: '▼';
+            position: absolute;
+            right: 12px;
+            color: var(--oro);
+            font-size: 12px;
+            pointer-events: none;
         }
 
-        /* CHAT Y MENÚ */
-        #chat-frame { flex: 1; width: 100%; border: none; background: #fff; }
-        .btn-menu { 
-            width: 100%; padding: 12px; background: #222; color: #fff; 
-            text-align: center; font-weight: bold; text-decoration: none; 
-            display: block; font-size: 12px; text-transform: uppercase;
-        }
+        .btn-fs { width: 100%; padding: 12px; background: var(--oro); color: #000; border: none; border-radius: 8px; font-weight: bold; text-transform: uppercase; }
+
+        /* CHAT SECTION */
+        #chat-section { flex: 1; display: flex; flex-direction: column; background: #ffffff; overflow: hidden; }
+        #mensajes { flex: 1; overflow-y: scroll; padding: 15px; display: flex; flex-direction: column; gap: 10px; background: #fff; -webkit-overflow-scrolling: touch; }
+        .msg { font-size: 14px; border-bottom: 1px solid #eee; padding-bottom: 5px; color: #111; }
+        .user { font-weight: bold; color: #cc0000; margin-right: 5px; }
+
+        /* INPUT AREA */
+        #input-area { padding: 10px; background: #f8f8f8; border-top: 1px solid #ddd; display: flex; gap: 8px; flex-shrink: 0; }
+        .inp-nombre { width: 25%; background: #fff; border: 1px solid #ccc; padding: 8px; border-radius: 5px; color: #000; }
+        .inp-msg { flex: 1; background: #fff; border: 1px solid #ccc; padding: 8px; border-radius: 5px; color: #000; }
+        .btn-send { background: var(--oro); border: none; padding: 8px 15px; border-radius: 5px; font-weight: bold; }
+        .btn-menu { width: 100%; padding: 12px; background: #222; color: #fff; border: none; text-align: center; font-weight: bold; text-decoration: none; display: block; flex-shrink: 0; font-size: 13px; }
     </style>
 </head>
 <body>
 
-    <div id="master-player">
+    <div id="video-container">
+        <button id="exit-fs" onclick="toggleFS()">❌ SALIR</button>
         <video id="vid" playsinline controls autoplay muted></video>
-        <iframe id="yt" style="display:none" allow="autoplay; fullscreen"></iframe>
+        <iframe id="yt" style="display:none" allow="autoplay; fullscreen" allowfullscreen></iframe>
         <audio id="radio-audio" src="https://stream.zeno.fm/a0x4vvcp9whvv"></audio>
-        
         <div id="pub-overlay"><img id="pub-img" src=""></div>
-        
-        <button id="fs-button" class="btn-fs" style="position:absolute; bottom:10px; right:10px; width:auto; padding:8px 15px;" onclick="toggleFS()">
-            MODO CINE
-        </button>
     </div>
 
     <div id="controls">
@@ -90,16 +102,22 @@
                 <option>CARGANDO...</option>
             </select>
         </div>
-        <button class="btn-fs" onclick="toggleFS()">📺 AMPLIAR PANTALLA TOTAL</button>
+        <button class="btn-fs" onclick="toggleFS()">Ampliar Pantalla 📺</button>
     </div>
 
-    <iframe id="chat-frame" src="chat-partido.html"></iframe>
-
-    <a href="index.html" class="btn-menu">🏠 VOLVER AL INICIO</a>
+    <div id="chat-section">
+        <div id="mensajes"></div>
+        <div id="input-area">
+            <input type="text" id="user-input" class="inp-nombre" placeholder="Nombre">
+            <input type="text" id="msg-input" class="inp-msg" placeholder="Comenta...">
+            <button id="send-btn" class="btn-send">➤</button>
+        </div>
+        <a href="index.html" class="btn-menu">🏠 VOLVER AL INICIO</a>
+    </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    import { getDatabase, ref, onValue, push, query, limitToLast, onChildAdded } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
     const firebaseConfig = { 
         apiKey: "AIzaSyBtkKwQlTzDgQwP_RpDPnX7WJqoyg1turk", 
@@ -112,63 +130,67 @@
     const vid = document.getElementById('vid');
     const yt = document.getElementById('yt');
     const radio = document.getElementById('radio-audio');
-    const fsButton = document.getElementById('fs-button');
+    const pubOverlay = document.getElementById('pub-overlay');
     const hls = new Hls({ enableWorker: true, lowLatencyMode: true });
 
-    // MANDO
+    // --- MANDO VOZ ---
     onValue(ref(db, 'radio_activa'), snap => {
-        if (snap.val()?.estado === 'ON') { radio.play().catch(()=>{}); vid.muted = true; } 
-        else { radio.pause(); vid.muted = false; }
+        if (snap.val()?.estado === 'ON') { 
+            radio.play().catch(()=>{}); vid.muted = true;
+            if(yt.style.display === "block" && !yt.src.includes('mute=1')) yt.src += "&mute=1";
+        } else { 
+            radio.pause(); vid.muted = false; 
+            if(yt.style.display === "block") yt.src = yt.src.replace("&mute=1", "");
+        }
     });
 
+    // --- PUBLICIDAD ---
     onValue(ref(db, 'publicidad_activa'), snap => {
-        const v = snap.val();
-        document.getElementById('pub-overlay').style.display = (v?.imagen && v.imagen !== 'OFF') ? 'block' : 'none';
-        if(v?.imagen && v.imagen !== 'OFF') document.getElementById('pub-img').src = v.imagen;
+        const d = snap.val();
+        if (d?.imagen && d.imagen !== 'OFF') {
+            document.getElementById('pub-img').src = d.imagen;
+            pubOverlay.style.display = 'block';
+        } else { pubOverlay.style.display = 'none'; }
     });
 
-    // CAMBIO DE CANAL
+    // --- CHAT ---
+    const chatRef = ref(db, 'chat_partido');
+    const box = document.getElementById('mensajes');
+    const userInp = document.getElementById('user-input');
+    const msgInp = document.getElementById('msg-input');
+    const btnSend = document.getElementById('send-btn');
+
+    const enviar = () => {
+        const user = userInp.value.trim() || "Anónimo";
+        const text = msgInp.value.trim();
+        if(text) { push(chatRef, { user, text, time: Date.now() }); msgInp.value = ""; }
+    };
+    btnSend.onclick = enviar;
+    msgInp.onkeypress = (e) => { if(e.key === 'Enter') enviar(); };
+
+    onChildAdded(query(chatRef, limitToLast(50)), (snap) => {
+        const data = snap.val();
+        const div = document.createElement('div');
+        div.className = 'msg';
+        div.innerHTML = `<span class="user">${data.user}:</span><span class="text">${data.text}</span>`;
+        box.appendChild(div);
+    });
+
+    // --- VIDEO ---
     window.cambiarCanal = (url) => {
         vid.pause(); vid.style.display = "none"; yt.style.display = "none"; yt.src = ""; hls.detachMedia();
         if (url.includes('youtu')) {
-            let id = url.includes('v=') ? url.split('v=')[1].split('&')[0] : url.split('/').pop().split('?')[0];
+            let id = url.split('v=')[1] || url.split('/').pop();
             yt.style.display = "block";
-            yt.src = `https://www.youtube.com/embed/${id}?autoplay=1&rel=0&modestbranding=1`;
+            yt.src = `https://www.youtube.com/embed/${id.split('&')[0]}?autoplay=1&rel=0`;
         } else {
             vid.style.display = "block";
             if (Hls.isSupported()) {
                 hls.loadSource(url); hls.attachMedia(vid);
                 hls.on(Hls.Events.MANIFEST_PARSED, () => vid.play().catch(()=>{}));
-            }
+            } else { vid.src = url; vid.play().catch(()=>{}); }
         }
     };
-
-    // PANTALLA COMPLETA TOTAL (CON BLOQUEO DE GIRO)
-    window.toggleFS = () => {
-        const el = document.getElementById('master-player');
-        if (!document.fullscreenElement && !document.webkitFullscreenElement) {
-            if (el.requestFullscreen) el.requestFullscreen();
-            else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
-            
-            // Bloquea en horizontal para que ocupe todo
-            if (screen.orientation && screen.orientation.lock) {
-                screen.orientation.lock("landscape").catch(()=>{});
-            }
-        } else {
-            document.exitFullscreen();
-        }
-    };
-
-    document.addEventListener('fullscreenchange', () => {
-        if (document.fullscreenElement) {
-            fsButton.innerText = "SALIR";
-            vid.style.objectFit = "fill"; // Forzar llenado total en FullScreen
-        } else {
-            fsButton.innerText = "MODO CINE";
-            vid.style.objectFit = "cover";
-            if (screen.orientation && screen.orientation.unlock) screen.orientation.unlock();
-        }
-    });
 
     fetch("https://raw.githubusercontent.com/lavozdemanaureapp/lavozdemanaure/main/canales.m3u")
         .then(r => r.text()).then(data => {
@@ -181,6 +203,31 @@
             });
             if(select.length > 0) cambiarCanal(select.value);
         });
+
+    // --- PANTALLA COMPLETA CON PUB AGRANDADA ---
+    window.toggleFS = () => {
+        const container = document.getElementById('video-container');
+        const btnExit = document.getElementById('exit-fs');
+        
+        if (!document.fullscreenElement) {
+            container.requestFullscreen().catch(() => {});
+            btnExit.style.display = "block";
+            pubOverlay.style.width = "180px"; // Publicidad más grande en pantalla completa
+            if (screen.orientation && screen.orientation.lock) screen.orientation.lock("landscape").catch(() => {});
+        } else {
+            document.exitFullscreen();
+            btnExit.style.display = "none";
+            pubOverlay.style.width = "110px"; // Vuelve al tamaño normal
+        }
+    };
+    
+    // Resetear tamaño si salen con el botón nativo del cel
+    document.addEventListener('fullscreenchange', () => {
+        if (!document.fullscreenElement) {
+            document.getElementById('exit-fs').style.display = "none";
+            pubOverlay.style.width = "110px";
+        }
+    });
 </script>
 </body>
 </html>
