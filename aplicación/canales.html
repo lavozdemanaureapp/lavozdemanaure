@@ -24,48 +24,40 @@
 
         video, #yt-player { width: 100% !important; height: 100% !important; object-fit: contain; }
         
-        /* 1. PUBLICIDAD AGRANDADA */
+        /* PUBLICIDAD */
         #pub-overlay { 
             position: absolute; 
             top: 15px; 
             right: 15px; 
-            width: 190px; /* Tamaño solicitado */
+            width: 190px; 
             z-index: 2147483647; 
             display: none; 
             pointer-events: none; 
         }
         #pub-overlay img { width: 100%; border: 3px solid var(--rojo); border-radius: 8px; box-shadow: 0 0 20px rgba(0,0,0,0.8); }
         
-        /* 2. CHAT FLOTANTE (SOLO LECTURA) */
-       #chat-overlay { 
-    position: absolute; 
-    bottom: 75px; /* Un pelín más arriba para que no choque con los controles */
-    left: 15px; 
-    width: 300px; /* Un poquito más ancho para mensajes largos */
-    height: 180px; /* Aumentado para que quepan los 5 mensajes cómodamente */
-    z-index: 2147483647; 
-    display: none; 
-    overflow: hidden; 
-    background: transparent !important; /* FORZAMOS TRANSPARENCIA */
-    border: none !important;
-    pointer-events: none;
-}
-
-#chat-overlay iframe {
-    width: 100%;
-    height: 100%;
-    background: transparent !important; /* EL IFRAME TAMBIÉN DEBE SER TRANSPARENTE */
-    border: none;
-}
-        /* Este iframe tiene un margen negativo abajo para ocultar la caja de texto del chat */
-        #chat-overlay iframe {
-            width: 100%;
-            height: 160%; /* Más alto para que la caja de texto quede fuera del área visible */
-            border: none;
-            margin-top: -5px;
+        /* CHAT FLOTANTE MODO CINE */
+        #chat-overlay { 
+            position: absolute; 
+            bottom: 75px; 
+            left: 15px; 
+            width: 300px; 
+            height: 180px; 
+            z-index: 2147483647; 
+            display: none; 
+            overflow: hidden; 
+            background: transparent !important; 
+            pointer-events: none;
         }
 
-        /* 3. BOTÓN DINÁMICO MODO CINE / SALIR */
+        #chat-overlay iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: transparent !important;
+        }
+
+        /* BOTÓN MODO CINE */
         .btn-fullscreen { 
             position: absolute; 
             bottom: 15px; 
@@ -99,7 +91,7 @@
         <div id="pub-overlay"><img id="pub-img" src=""></div>
         
         <div id="chat-overlay">
-            <iframe src="chat-manaure.html"></iframe>
+            <iframe id="chat-cine-iframe" src="chat-manaure.html"></iframe>
         </div>
         
         <button id="fs-button" class="btn-fullscreen" onclick="toggleFS()">MODO CINE</button>
@@ -123,33 +115,69 @@
         const video = document.getElementById('video');
         const radio = document.getElementById('radio-audio');
         const fsButton = document.getElementById('fs-button');
+        const chatCineIframe = document.getElementById('chat-cine-iframe');
         let ytPlayer;
+        let ytReady = false;
 
+        // Configuración de YouTube
         window.onYouTubeIframeAPIReady = () => {
-            ytPlayer = new YT.Player('yt-player', { playerVars: { 'autoplay': 1, 'controls': 1, 'rel': 0 } });
+            ytPlayer = new YT.Player('yt-player', { 
+                playerVars: { 'autoplay': 1, 'controls': 1, 'rel': 0, 'origin': window.location.origin },
+                events: { 'onReady': () => { ytReady = true; } }
+            });
         };
 
-        const hls = new Hls({ enableWorker: true, lowLatencyMode: true });
+        // Motor HLS para M3U8 de alta velocidad
+        const hls = new Hls({ 
+            enableWorker: true, 
+            lowLatencyMode: true,
+            liveSyncDurationCount: 2, 
+            maxBufferLength: 10 
+        });
+
+        // Detector de IDs de YouTube (Normal y Live)
+        function getYoutubeID(url) {
+            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=|live\/)([^#&?]*).*/;
+            const match = url.match(regExp);
+            return (match && match[2].length === 11) ? match[2] : null;
+        }
 
         window.play = (url) => {
-            video.style.display = "none"; video.pause();
+            // Limpiar reproductores
+            video.pause();
+            video.style.display = "none";
             document.getElementById('yt-player').style.display = "none";
-            if(ytPlayer && ytPlayer.stopVideo) ytPlayer.stopVideo();
+            hls.detachMedia();
 
-            if (url.includes('youtube.com') || url.includes('youtu.be')) {
+            if(ytPlayer && ytPlayer.stopVideo) {
+                try { ytPlayer.stopVideo(); } catch(e) {}
+            }
+
+            const ytId = getYoutubeID(url);
+
+            if (ytId) {
                 document.getElementById('yt-player').style.display = "block";
-                let id = url.includes('v=') ? url.split('v=')[1].split('&')[0] : url.split('/').pop();
-                ytPlayer.loadVideoById(id);
+                if (ytReady && ytPlayer.loadVideoById) {
+                    ytPlayer.loadVideoById(ytId);
+                } else {
+                    setTimeout(() => { if(ytReady) ytPlayer.loadVideoById(ytId); }, 1500);
+                }
             } else {
                 video.style.display = "block";
                 if (Hls.isSupported()) {
-                    hls.loadSource(url); hls.attachMedia(video);
-                    hls.on(Hls.Events.MANIFEST_PARSED, () => video.play());
+                    hls.loadSource(url); 
+                    hls.attachMedia(video);
+                    hls.on(Hls.Events.MANIFEST_PARSED, () => video.play().catch(() => {
+                        video.muted = true; video.play();
+                    }));
+                } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                    video.src = url;
+                    video.play();
                 }
             }
         };
 
-        // --- LÓGICA DE PANTALLA COMPLETA Y BOTÓN DINÁMICO ---
+        // Pantalla Completa y Modo Cine
         window.toggleFS = () => {
             const el = document.getElementById('master-player');
             if (!document.fullscreenElement) {
@@ -161,17 +189,19 @@
             }
         };
 
-        // Escuchar cambios de pantalla completa para cambiar el texto del botón
         document.addEventListener('fullscreenchange', () => {
             if (document.fullscreenElement) {
                 fsButton.innerText = "SALIR";
-                fsButton.style.background = "#333"; // Color más discreto al estar dentro
+                fsButton.style.background = "#333";
+                chatCineIframe.src = "chat-manaure.html?modo=cine";
             } else {
                 fsButton.innerText = "MODO CINE";
                 fsButton.style.background = "var(--rojo)";
+                chatCineIframe.src = "chat-manaure.html";
             }
         });
 
+        // Carga de lista M3U
         async function loadM3U() {
             const url = "https://raw.githubusercontent.com/lavozdemanaureapp/lavozdemanaure/main/canales.m3u";
             try {
@@ -188,13 +218,14 @@
                     }
                 }
                 if (select.length > 0) play(select.options[0].value);
-            } catch (e) { console.error(e); }
+            } catch (e) { console.error("Error M3U:", e); }
         }
 
+        // Firebase Listeners
         onValue(ref(db, 'publicidad_activa'), s => {
             const v = s.val();
-            document.getElementById('pub-overlay').style.display = (v?.imagen !== 'OFF') ? 'block' : 'none';
-            if(v?.imagen !== 'OFF') document.getElementById('pub-img').src = v.imagen;
+            document.getElementById('pub-overlay').style.display = (v?.imagen && v.imagen !== 'OFF') ? 'block' : 'none';
+            if(v?.imagen && v.imagen !== 'OFF') document.getElementById('pub-img').src = v.imagen;
         });
 
         onValue(ref(db, 'chat_visible'), s => {
