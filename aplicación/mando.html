@@ -2,50 +2,111 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Mando Manaure</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mando Manaure Pro</title>
     <style>
-        body { background: #111; color: white; font-family: sans-serif; text-align: center; padding: 20px; }
-        .card { background: #222; padding: 15px; border-radius: 10px; margin-bottom: 10px; border: 1px solid #444; }
-        button { padding: 15px; margin: 5px; border-radius: 5px; border: none; cursor: pointer; font-weight: bold; width: 45%; }
+        body { background: #111; color: white; font-family: sans-serif; text-align: center; padding: 15px; margin: 0; }
+        h1 { font-size: 1.2rem; color: #666; margin-bottom: 15px; }
+        
+        /* CUADRO DE AUDIENCIA */
+        .audiencia-card { 
+            background: #000; 
+            border: 2px solid #ff0000; 
+            padding: 15px; 
+            border-radius: 15px; 
+            margin-bottom: 20px;
+            box-shadow: 0 0 15px rgba(255,0,0,0.2);
+        }
+        .audiencia-label { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: #aaa; }
+        #audiencia-total { font-size: 45px; font-weight: bold; color: #ff0000; margin: 5px 0; }
+
+        .card { background: #222; padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid #333; }
+        h3 { font-size: 0.9rem; margin-top: 0; color: #ddd; text-transform: uppercase; }
+        
+        .grid-pub { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+        
+        button { 
+            padding: 12px; 
+            border-radius: 8px; 
+            border: none; 
+            cursor: pointer; 
+            font-weight: bold; 
+            font-size: 14px;
+            transition: 0.2s;
+        }
+        
+        .btn-main { width: 48%; }
         .on { background: #28a745; color: white; }
         .off { background: #dc3545; color: white; }
+        .btn-pub { background: #444; color: white; width: 100%; }
+        .btn-pub:active { background: #ff0000; }
+        
+        .btn-quitar-pub { background: #555; color: white; width: 100%; margin-top: 10px; padding: 15px; }
     </style>
 </head>
 <body>
-    <h1>MANDO PRIVADO</h1>
-    <div class="card">
-        <h3>CHAT EN PANTALLA</h3>
-        <button class="on" onclick="setChat('ON')">ACTIVAR</button>
-        <button class="off" onclick="setChat('OFF')">QUITAR</button>
+
+    <h1>CENTRO DE CONTROL MANAURE</h1>
+
+    <div class="audiencia-card">
+        <div class="audiencia-label">Oyentes Conectados</div>
+        <div id="audiencia-total">0</div>
+        <div class="audiencia-label">En Tiempo Real</div>
     </div>
+
     <div class="card">
-        <h3>VOZ RADIO (SILENCIA VIDEO)</h3>
-        <button class="on" onclick="setRadio('ON')">HABLAR</button>
-        <button class="off" onclick="setRadio('OFF')">CALLAR</button>
+        <h3>Chat en Pantalla</h3>
+        <button class="on btn-main" onclick="setChat('ON')">ACTIVAR</button>
+        <button class="off btn-main" onclick="setChat('OFF')">QUITAR</button>
     </div>
+
     <div class="card">
-        <h3>PUBLICIDAD</h3>
-        <button onclick="setPub('publiidad1.png')">PUB 1</button>
-        <button onclick="setPub('publicidad2.png')">PUB 2</button>
-        <button onclick="setPub('publiidad3.png')">PUB 3</button>
-        <button onclick="setPub('publicidad4.png')">PUB 4</button>
-        <button onclick="setPub('publiidad5.png')">PUB 5</button>
-        <button onclick="setPub('publicidad6.png')">PUB 6</button>
-        <button onclick="setPub('publiidad7.png')">PUB 7</button>
-        <button onclick="setPub('publicidad8.png')">PUB 8</button>
-        <button onclick="setPub('publiidad9.png')">PUB 9</button>
-        <button onclick="setPub('publicidad10.png')">PUB 10</button>
-        <button class="off" onclick="setPub('OFF')" style="width:92%">QUITAR PUB</button>
+        <h3>Voz Radio (Silencia Video)</h3>
+        <button class="on btn-main" onclick="setRadio('ON')">HABLAR</button>
+        <button class="off btn-main" onclick="setRadio('OFF')">CALLAR</button>
     </div>
+
+    <div class="card">
+        <h3>Lanzar Publicidad</h3>
+        <div class="grid-pub">
+            <button class="btn-pub" onclick="setPub('publicidad1.png')">PUB 1</button>
+            <button class="btn-pub" onclick="setPub('publicidad2.png')">PUB 2</button>
+            <button class="btn-pub" onclick="setPub('publicidad3.png')">PUB 3</button>
+            <button class="btn-pub" onclick="setPub('publicidad4.png')">PUB 4</button>
+            <button class="btn-pub" onclick="setPub('publicidad5.png')">PUB 5</button>
+            <button class="btn-pub" onclick="setPub('publicidad6.png')">PUB 6</button>
+            <button class="btn-pub" onclick="setPub('publicidad7.png')">PUB 7</button>
+            <button class="btn-pub" onclick="setPub('publicidad8.png')">PUB 8</button>
+            <button class="btn-pub" onclick="setPub('publicidad9.png')">PUB 9</button>
+            <button class="btn-pub" onclick="setPub('publicidad10.png')">PUB 10</button>
+        </div>
+        <button class="off btn-quitar-pub" onclick="setPub('OFF')">QUITAR PUBLICIDAD</button>
+    </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-        const firebaseConfig = { apiKey: "AIzaSyBtkKwQlTzDgQwP_RpDPnX7WJqoyg1turk", databaseURL: "https://radiomanaure-default-rtdb.firebaseio.com", projectId: "radiomanaure" };
+        import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        const firebaseConfig = { 
+            apiKey: "AIzaSyBtkKwQlTzDgQwP_RpDPnX7WJqoyg1turk", 
+            databaseURL: "https://radiomanaure-default-rtdb.firebaseio.com", 
+            projectId: "radiomanaure" 
+        };
+
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
+
+        // --- FUNCIONES DE MANDO ---
         window.setChat = (est) => set(ref(db, 'chat_visible'), { estado: est });
         window.setRadio = (est) => set(ref(db, 'radio_activa'), { estado: est });
         window.setPub = (img) => set(ref(db, 'publicidad_activa'), { imagen: img });
+
+        // --- LÓGICA DE AUDIENCIA EN TIEMPO REAL ---
+        const audienciaRef = ref(db, 'audiencia');
+        onValue(audienciaRef, (snapshot) => {
+            const num = snapshot.exists() ? Object.keys(snapshot.val()).length : 0;
+            document.getElementById('audiencia-total').innerText = num;
+        });
     </script>
 </body>
 </html>
