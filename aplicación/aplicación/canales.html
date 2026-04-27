@@ -212,15 +212,20 @@
         if (!document.fullscreenElement) {
             container.requestFullscreen().catch(() => {});
             btnExit.style.display = "block";
-            pubOverlay.style.width = "180px"; // Publicidad más grande en pantalla completa
+            
+            // Volvemos al tamaño que te gustaba
+            pubOverlay.style.width = "180px"; 
+            
             if (screen.orientation && screen.orientation.lock) screen.orientation.lock("landscape").catch(() => {});
         } else {
             document.exitFullscreen();
             btnExit.style.display = "none";
-            pubOverlay.style.width = "110px"; // Vuelve al tamaño normal
+            
+            // Tamaño normal fuera de pantalla completa
+            pubOverlay.style.width = "110px"; 
         }
     };
-    
+
     // Resetear tamaño si salen con el botón nativo del cel
     document.addEventListener('fullscreenchange', () => {
         if (!document.fullscreenElement) {
