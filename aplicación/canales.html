@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MANAURE TV - PRO SELECTION</title>
+    <title>MANAURE TV - MODO PRO</title>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <style>
         :root { --oro: #ffcc00; --rojo: #ff0000; --oscuro: #1a1a1a; }
@@ -12,11 +12,17 @@
         /* VIDEO AREA */
         #video-container { width: 100%; aspect-ratio: 16 / 9; background: #111; position: relative; flex-shrink: 0; }
         video, iframe { position: absolute; top: 0; left: 0; width: 100% !important; height: 100% !important; border: none; z-index: 5; }
-        #pub-overlay { position: absolute; top: 10px; right: 10px; width: 110px; z-index: 100; display: none; }
-        #pub-overlay img { width: 100%; border: 2px solid var(--oro); border-radius: 8px; }
+        
+        /* PUBLICIDAD DINÁMICA (Aumenta en Fullscreen vía JS) */
+        #pub-overlay { 
+            position: absolute; top: 10px; right: 10px; width: 110px; 
+            z-index: 100; display: none; transition: width 0.3s ease;
+        }
+        #pub-overlay img { width: 100%; border: 2px solid var(--oro); border-radius: 8px; box-shadow: 0 0 15px #000; }
+        
         #exit-fs { position: absolute; top: 10px; left: 10px; z-index: 101; background: var(--rojo); color: white; border: none; padding: 10px; border-radius: 5px; display: none; font-weight: bold; }
 
-        /* NUEVA BARRA DE SELECCIÓN DIVIDIDA */
+        /* BARRA DE SELECCIÓN CON FLECHA */
         #controls { padding: 10px; background: var(--oscuro); flex-shrink: 0; border-bottom: 2px solid var(--oro); }
         
         .selector-wrapper { 
@@ -27,28 +33,40 @@
             overflow: hidden;
             border: 1px solid #444;
             margin-bottom: 8px;
+            position: relative;
         }
 
         .label-canales { 
             background: var(--oro); 
             color: #000; 
-            padding: 12px 15px; 
+            padding: 12px 12px; 
             font-weight: bold; 
-            font-size: 14px;
+            font-size: 13px;
             text-transform: uppercase;
         }
 
         select { 
             flex: 1; 
-            padding: 12px; 
+            padding: 12px 35px 12px 12px; /* Espacio a la derecha para la flecha */
             background: transparent; 
             color: var(--oro); 
             border: none; 
             font-weight: bold; 
             font-size: 16px;
             outline: none;
-            appearance: none; /* Quita la flecha por defecto para que sea más limpio */
+            appearance: none; /* Quitamos flecha nativa fea */
             cursor: pointer;
+            z-index: 2;
+        }
+
+        /* Flecha personalizada */
+        .selector-wrapper::after {
+            content: '▼';
+            position: absolute;
+            right: 12px;
+            color: var(--oro);
+            font-size: 12px;
+            pointer-events: none;
         }
 
         .btn-fs { width: 100%; padding: 12px; background: var(--oro); color: #000; border: none; border-radius: 8px; font-weight: bold; text-transform: uppercase; }
@@ -90,8 +108,8 @@
     <div id="chat-section">
         <div id="mensajes"></div>
         <div id="input-area">
-            <input type="text" id="user-input" class="inp-nombre" placeholder="Yo">
-            <input type="text" id="msg-input" class="inp-msg" placeholder="Escribe aquí...">
+            <input type="text" id="user-input" class="inp-nombre" placeholder="Nombre">
+            <input type="text" id="msg-input" class="inp-msg" placeholder="Comenta...">
             <button id="send-btn" class="btn-send">➤</button>
         </div>
         <a href="index.html" class="btn-menu">🏠 VOLVER AL INICIO</a>
@@ -112,13 +130,13 @@
     const vid = document.getElementById('vid');
     const yt = document.getElementById('yt');
     const radio = document.getElementById('radio-audio');
+    const pubOverlay = document.getElementById('pub-overlay');
     const hls = new Hls({ enableWorker: true, lowLatencyMode: true });
 
     // --- MANDO VOZ ---
     onValue(ref(db, 'radio_activa'), snap => {
         if (snap.val()?.estado === 'ON') { 
-            radio.play().catch(()=>{}); 
-            vid.muted = true;
+            radio.play().catch(()=>{}); vid.muted = true;
             if(yt.style.display === "block" && !yt.src.includes('mute=1')) yt.src += "&mute=1";
         } else { 
             radio.pause(); vid.muted = false; 
@@ -129,14 +147,13 @@
     // --- PUBLICIDAD ---
     onValue(ref(db, 'publicidad_activa'), snap => {
         const d = snap.val();
-        const div = document.getElementById('pub-overlay');
         if (d?.imagen && d.imagen !== 'OFF') {
             document.getElementById('pub-img').src = d.imagen;
-            div.style.display = 'block';
-        } else { div.style.display = 'none'; }
+            pubOverlay.style.display = 'block';
+        } else { pubOverlay.style.display = 'none'; }
     });
 
-    // --- CHAT SIN AUTO-SCROLL ---
+    // --- CHAT ---
     const chatRef = ref(db, 'chat_partido');
     const box = document.getElementById('mensajes');
     const userInp = document.getElementById('user-input');
@@ -146,12 +163,8 @@
     const enviar = () => {
         const user = userInp.value.trim() || "Anónimo";
         const text = msgInp.value.trim();
-        if(text) {
-            push(chatRef, { user, text, time: Date.now() });
-            msgInp.value = "";
-        }
+        if(text) { push(chatRef, { user, text, time: Date.now() }); msgInp.value = ""; }
     };
-
     btnSend.onclick = enviar;
     msgInp.onkeypress = (e) => { if(e.key === 'Enter') enviar(); };
 
@@ -191,18 +204,30 @@
             if(select.length > 0) cambiarCanal(select.value);
         });
 
+    // --- PANTALLA COMPLETA CON PUB AGRANDADA ---
     window.toggleFS = () => {
         const container = document.getElementById('video-container');
         const btnExit = document.getElementById('exit-fs');
+        
         if (!document.fullscreenElement) {
             container.requestFullscreen().catch(() => {});
             btnExit.style.display = "block";
+            pubOverlay.style.width = "180px"; // Publicidad más grande en pantalla completa
             if (screen.orientation && screen.orientation.lock) screen.orientation.lock("landscape").catch(() => {});
         } else {
             document.exitFullscreen();
             btnExit.style.display = "none";
+            pubOverlay.style.width = "110px"; // Vuelve al tamaño normal
         }
     };
+    
+    // Resetear tamaño si salen con el botón nativo del cel
+    document.addEventListener('fullscreenchange', () => {
+        if (!document.fullscreenElement) {
+            document.getElementById('exit-fs').style.display = "none";
+            pubOverlay.style.width = "110px";
+        }
+    });
 </script>
 </body>
 </html>
