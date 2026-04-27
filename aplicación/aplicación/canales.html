@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Manaure TV Pro</title>
+    <title>Manaure TV Ultra</title>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <style>
         :root { --rojo: #ff0000; }
@@ -11,111 +11,87 @@
         body { margin: 0; background: #000; color: #fff; font-family: sans-serif; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
         
         #master-player { width: 100%; aspect-ratio: 16 / 9; background: #000; position: relative; flex-shrink: 0; z-index: 10; }
-        
-        /* Contenedores de Video */
-        #video, #yt-frame { position: absolute; top: 0; left: 0; width: 100% !important; height: 100% !important; border: none; z-index: 11; }
-        #yt-frame { display: none; background: #000; }
+        video, iframe { position: absolute; top: 0; left: 0; width: 100% !important; height: 100% !important; border: none; z-index: 11; }
 
-        /* PUBLICIDAD */
-        #pub-overlay { position: absolute; top: 10px; right: 10px; width: 120px; z-index: 20; display: none; pointer-events: none; }
-        #pub-overlay img { width: 100%; border: 2px solid var(--rojo); border-radius: 5px; }
-
-        /* CHAT TRANSPARENTE (Solo último mensaje) */
+        /* CHAT INVISIBLE - SOLO TEXTO FLOTANTE */
         #chat-overlay { 
-            position: absolute; 
-            bottom: 55px; 
-            left: 5%; 
-            width: 90%; 
-            height: 45px; 
-            z-index: 20; 
-            display: none; 
-            overflow: hidden; 
-            /* TOTALMENTE TRANSPARENTE */
-            background: transparent !important; 
-            border: none;
-            pointer-events: none;
-            /* Sombra de texto para que se lea bien sobre cualquier fondo */
-            filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.8));
+            position: absolute; bottom: 50px; left: 5%; width: 90%; height: 45px; 
+            z-index: 20; display: none; overflow: hidden; 
+            background: transparent !important; pointer-events: none;
+            filter: drop-shadow(2px 2px 2px rgba(0,0,0,1)); /* Sombra para leer sobre blanco */
         }
-        /* Ajuste fino para ver solo la última línea del chat */
-        #chat-overlay iframe { 
-            width: 100%; 
-            height: 400px; 
-            margin-top: -345px; 
-            border: none; 
-            background: transparent !important;
-        }
+        #chat-overlay iframe { width: 100%; height: 500px; margin-top: -450px; background: transparent !important; border: none; }
 
-        .btn-fullscreen { position: absolute; bottom: 10px; right: 10px; background: var(--rojo); color: white; border: none; padding: 8px 15px; border-radius: 15px; font-size: 10px; font-weight: bold; z-index: 30; cursor: pointer; text-transform: uppercase; }
+        .btn-fs { position: absolute; bottom: 10px; right: 10px; background: var(--rojo); color: white; border: none; padding: 8px 15px; border-radius: 15px; font-size: 10px; font-weight: bold; z-index: 30; cursor: pointer; }
 
-        #interaction-area { flex: 1; display: flex; flex-direction: column; background: #0a0a0a; border-top: 2px solid var(--rojo); z-index: 5; }
-        #channel-bar { padding: 10px; }
-        select { width: 100%; background: #1a1a1a; color: #fff; border: 1px solid var(--rojo); padding: 12px; border-radius: 8px; font-size: 16px; appearance: none; }
-        #chat-frame { width: 100%; flex: 1; border: none; }
+        #ui { flex: 1; display: flex; flex-direction: column; background: #0a0a0a; border-top: 2px solid var(--rojo); }
+        #bar { padding: 10px; }
+        select { width: 100%; background: #1a1a1a; color: #fff; border: 1px solid var(--rojo); padding: 12px; border-radius: 8px; font-size: 16px; font-weight: bold; }
+        #chat-main { width: 100%; flex: 1; border: none; }
     </style>
 </head>
 <body>
 
     <div id="master-player">
         <video id="video" playsinline autoplay controls muted></video>
-        <iframe id="yt-frame" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
-        
-        <audio id="radio-audio" src="https://stream.zeno.fm/a0x4vvcp9whvv"></audio>
-        
-        <div id="pub-overlay"><img id="pub-img" src=""></div>
-        <div id="chat-overlay"><iframe id="chat-cine-iframe" src="chat-manaure.html"></iframe></div>
-        <button id="fs-button" class="btn-fullscreen" onclick="toggleFS()">MODO CINE</button>
+        <iframe id="yt-frame" allow="autoplay; fullscreen" allowfullscreen style="display:none"></iframe>
+        <div id="chat-overlay"><iframe id="chat-cine-frame" src="chat-manaure.html"></iframe></div>
+        <button class="btn-fs" onclick="toggleFS()">MODO CINE</button>
     </div>
 
-    <div id="interaction-area">
-        <div id="channel-bar">
-            <select id="channel-select"><option>Cargando Canales...</option></select>
+    <div id="ui">
+        <div id="bar">
+            <select id="lista"><option>Cargando Canales...</option></select>
         </div>
-        <iframe id="chat-frame" src="chat-manaure.html"></iframe>
+        <iframe id="chat-main" src="chat-manaure.html"></iframe>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-        const firebaseConfig = { apiKey: "AIzaSyBtkKwQlTzDgQwP_RpDPnX7WJqoyg1turk", databaseURL: "https://radiomanaure-default-rtdb.firebaseio.com", projectId: "radiomanaure" };
+        const firebaseConfig = { databaseURL: "https://radiomanaure-default-rtdb.firebaseio.com" };
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         
         const video = document.getElementById('video');
-        const ytFrame = document.getElementById('yt-frame');
-        const radio = document.getElementById('radio-audio');
-        const hls = new Hls({ enableWorker: true, lowLatencyMode: true });
+        const yt = document.getElementById('yt-frame');
 
-        function getYoutubeID(url) {
-            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=|live\/)([^#&?]*).*/;
-            const match = url.match(regExp);
-            if (match && match[2].length === 11) return match[2];
-            const liveMatch = url.split('/live/')[1]?.split('?')[0];
-            return (liveMatch && liveMatch.length === 11) ? liveMatch : null;
+        // --- MOTOR DE VELOCIDAD EXTREMA (M3U8) ---
+        const hls = new Hls({
+            enableWorker: true,
+            lowLatencyMode: true, // Modo latencia baja
+            backBufferLength: 30, // Limpia memoria vieja para que no se pegue
+            maxBufferLength: 10,  // Carga solo 10 segundos adelante (evita saturar el internet)
+            manifestLoadingMaxRetry: 10,
+            levelLoadingMaxRetry: 10
+        });
+
+        function getYTID(url) {
+            const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|live\/))([^?&"'>]+)/);
+            return (m && m[1].length === 11) ? m[1] : null;
         }
 
         window.play = (url) => {
             video.pause();
             video.style.display = "none";
-            ytFrame.style.display = "none";
-            ytFrame.src = ""; 
+            yt.style.display = "none";
+            yt.src = "";
             hls.detachMedia();
 
-            const ytId = getYoutubeID(url);
+            const id = getYTID(url);
 
-            if (ytId) {
-                ytFrame.style.display = "block";
-                ytFrame.src = `https://www.youtube.com/embed/${ytId}?autoplay=1&modestbranding=1&rel=0`;
+            if (id) {
+                yt.style.display = "block";
+                yt.src = `https://www.youtube.com/embed/${id}?autoplay=1&rel=0&modestbranding=1`;
             } else {
                 video.style.display = "block";
                 if (url.includes('.m3u8')) {
-                    if (Hls.isSupported()) {
-                        hls.loadSource(url); hls.attachMedia(video);
-                        hls.on(Hls.Events.MANIFEST_PARSED, () => {
-                            video.play().catch(() => { video.muted = true; video.play(); });
-                        });
-                    }
+                    hls.loadSource(url);
+                    hls.attachMedia(video);
+                    hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                        video.play().catch(() => { video.muted = true; video.play(); });
+                    });
                 } else {
                     video.src = url;
                     video.play().catch(() => { video.muted = true; video.play(); });
@@ -124,58 +100,33 @@
         };
 
         window.toggleFS = () => {
-            const el = document.getElementById('master-player');
-            if (!document.fullscreenElement) {
-                if (el.requestFullscreen) el.requestFullscreen();
-                else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
-            } else { document.exitFullscreen(); }
+            const p = document.getElementById('master-player');
+            if (!document.fullscreenElement) p.requestFullscreen().catch(() => {});
+            else document.exitFullscreen();
         };
 
-        document.addEventListener('fullscreenchange', () => {
-            const chatCine = document.getElementById('chat-cine-iframe');
-            if (document.fullscreenElement) {
-                document.getElementById('fs-button').innerText = "SALIR";
-                chatCine.src = "chat-manaure.html?modo=cine";
-            } else {
-                document.getElementById('fs-button').innerText = "MODO CINE";
-                chatCine.src = "chat-manaure.html";
-            }
-        });
-
-        async function loadM3U() {
-            const url = "https://raw.githubusercontent.com/lavozdemanaureapp/lavozdemanaure/main/canales.m3u";
-            try {
-                const r = await fetch(url);
-                const t = await r.text();
-                const lines = t.split('\n');
-                const select = document.getElementById('channel-select');
-                select.innerHTML = '';
-                for (let i = 0; i < lines.length; i++) {
-                    if (lines[i].includes('#EXTINF')) {
-                        const name = lines[i].split(',')[1].trim();
-                        const link = lines[i+1]?.trim();
-                        if (link?.startsWith('http')) select.add(new Option(name.toUpperCase(), link));
-                    }
+        // Carga rápida de lista
+        fetch("https://raw.githubusercontent.com/lavozdemanaureapp/lavozdemanaure/main/canales.m3u")
+        .then(r => r.text()).then(t => {
+            const s = document.getElementById('lista');
+            s.innerHTML = "";
+            const lines = t.split('\n');
+            lines.forEach((line, i) => {
+                if (line.includes('#EXTINF')) {
+                    const name = line.split(',')[1].trim();
+                    const url = lines[i+1]?.trim();
+                    if (url?.startsWith('http')) s.add(new Option(name.toUpperCase(), url));
                 }
-                if (select.length > 0) play(select.options[0].value);
-            } catch (e) { console.error(e); }
-        }
-
-        onValue(ref(db, 'publicidad_activa'), s => {
-            const v = s.val();
-            document.getElementById('pub-overlay').style.display = (v?.imagen && v.imagen !== 'OFF') ? 'block' : 'none';
-            if(v?.imagen && v.imagen !== 'OFF') document.getElementById('pub-img').src = v.imagen;
-        });
-        onValue(ref(db, 'chat_visible'), s => {
-            document.getElementById('chat-overlay').style.display = (s.val()?.estado === 'ON') ? 'block' : 'none';
-        });
-        onValue(ref(db, 'radio_activa'), s => {
-            if(s.val()?.estado === 'ON') { radio.play(); video.muted = true; }
-            else { radio.pause(); video.muted = false; }
+            });
+            if (s.length > 0) play(s.value);
         });
 
-        document.getElementById('channel-select').onchange = (e) => play(e.target.value);
-        loadM3U();
+        document.getElementById('lista').onchange = (e) => play(e.target.value);
+
+        // Firebase: Visibilidad del Chat Flotante
+        onValue(ref(db, 'chat_visible'), snap => {
+            document.getElementById('chat-overlay').style.display = (snap.val()?.estado === 'ON') ? 'block' : 'none';
+        });
     </script>
 </body>
 </html>
