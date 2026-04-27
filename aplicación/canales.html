@@ -38,19 +38,15 @@
         
         /* 2. CHAT FLOTANTE (SOLO LECTURA) */
         #chat-overlay { 
-            position: absolute; 
-            bottom: 65px; 
-            left: 15px; 
-            width: 300px; 
-            height: 140px; /* Altura ajustada para unos 4 mensajes */
-            z-index: 2147483647; 
-            display: none; 
-            background: rgba(0,0,0,0.5); 
-            border-radius: 12px; 
-            border-left: 5px solid var(--rojo);
-            pointer-events: none; 
-            overflow: hidden;
-        }
+    position: absolute; 
+    bottom: 70px; 
+    left: 15px; 
+    width: 280px; 
+    height: 140px; /* <--- Asegúrate que diga al menos 140px */
+    z-index: 2147483647; 
+    display: none; 
+    overflow: hidden; 
+}
         /* Este iframe tiene un margen negativo abajo para ocultar la caja de texto del chat */
         #chat-overlay iframe {
             width: 100%;
