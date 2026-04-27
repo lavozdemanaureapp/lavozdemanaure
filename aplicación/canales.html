@@ -3,38 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MANAURE TV - REPARADO</title>
+    <title>MANAURE TV - FIX PANTALLA</title>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <style>
         :root { --oro: #ffcc00; --rojo: #ff0000; --oscuro: #1a1a1a; }
         
-        /* Forzamos que el cuerpo no se mueva */
         html, body { 
-            margin: 0; 
-            padding: 0; 
-            background: #000; 
-            height: 100vh; 
-            display: flex; 
-            flex-direction: column; 
-            overflow: hidden; 
+            margin: 0; padding: 0; background: #000; height: 100vh; 
+            display: flex; flex-direction: column; overflow: hidden; 
         }
         
-        /* ÁREA DE VIDEO: Le damos prioridad absoluta */
+        /* CONTENEDOR DE VIDEO - IMPORTANTE */
         #video-container { 
-            width: 100%; 
-            aspect-ratio: 16 / 9; 
-            background: #111; 
-            position: relative; 
-            flex-shrink: 0; /* Esto evita que el chat lo aplaste */
-            z-index: 10;
+            width: 100%; aspect-ratio: 16 / 9; background: #000; 
+            position: relative; flex-shrink: 0; z-index: 10;
         }
         
         video, iframe { position: absolute; top: 0; left: 0; width: 100% !important; height: 100% !important; border: none; }
         
+        /* BOTÓN DE SALIDA (Solo visible en pantalla completa) */
+        #exit-fs { 
+            position: absolute; top: 15px; left: 15px; z-index: 999; 
+            background: var(--rojo); color: white; border: 2px solid white; 
+            padding: 12px; border-radius: 8px; display: none; font-weight: bold; 
+        }
+
         /* PUBLICIDAD */
         #pub-overlay { position: absolute; top: 10px; right: 10px; width: 110px; z-index: 100; display: none; transition: width 0.3s ease; }
-        #pub-overlay img { width: 100%; border: 2px solid var(--oro); border-radius: 8px; box-shadow: 0 0 15px #000; }
-        #exit-fs { position: absolute; top: 10px; left: 10px; z-index: 101; background: var(--rojo); color: white; border: none; padding: 10px; border-radius: 5px; display: none; font-weight: bold; }
+        #pub-overlay img { width: 100%; border: 2px solid var(--oro); border-radius: 8px; }
 
         /* CONTROLES */
         #controls { padding: 8px; background: var(--oscuro); flex-shrink: 0; border-bottom: 2px solid var(--oro); }
@@ -42,23 +38,22 @@
         .label-canales { background: var(--oro); color: #000; padding: 10px; font-weight: bold; font-size: 12px; text-transform: uppercase; }
         select { flex: 1; padding: 10px; background: transparent; color: var(--oro); border: none; font-weight: bold; font-size: 15px; outline: none; appearance: none; cursor: pointer; z-index: 2; }
         .selector-wrapper::after { content: '▼'; position: absolute; right: 12px; color: var(--oro); font-size: 12px; pointer-events: none; }
-        .btn-fs { width: 100%; padding: 10px; background: var(--oro); color: #000; border: none; border-radius: 8px; font-weight: bold; text-transform: uppercase; font-size: 13px; }
-
-        /* CHAT: Ahora sí usa el espacio que sobra sin molestar */
-        #chat-frame { 
-            flex: 1; 
-            width: 100%; 
-            border: none; 
-            background: #fff; 
-        }
         
+        .btn-fs { 
+            width: 100%; padding: 12px; background: var(--oro); color: #000; 
+            border: none; border-radius: 8px; font-weight: bold; 
+            text-transform: uppercase; font-size: 14px; cursor: pointer;
+        }
+
+        /* CHAT */
+        #chat-frame { flex: 1; width: 100%; border: none; background: #fff; }
         .btn-menu { width: 100%; padding: 10px; background: #222; color: #fff; border: none; text-align: center; font-weight: bold; text-decoration: none; display: block; font-size: 12px; }
     </style>
 </head>
 <body>
 
     <div id="video-container">
-        <button id="exit-fs" onclick="toggleFS()">❌ SALIR</button>
+        <button id="exit-fs" onclick="toggleFS()">❌ SALIR DE PANTALLA COMPLETA</button>
         <video id="vid" playsinline controls autoplay muted></video>
         <iframe id="yt" style="display:none" allow="autoplay; fullscreen" allowfullscreen></iframe>
         <audio id="radio-audio" src="https://stream.zeno.fm/a0x4vvcp9whvv"></audio>
@@ -70,7 +65,7 @@
             <div class="label-canales">CANALES</div>
             <select id="lista" onchange="cambiarCanal(this.value)"><option>CARGANDO...</option></select>
         </div>
-        <button class="btn-fs" onclick="toggleFS()">Ampliar Pantalla 📺</button>
+        <button class="btn-fs" onclick="toggleFS()">📺 AMPLIAR PANTALLA</button>
     </div>
 
     <iframe id="chat-frame" src="chat-partido.html"></iframe>
@@ -89,7 +84,7 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    // --- AUDIENCIA ---
+    // --- CONTADOR DE AUDIENCIA ---
     const sessionId = localStorage.getItem('manaure_session') || Math.random().toString(36).substring(7);
     localStorage.setItem('manaure_session', sessionId);
     const presenciaRef = ref(db, 'audiencia/' + sessionId);
@@ -102,7 +97,7 @@
     const pubOverlay = document.getElementById('pub-overlay');
     const hls = new Hls({ enableWorker: true, lowLatencyMode: true });
 
-    // --- MANDO VOZ ---
+    // --- MANDO VOZ Y PUBLICIDAD (IGUAL QUE ANTES) ---
     onValue(ref(db, 'radio_activa'), snap => {
         if (snap.val()?.estado === 'ON') { 
             radio.play().catch(()=>{}); vid.muted = true;
@@ -110,7 +105,6 @@
         } else { radio.pause(); vid.muted = false; if(yt.style.display === "block") yt.src = yt.src.replace("&mute=1", ""); }
     });
 
-    // --- PUBLICIDAD ---
     onValue(ref(db, 'publicidad_activa'), snap => {
         const d = snap.val();
         if (d?.imagen && d.imagen !== 'OFF') {
@@ -119,13 +113,13 @@
         } else { pubOverlay.style.display = 'none'; }
     });
 
-    // --- VIDEO ---
+    // --- LÓGICA DE VIDEO ---
     window.cambiarCanal = (url) => {
         vid.pause(); vid.style.display = "none"; yt.style.display = "none"; yt.src = ""; hls.detachMedia();
         if (url.includes('youtu')) {
             let id = url.split('v=')[1] || url.split('/').pop();
             yt.style.display = "block";
-            yt.src = `https://www.youtube.com/embed/${id.split('&')[0]}?autoplay=1&rel=0`;
+            yt.src = `https://www.youtube.com/embed/${id.split('&')[0]}?autoplay=1&rel=0&controls=1&showinfo=0`;
         } else {
             vid.style.display = "block";
             if (Hls.isSupported()) {
@@ -147,24 +141,43 @@
             if(select.length > 0) cambiarCanal(select.value);
         });
 
+    // --- FUNCIÓN DE PANTALLA COMPLETA REPARADA ---
     window.toggleFS = () => {
         const container = document.getElementById('video-container');
-        if (!document.fullscreenElement) {
-            container.requestFullscreen().catch(() => {});
-            document.getElementById('exit-fs').style.display = "block";
+        const btnExit = document.getElementById('exit-fs');
+
+        if (!document.fullscreenElement && !document.webkitFullscreenElement && !document.mozFullScreenElement && !document.msFullscreenElement) {
+            // Intentar entrar en pantalla completa (soporte para todos los navegadores)
+            if (container.requestFullscreen) { container.requestFullscreen(); }
+            else if (container.webkitRequestFullscreen) { container.webkitRequestFullscreen(); }
+            else if (container.mozRequestFullScreen) { container.mozRequestFullScreen(); }
+            else if (container.msRequestFullscreen) { container.msRequestFullscreen(); }
+            
+            btnExit.style.display = "block";
             pubOverlay.style.width = "180px";
-            if (screen.orientation && screen.orientation.lock) screen.orientation.lock("landscape").catch(() => {});
+            if (screen.orientation && screen.orientation.lock) {
+                screen.orientation.lock("landscape").catch(() => {});
+            }
         } else {
-            document.exitFullscreen();
+            // Salir de pantalla completa
+            if (document.exitFullscreen) { document.exitFullscreen(); }
+            else if (document.webkitExitFullscreen) { document.webkitExitFullscreen(); }
+            else if (document.mozCancelFullScreen) { document.mozCancelFullScreen(); }
+            else if (document.msExitFullscreen) { document.msExitFullscreen(); }
         }
     };
     
-    document.addEventListener('fullscreenchange', () => {
-        if (!document.fullscreenElement) {
-            document.getElementById('exit-fs').style.display = "none";
+    // Detectar cambios para limpiar el botón de salida
+    const fsChangeHandler = () => {
+        const btnExit = document.getElementById('exit-fs');
+        if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+            btnExit.style.display = "none";
             pubOverlay.style.width = "110px";
         }
-    });
+    };
+
+    document.addEventListener('fullscreenchange', fsChangeHandler);
+    document.addEventListener('webkitfullscreenchange', fsChangeHandler);
 </script>
 </body>
 </html>
