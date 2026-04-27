@@ -3,50 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Manaure TV Pro</title>
+    <title>Manaure TV - Modo Estadio</title>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <style>
-        :root { --rojo: #ff0000; }
-        body { margin: 0; background: #000; color: #fff; font-family: sans-serif; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        :root { --accent: #ffcc00; --bg: #000; --chat-bg: #0f0f0f; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { margin: 0; background: var(--bg); color: #fff; font-family: sans-serif; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
         
-        #master-player { width: 100%; aspect-ratio: 16 / 9; background: #000; position: relative; flex-shrink: 0; }
-        video, #yt-frame { position: absolute; top: 0; left: 0; width: 100% !important; height: 100% !important; border: none; }
+        #player-box { width: 100%; aspect-ratio: 16 / 9; background: #000; position: relative; flex-shrink: 0; }
+        video, #yt-frame { position: absolute; top: 0; left: 0; width: 100% !important; height: 100% !important; border: none; z-index: 10; }
 
-        /* CHAT FLOTANTE TRANSPARENTE */
-        #chat-overlay { 
-            position: absolute; bottom: 45px; left: 5%; width: 90%; height: 45px; 
-            z-index: 100; display: none; overflow: hidden; 
-            background: transparent !important; pointer-events: none;
-        }
-        #chat-overlay iframe { 
-            width: 100%; height: 500px; margin-top: -455px; 
-            background: transparent !important; border: none;
-            filter: drop-shadow(2px 2px 2px #000); /* Para que las letras resalten */
-        }
+        /* PUBLICIDAD */
+        #pub-overlay { position: absolute; top: 10px; right: 10px; width: 130px; z-index: 100; display: none; pointer-events: none; }
+        #pub-overlay img { width: 100%; border: 1px solid var(--accent); border-radius: 5px; }
 
-        .btn-fs { position: absolute; bottom: 10px; right: 10px; background: var(--rojo); color: white; border: none; padding: 8px 12px; border-radius: 5px; font-size: 10px; font-weight: bold; z-index: 101; cursor: pointer; }
+        .btn-fs { position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,0.7); color: var(--accent); border: 1px solid var(--accent); padding: 8px 12px; border-radius: 5px; font-size: 10px; font-weight: bold; z-index: 101; cursor: pointer; }
 
-        #interaction { flex: 1; display: flex; flex-direction: column; background: #0a0a0a; border-top: 2px solid var(--rojo); }
-        #bar { padding: 10px; }
-        select { width: 100%; background: #1a1a1a; color: #fff; border: 1px solid var(--rojo); padding: 12px; border-radius: 8px; font-size: 16px; }
-        #chat-main { width: 100%; flex: 1; border: none; }
+        /* INTERFAZ INFERIOR (CHAT) */
+        #interface { flex: 1; display: flex; flex-direction: column; background: var(--chat-bg); }
+        #bar { padding: 10px; background: #1a1a1a; }
+        select { width: 100%; background: #222; color: #fff; border: 1px solid #444; padding: 12px; border-radius: 8px; font-size: 16px; outline: none; }
+
+        #chat-container { flex: 1; display: flex; flex-direction: column; }
+        #chat-header { padding: 10px 15px; font-size: 12px; font-weight: bold; border-bottom: 1px solid #333; color: #aaa; letter-spacing: 1px; }
+        #chat-frame { width: 100%; flex: 1; border: none; }
     </style>
 </head>
 <body>
 
-    <div id="master-player">
+    <div id="player-box">
         <video id="video" playsinline controls autoplay muted></video>
         <iframe id="yt-frame" style="display:none" allow="autoplay; fullscreen" allowfullscreen></iframe>
         
-        <div id="chat-overlay"><iframe id="chat-cine-frame" src="chat-manaure.html"></iframe></div>
-        <button class="btn-fs" onclick="toggleFS()">MODO CINE</button>
+        <audio id="radio-audio" src="https://stream.zeno.fm/a0x4vvcp9whvv"></audio>
+
+        <div id="pub-overlay"><img id="pub-img" src=""></div>
+        <button class="btn-fs" onclick="toggleFS()">PANTALLA COMPLETA</button>
     </div>
 
-    <div id="interaction">
+    <div id="interface">
         <div id="bar">
-            <select id="lista"><option>Cargando Canales...</option></select>
+            <select id="lista-canales"><option>Cargando Canales...</option></select>
         </div>
-        <iframe id="chat-main" src="chat-manaure.html"></iframe>
+        
+        <div id="chat-container">
+            <div id="chat-header">● CHAT DEL PARTIDO</div>
+            <iframe id="chat-frame" src="chat-partido.html"></iframe>
+        </div>
     </div>
 
     <script type="module">
@@ -59,22 +62,22 @@
         
         const video = document.getElementById('video');
         const yt = document.getElementById('yt-frame');
+        const radio = document.getElementById('radio-audio');
+
+        // --- POTENCIA MÁXIMA ---
         const hls = new Hls({
             enableWorker: true,
             lowLatencyMode: true,
-            maxBufferLength: 10
+            maxBufferLength: 3, // Solo carga 3 segundos adelante (vuela)
+            autoStartLoad: true
         });
 
-        // Detector de YouTube mejorado
         function getYTID(url) {
-            if (!url) return null;
-            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=|live\/)([^#&?]*).*/;
-            const match = url.match(regExp);
-            return (match && match[2].length === 11) ? match[2] : null;
+            const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|live\/))([^?&"'>]+)/);
+            return (m && m[1].length === 11) ? m[1] : null;
         }
 
         window.play = (url) => {
-            // Limpiar ambos reproductores
             video.pause();
             video.style.display = "none";
             yt.style.display = "none";
@@ -85,12 +88,11 @@
 
             if (id) {
                 yt.style.display = "block";
-                // Añadimos el origin para evitar bloqueos de seguridad
-                const origin = window.location.origin;
-                yt.src = `https://www.youtube.com/embed/${id}?autoplay=1&rel=0&modestbranding=1&origin=${origin}`;
+                // URL blindada para móvil
+                yt.src = `https://www.youtube.com/embed/${id}?autoplay=1&rel=0&modestbranding=1&controls=1`;
             } else {
                 video.style.display = "block";
-                if (url.includes('.m3u8')) {
+                if (Hls.isSupported() && url.includes('.m3u8')) {
                     hls.loadSource(url);
                     hls.attachMedia(video);
                     hls.on(Hls.Events.MANIFEST_PARSED, () => video.play());
@@ -101,37 +103,40 @@
             }
         };
 
+        // Carga de lista
+        fetch("https://raw.githubusercontent.com/lavozdemanaureapp/lavozdemanaure/main/canales.m3u")
+            .then(r => r.text()).then(t => {
+                const s = document.getElementById('lista-canales');
+                s.innerHTML = "";
+                const lines = t.split('\n');
+                lines.forEach((line, i) => {
+                    if (line.includes('#EXTINF')) {
+                        const n = line.split(',')[1].trim();
+                        const u = lines[i+1]?.trim();
+                        if (u?.startsWith('http')) s.add(new Option(n.toUpperCase(), u));
+                    }
+                });
+                if (s.length > 0) play(s.value);
+            });
+
+        document.getElementById('lista-canales').onchange = (e) => play(e.target.value);
+
         window.toggleFS = () => {
-            const p = document.getElementById('master-player');
+            const p = document.getElementById('player-box');
             if (!document.fullscreenElement) p.requestFullscreen().catch(() => {});
             else document.exitFullscreen();
         };
 
-        // Cargar lista M3U
-        fetch("https://raw.githubusercontent.com/lavozdemanaureapp/lavozdemanaure/main/canales.m3u")
-            .then(res => res.text())
-            .then(data => {
-                const select = document.getElementById('lista');
-                select.innerHTML = "";
-                const lines = data.split('\n');
-                lines.forEach((line, i) => {
-                    if (line.includes('#EXTINF')) {
-                        const name = line.split(',')[1].trim();
-                        const url = lines[i+1]?.trim();
-                        if (url && url.startsWith('http')) {
-                            select.add(new Option(name.toUpperCase(), url));
-                        }
-                    }
-                });
-                if (select.length > 0) play(select.value);
-            });
+        // Firebase: Publi y Comentarios
+        onValue(ref(db, 'publicidad_activa'), snap => {
+            const d = snap.val();
+            document.getElementById('pub-overlay').style.display = (d?.estado === 'ON') ? 'block' : 'none';
+            if(d?.imagen) document.getElementById('pub-img').src = d.imagen;
+        });
 
-        document.getElementById('lista').onchange = (e) => play(e.target.value);
-
-        // Firebase: Visibilidad Chat Flotante
-        onValue(ref(db, 'chat_visible'), snap => {
-            const estado = snap.val()?.estado;
-            document.getElementById('chat-overlay').style.display = (estado === 'ON') ? 'block' : 'none';
+        onValue(ref(db, 'comentarios_on'), snap => {
+            if (snap.val() === 'ON') { radio.play(); video.muted = true; }
+            else { radio.pause(); video.muted = false; }
         });
     </script>
 </body>
