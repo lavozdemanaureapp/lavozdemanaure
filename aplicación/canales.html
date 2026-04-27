@@ -3,242 +3,122 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Manaure TV Profesional</title>
+    <title>MANAURE TV LIVE</title>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-    <script src="https://www.youtube.com/iframe_api"></script>
     <style>
-        :root { --rojo: #ff0000; --negro: #000; }
-        * { box-sizing: border-box; }
-        body { margin: 0; background: #000; color: #fff; font-family: sans-serif; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        body { margin: 0; background: #000; color: #fff; font-family: sans-serif; overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
+        #reproductor { width: 100%; aspect-ratio: 16/9; background: #111; position: relative; border-bottom: 2px solid #ffcc00; }
+        video, iframe { position: absolute; top: 0; left: 0; width: 100% !important; height: 100% !important; border: none; z-index: 5; }
         
-        #master-player { 
-            width: 100%; 
-            aspect-ratio: 16 / 9; 
-            background: #000; 
-            position: relative; 
-            flex-shrink: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        video, #yt-player { width: 100% !important; height: 100% !important; object-fit: contain; }
+        #controles { padding: 15px; background: #1a1a1a; flex-shrink: 0; }
+        select { width: 100%; padding: 15px; background: #333; color: #ffcc00; border: 1px solid #ffcc00; border-radius: 8px; font-size: 18px; font-weight: bold; outline: none; }
         
-        /* PUBLICIDAD */
-        #pub-overlay { 
-            position: absolute; 
-            top: 15px; 
-            right: 15px; 
-            width: 190px; 
-            z-index: 2147483647; 
-            display: none; 
-            pointer-events: none; 
-        }
-        #pub-overlay img { width: 100%; border: 3px solid var(--rojo); border-radius: 8px; box-shadow: 0 0 20px rgba(0,0,0,0.8); }
-        
-        /* CHAT FLOTANTE MODO CINE */
-        #chat-overlay { 
-            position: absolute; 
-            bottom: 75px; 
-            left: 15px; 
-            width: 300px; 
-            height: 180px; 
-            z-index: 2147483647; 
-            display: none; 
-            overflow: hidden; 
-            background: transparent !important; 
-            pointer-events: none;
-        }
-
-        #chat-overlay iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-            background: transparent !important;
-        }
-
-        /* BOTÓN MODO CINE */
-        .btn-fullscreen { 
-            position: absolute; 
-            bottom: 15px; 
-            right: 15px; 
-            background: var(--rojo); 
-            color: white; 
-            border: none; 
-            padding: 12px 22px; 
-            border-radius: 30px; 
-            font-size: 13px; 
-            font-weight: bold; 
-            z-index: 2147483647; 
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(255,0,0,0.5);
-            text-transform: uppercase;
-        }
-
-        #interaction-area { flex: 1; display: flex; flex-direction: column; background: #0a0a0a; border-top: 3px solid var(--rojo); }
-        #channel-bar { padding: 15px; }
-        select { width: 100%; background: #1a1a1a; color: white; border: 1px solid #444; padding: 15px; border-radius: 10px; font-size: 16px; font-weight: bold; color: var(--rojo); }
-        iframe#chat-frame { width: 100%; flex: 1; border: none; }
+        #chat-partido { flex: 1; width: 100%; border: none; background: #000; }
+        .error-msg { position: absolute; top: 40%; width: 100%; text-align: center; color: red; font-size: 12px; z-index: 1; }
     </style>
 </head>
 <body>
 
-    <div id="master-player">
-        <video id="video" playsinline autoplay controls></video>
-        <div id="yt-player"></div>
-        <audio id="radio-audio" src="https://stream.zeno.fm/a0x4vvcp9whvv"></audio>
+<div id="reproductor">
+    <div class="error-msg" id="status">Cargando sistema...</div>
+    <video id="vid" playsinline controls autoplay muted style="display:none"></video>
+    <iframe id="yt" allow="autoplay; fullscreen" allowfullscreen style="display:none"></iframe>
+</div>
+
+<div id="controles">
+    <select id="lista" onchange="conectar(this.value)">
+        <option>Esperando lista...</option>
+    </select>
+</div>
+
+<iframe id="chat-partido" src="chat-partido.html"></iframe>
+
+<script>
+    const vid = document.getElementById('vid');
+    const yt = document.getElementById('yt');
+    const status = document.getElementById('status');
+    const hls = new Hls({
+        enableWorker: true,
+        xhrSetup: function(xhr) { xhr.withCredentials = false; } // Evita bloqueos de seguridad
+    });
+
+    function conectar(url) {
+        if(!url) return;
+        status.innerText = "Conectando señal...";
         
-        <div id="pub-overlay"><img id="pub-img" src=""></div>
-        
-        <div id="chat-overlay">
-            <iframe id="chat-cine-iframe" src="chat-manaure.html"></iframe>
-        </div>
-        
-        <button id="fs-button" class="btn-fullscreen" onclick="toggleFS()">MODO CINE</button>
-    </div>
+        // Reset
+        vid.pause();
+        vid.style.display = "none";
+        yt.style.display = "none";
+        yt.src = "";
+        hls.detachMedia();
 
-    <div id="interaction-area">
-        <div id="channel-bar">
-            <select id="channel-select"><option>Cargando Canales...</option></select>
-        </div>
-        <iframe id="chat-frame" src="chat-manaure.html"></iframe>
-    </div>
+        // Es YouTube?
+        if (url.includes('youtu')) {
+            let id = "";
+            if (url.includes('v=')) id = url.split('v=')[1].split('&')[0];
+            else if (url.includes('live/')) id = url.split('live/')[1].split('?')[0];
+            else id = url.split('/').pop();
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-
-        const firebaseConfig = { apiKey: "AIzaSyBtkKwQlTzDgQwP_RpDPnX7WJqoyg1turk", databaseURL: "https://radiomanaure-default-rtdb.firebaseio.com", projectId: "radiomanaure" };
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
-        
-        const video = document.getElementById('video');
-        const radio = document.getElementById('radio-audio');
-        const fsButton = document.getElementById('fs-button');
-        const chatCineIframe = document.getElementById('chat-cine-iframe');
-        let ytPlayer;
-        let ytReady = false;
-
-        // Configuración de YouTube
-        window.onYouTubeIframeAPIReady = () => {
-            ytPlayer = new YT.Player('yt-player', { 
-                playerVars: { 'autoplay': 1, 'controls': 1, 'rel': 0, 'origin': window.location.origin },
-                events: { 'onReady': () => { ytReady = true; } }
-            });
-        };
-
-        // Motor HLS para M3U8 de alta velocidad
-        const hls = new Hls({ 
-            enableWorker: true, 
-            lowLatencyMode: true,
-            liveSyncDurationCount: 2, 
-            maxBufferLength: 10 
-        });
-
-        // Detector de IDs de YouTube (Normal y Live)
-        function getYoutubeID(url) {
-            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=|live\/)([^#&?]*).*/;
-            const match = url.match(regExp);
-            return (match && match[2].length === 11) ? match[2] : null;
+            yt.style.display = "block";
+            yt.src = "https://www.youtube.com/embed/" + id + "?autoplay=1&modestbranding=1";
+            status.innerText = "";
+        } 
+        // Es M3U8?
+        else {
+            vid.style.display = "block";
+            if (Hls.isSupported()) {
+                hls.loadSource(url);
+                hls.attachMedia(vid);
+                hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                    vid.play().catch(e => {
+                        status.innerText = "Toca Play para iniciar audio";
+                        vid.muted = true; vid.play();
+                    });
+                    status.innerText = "";
+                });
+            } else {
+                vid.src = url;
+                vid.play();
+                status.innerText = "";
+            }
         }
+    }
 
-        window.play = (url) => {
-            // Limpiar reproductores
-            video.pause();
-            video.style.display = "none";
-            document.getElementById('yt-player').style.display = "none";
-            hls.detachMedia();
-
-            if(ytPlayer && ytPlayer.stopVideo) {
-                try { ytPlayer.stopVideo(); } catch(e) {}
-            }
-
-            const ytId = getYoutubeID(url);
-
-            if (ytId) {
-                document.getElementById('yt-player').style.display = "block";
-                if (ytReady && ytPlayer.loadVideoById) {
-                    ytPlayer.loadVideoById(ytId);
-                } else {
-                    setTimeout(() => { if(ytReady) ytPlayer.loadVideoById(ytId); }, 1500);
-                }
-            } else {
-                video.style.display = "block";
-                if (Hls.isSupported()) {
-                    hls.loadSource(url); 
-                    hls.attachMedia(video);
-                    hls.on(Hls.Events.MANIFEST_PARSED, () => video.play().catch(() => {
-                        video.muted = true; video.play();
-                    }));
-                } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-                    video.src = url;
-                    video.play();
-                }
-            }
-        };
-
-        // Pantalla Completa y Modo Cine
-        window.toggleFS = () => {
-            const el = document.getElementById('master-player');
-            if (!document.fullscreenElement) {
-                if (el.requestFullscreen) el.requestFullscreen();
-                else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
-                if (screen.orientation && screen.orientation.lock) screen.orientation.lock("landscape").catch(()=>{});
-            } else {
-                document.exitFullscreen();
-            }
-        };
-
-        document.addEventListener('fullscreenchange', () => {
-            if (document.fullscreenElement) {
-                fsButton.innerText = "SALIR";
-                fsButton.style.background = "#333";
-                chatCineIframe.src = "chat-manaure.html?modo=cine";
-            } else {
-                fsButton.innerText = "MODO CINE";
-                fsButton.style.background = "var(--rojo)";
-                chatCineIframe.src = "chat-manaure.html";
-            }
-        });
-
-        // Carga de lista M3U
-        async function loadM3U() {
-            const url = "https://raw.githubusercontent.com/lavozdemanaureapp/lavozdemanaure/main/canales.m3u";
-            try {
-                const r = await fetch(url);
-                const t = await r.text();
-                const lines = t.split('\n');
-                const select = document.getElementById('channel-select');
-                select.innerHTML = '';
-                for (let i = 0; i < lines.length; i++) {
-                    if (lines[i].includes('#EXTINF')) {
-                        const name = lines[i].split(',')[1].trim();
-                        const link = lines[i+1]?.trim();
-                        if (link?.startsWith('http')) select.add(new Option(name.toUpperCase(), link));
+    // CARGAR LISTA CON GESTOR DE ERRORES
+    async function cargarLista() {
+        const githubURL = "https://raw.githubusercontent.com/lavozdemanaureapp/lavozdemanaure/main/canales.m3u";
+        try {
+            const resp = await fetch(githubURL);
+            if(!resp.ok) throw new Error("Error en GitHub");
+            const texto = await resp.text();
+            
+            const select = document.getElementById('lista');
+            select.innerHTML = "";
+            
+            const lineas = texto.split('\n');
+            lineas.forEach((linea, i) => {
+                if (linea.includes('#EXTINF')) {
+                    const nombre = linea.split(',')[1].trim();
+                    const link = lineas[i+1].trim();
+                    if(link.startsWith('http')) {
+                        let opt = new Option(nombre.toUpperCase(), link);
+                        select.add(opt);
                     }
                 }
-                if (select.length > 0) play(select.options[0].value);
-            } catch (e) { console.error("Error M3U:", e); }
+            });
+            
+            if (select.length > 0) conectar(select.value);
+            else status.innerText = "Lista vacía";
+
+        } catch (e) {
+            status.innerText = "ERROR: No se pudo leer la lista de canales";
+            console.error(e);
         }
+    }
 
-        // Firebase Listeners
-        onValue(ref(db, 'publicidad_activa'), s => {
-            const v = s.val();
-            document.getElementById('pub-overlay').style.display = (v?.imagen && v.imagen !== 'OFF') ? 'block' : 'none';
-            if(v?.imagen && v.imagen !== 'OFF') document.getElementById('pub-img').src = v.imagen;
-        });
+    cargarLista();
+</script>
 
-        onValue(ref(db, 'chat_visible'), s => {
-            document.getElementById('chat-overlay').style.display = (s.val()?.estado === 'ON') ? 'block' : 'none';
-        });
-
-        onValue(ref(db, 'radio_activa'), s => {
-            if(s.val()?.estado === 'ON') { radio.play(); video.muted = true; }
-            else { radio.pause(); video.muted = false; }
-        });
-
-        document.getElementById('channel-select').onchange = (e) => play(e.target.value);
-        loadM3U();
-    </script>
 </body>
 </html>
