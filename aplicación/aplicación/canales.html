@@ -3,97 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Manaure TV Profesional</title>
+    <title>Manaure TV Pro</title>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <script src="https://www.youtube.com/iframe_api"></script>
     <style>
-        :root { --rojo: #ff0000; --negro: #000; }
+        :root { --rojo: #ff0000; }
         * { box-sizing: border-box; }
         body { margin: 0; background: #000; color: #fff; font-family: sans-serif; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        #master-player { width: 100%; aspect-ratio: 16 / 9; background: #000; position: relative; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+        video, #yt-placeholder { width: 100% !important; height: 100% !important; object-fit: contain; }
+        #yt-placeholder { display: none; }
         
-        #master-player { 
-            width: 100%; 
-            aspect-ratio: 16 / 9; 
-            background: #000; 
-            position: relative; 
-            flex-shrink: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+        /* PUBLICIDAD Y CHAT */
+        #pub-overlay { position: absolute; top: 15px; right: 15px; width: 190px; z-index: 100; display: none; pointer-events: none; }
+        #pub-overlay img { width: 100%; border: 3px solid var(--rojo); border-radius: 8px; }
+        #chat-overlay { position: absolute; bottom: 75px; left: 15px; width: 300px; height: 180px; z-index: 100; display: none; overflow: hidden; background: transparent; pointer-events: none; }
+        #chat-overlay iframe { width: 100%; height: 100%; border: none; }
 
-        video, #yt-player { width: 100% !important; height: 100% !important; object-fit: contain; }
-        
-        /* PUBLICIDAD */
-        #pub-overlay { 
-            position: absolute; 
-            top: 15px; 
-            right: 15px; 
-            width: 190px; 
-            z-index: 2147483647; 
-            display: none; 
-            pointer-events: none; 
-        }
-        #pub-overlay img { width: 100%; border: 3px solid var(--rojo); border-radius: 8px; box-shadow: 0 0 20px rgba(0,0,0,0.8); }
-        
-        /* CHAT FLOTANTE MODO CINE */
-        #chat-overlay { 
-            position: absolute; 
-            bottom: 75px; 
-            left: 15px; 
-            width: 300px; 
-            height: 180px; 
-            z-index: 2147483647; 
-            display: none; 
-            overflow: hidden; 
-            background: transparent !important; 
-            pointer-events: none;
-        }
-
-        #chat-overlay iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-            background: transparent !important;
-        }
-
-        /* BOTÓN MODO CINE */
-        .btn-fullscreen { 
-            position: absolute; 
-            bottom: 15px; 
-            right: 15px; 
-            background: var(--rojo); 
-            color: white; 
-            border: none; 
-            padding: 12px 22px; 
-            border-radius: 30px; 
-            font-size: 13px; 
-            font-weight: bold; 
-            z-index: 2147483647; 
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(255,0,0,0.5);
-            text-transform: uppercase;
-        }
-
+        .btn-fullscreen { position: absolute; bottom: 15px; right: 15px; background: var(--rojo); color: white; border: none; padding: 12px 22px; border-radius: 30px; font-size: 13px; font-weight: bold; z-index: 101; cursor: pointer; text-transform: uppercase; }
         #interaction-area { flex: 1; display: flex; flex-direction: column; background: #0a0a0a; border-top: 3px solid var(--rojo); }
         #channel-bar { padding: 15px; }
-        select { width: 100%; background: #1a1a1a; color: white; border: 1px solid #444; padding: 15px; border-radius: 10px; font-size: 16px; font-weight: bold; color: var(--rojo); }
+        select { width: 100%; background: #1a1a1a; color: var(--rojo); border: 1px solid #444; padding: 15px; border-radius: 10px; font-size: 16px; font-weight: bold; }
         iframe#chat-frame { width: 100%; flex: 1; border: none; }
     </style>
 </head>
 <body>
 
     <div id="master-player">
+        <div id="yt-placeholder"></div>
         <video id="video" playsinline autoplay controls></video>
-        <div id="yt-player"></div>
         <audio id="radio-audio" src="https://stream.zeno.fm/a0x4vvcp9whvv"></audio>
         
         <div id="pub-overlay"><img id="pub-img" src=""></div>
-        
-        <div id="chat-overlay">
-            <iframe id="chat-cine-iframe" src="chat-manaure.html"></iframe>
-        </div>
-        
+        <div id="chat-overlay"><iframe id="chat-cine-iframe" src="chat-manaure.html"></iframe></div>
         <button id="fs-button" class="btn-fullscreen" onclick="toggleFS()">MODO CINE</button>
     </div>
 
@@ -115,103 +57,92 @@
         const video = document.getElementById('video');
         const radio = document.getElementById('radio-audio');
         const fsButton = document.getElementById('fs-button');
-        const chatCineIframe = document.getElementById('chat-cine-iframe');
-        let ytPlayer;
-        let ytReady = false;
+        const ytPlaceholder = document.getElementById('yt-placeholder');
+        let ytPlayer = null;
 
-        // Configuración de YouTube Player API
-        window.onYouTubeIframeAPIReady = () => {
-            ytPlayer = new YT.Player('yt-player', { 
-                playerVars: { 'autoplay': 1, 'controls': 1, 'rel': 0, 'origin': window.location.origin },
-                events: { 'onReady': () => { ytReady = true; } }
-            });
-        };
+        // Motor HLS Pro
+        const hls = new Hls({ enableWorker: true, lowLatencyMode: true, liveSyncDurationCount: 2 });
 
-        // Motor HLS optimizado para M3U8 (Baja latencia)
-        const hls = new Hls({ 
-            enableWorker: true, 
-            lowLatencyMode: true,
-            liveSyncDurationCount: 2, 
-            maxBufferLength: 10 
-        });
-
-        // Limpiador de Enlaces de YouTube (Detecta Normal, Live y quita ?si=...)
         function getYoutubeID(url) {
             const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=|live\/)([^#&?]*).*/;
             const match = url.match(regExp);
-            
-            if (match && match[2].length === 11) {
-                return match[2];
-            } else {
-                const liveMatch = url.split('/live/')[1]?.split('?')[0];
-                if (liveMatch && liveMatch.length === 11) return liveMatch;
-            }
-            return null;
+            if (match && match[2].length === 11) return match[2];
+            const liveMatch = url.split('/live/')[1]?.split('?')[0];
+            return (liveMatch && liveMatch.length === 11) ? liveMatch : null;
         }
 
         window.play = (url) => {
-            // Resetear reproductores
+            // 1. Limpieza absoluta
             video.pause();
             video.style.display = "none";
-            document.getElementById('yt-player').style.display = "none";
             hls.detachMedia();
-
-            if(ytPlayer && ytPlayer.stopVideo) {
-                try { ytPlayer.stopVideo(); } catch(e) {}
+            
+            // Destruir el reproductor de YouTube anterior si existe
+            if (ytPlayer) {
+                ytPlayer.destroy();
+                ytPlayer = null;
             }
+            ytPlaceholder.style.display = "none";
+            ytPlaceholder.innerHTML = ""; // Limpiar el div
 
             const ytId = getYoutubeID(url);
 
             if (ytId) {
-                // MODO YOUTUBE
-                document.getElementById('yt-player').style.display = "block";
-                if (ytReady && ytPlayer.loadVideoById) {
-                    ytPlayer.loadVideoById(ytId);
-                } else {
-                    setTimeout(() => { if(ytReady) ytPlayer.loadVideoById(ytId); }, 1500);
-                }
+                // 2. MODO YOUTUBE (Reconstrucción total)
+                ytPlaceholder.style.display = "block";
+                // Crear un nuevo div interno para que la API lo reemplace
+                const newDiv = document.createElement('div');
+                newDiv.id = 'yt-internal';
+                ytPlaceholder.appendChild(newDiv);
+
+                ytPlayer = new YT.Player('yt-internal', {
+                    height: '100%',
+                    width: '100%',
+                    videoId: ytId,
+                    playerVars: { 
+                        'autoplay': 1, 
+                        'controls': 1, 
+                        'rel': 0, 
+                        'modestbranding': 1,
+                        'origin': window.location.origin 
+                    }
+                });
             } else {
-                // MODO VIDEO / M3U8
+                // 3. MODO VIDEO / M3U8 / MP4
                 video.style.display = "block";
-                if (Hls.isSupported() && url.includes('.m3u8')) {
-                    hls.loadSource(url); 
-                    hls.attachMedia(video);
-                    hls.on(Hls.Events.MANIFEST_PARSED, () => video.play().catch(() => {
-                        video.muted = true; video.play();
-                    }));
+                if (url.includes('.m3u8')) {
+                    if (Hls.isSupported()) {
+                        hls.loadSource(url); hls.attachMedia(video);
+                        hls.on(Hls.Events.MANIFEST_PARSED, () => video.play());
+                    }
                 } else {
-                    // Para MP4 directos u otros formatos
                     video.src = url;
                     video.play().catch(() => { video.muted = true; video.play(); });
                 }
             }
         };
 
-        // Pantalla Completa y Control de Chat Modo Cine
+        // Pantalla completa y Chat
         window.toggleFS = () => {
             const el = document.getElementById('master-player');
             if (!document.fullscreenElement) {
                 if (el.requestFullscreen) el.requestFullscreen();
                 else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
-                if (screen.orientation && screen.orientation.lock) screen.orientation.lock("landscape").catch(()=>{});
-            } else {
-                document.exitFullscreen();
-            }
+            } else { document.exitFullscreen(); }
         };
 
         document.addEventListener('fullscreenchange', () => {
+            const chatCine = document.getElementById('chat-cine-iframe');
             if (document.fullscreenElement) {
                 fsButton.innerText = "SALIR";
-                fsButton.style.background = "#333";
-                chatCineIframe.src = "chat-manaure.html?modo=cine";
+                chatCine.src = "chat-manaure.html?modo=cine";
             } else {
                 fsButton.innerText = "MODO CINE";
-                fsButton.style.background = "var(--rojo)";
-                chatCineIframe.src = "chat-manaure.html";
+                chatCine.src = "chat-manaure.html";
             }
         });
 
-        // Cargador de Lista M3U desde GitHub
+        // Carga de M3U
         async function loadM3U() {
             const url = "https://raw.githubusercontent.com/lavozdemanaureapp/lavozdemanaure/main/canales.m3u";
             try {
@@ -228,20 +159,18 @@
                     }
                 }
                 if (select.length > 0) play(select.options[0].value);
-            } catch (e) { console.error("Error cargando M3U:", e); }
+            } catch (e) { console.error(e); }
         }
 
-        // Conexión con Firebase para Publicidad, Chat y Radio
+        // Firebase Listeners
         onValue(ref(db, 'publicidad_activa'), s => {
             const v = s.val();
             document.getElementById('pub-overlay').style.display = (v?.imagen && v.imagen !== 'OFF') ? 'block' : 'none';
             if(v?.imagen && v.imagen !== 'OFF') document.getElementById('pub-img').src = v.imagen;
         });
-
         onValue(ref(db, 'chat_visible'), s => {
             document.getElementById('chat-overlay').style.display = (s.val()?.estado === 'ON') ? 'block' : 'none';
         });
-
         onValue(ref(db, 'radio_activa'), s => {
             if(s.val()?.estado === 'ON') { radio.play(); video.muted = true; }
             else { radio.pause(); video.muted = false; }
