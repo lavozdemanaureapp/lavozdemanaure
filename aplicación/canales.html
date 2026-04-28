@@ -11,19 +11,12 @@
         
         /* VIDEO AREA */
         #video-container { width: 100%; aspect-ratio: 16 / 9; background: #111; position: relative; flex-shrink: 0; }
-        video, iframe { position: absolute; top: 0; left: 0; width: 100% !important; height: 100% !important; border: none; z-index: 5; }
-#espn-container iframe { 
-            position: absolute !important; 
-            top: 0; 
-            left: 0; 
-            width: 100% !important; 
-            height: 100% !important; 
-            object-fit: cover !important; /* Esto ayuda a que llene el espacio */
-            z-index: 10 !important; 
-        }
+        video, iframe, #espn-frame { position: absolute; top: 0; left: 0; width: 100% !important; height: 100% !important; border: none; z-index: 5; }
         
-        /* PUBLICIDAD DINÁMICA */
-/* PUBLICIDAD CON EL MARCO ORO */
+        /* Ajuste especial para que el script de ESPN no se salga del cuadro */
+        #espn-frame { z-index: 10 !important; background: black; }
+
+        /* PUBLICIDAD CON EL MARCO ORO */
         #pub-overlay { 
             position: absolute; 
             top: 10px; 
@@ -33,10 +26,9 @@
             display: none; 
             transition: width 0.3s ease;
         }
-
         #pub-overlay img { 
             width: 100%; 
-            border: 3px solid var(--oro); /* Aquí está tu línea amarilla bonita */
+            border: 3px solid var(--oro); 
             border-radius: 8px; 
             box-shadow: 0 0 15px rgba(0,0,0,0.7); 
         }
@@ -75,15 +67,16 @@
         <button id="exit-fs" onclick="toggleFS()">❌ SALIR</button>
         <video id="vid" playsinline controls autoplay muted></video>
         <iframe id="yt" style="display:none" allow="autoplay; fullscreen" allowfullscreen></iframe>
+        
+        <iframe id="espn-frame" style="display:none" 
+                sandbox="allow-scripts allow-same-origin allow-forms" 
+                allow="autoplay; fullscreen">
+        </iframe>
+
         <audio id="radio-audio" src="https://stream.zeno.fm/a0x4vvcp9whvv"></audio>
         <div id="pub-overlay"><img id="pub-img" src=""></div>
     </div>
 
-    <div id="espn-container" style="display:none; width:100%; height:100%; position:absolute; top:0; left:0; z-index:10;">
-            <script type='text/javascript'> width='100%', height='100%', id='espncol';</script>
-            <script type='text/javascript' src='https://embed.ksdjugfsddeports.com/embed2.js'></script>
-        </div>
-    
     <div id="controls">
         <div class="selector-wrapper">
             <div class="label-canales">CANALES</div>
@@ -117,121 +110,43 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    // --- SISTEMA DE AUDIENCIA (PARA EL MANDO) ---
-    const sessionId = localStorage.getItem('manaure_session') || Math.random().toString(36).substring(7);
-    localStorage.setItem('manaure_session', sessionId);
-    const presenciaRef = ref(db, 'audiencia/' + sessionId);
-    set(presenciaRef, true);
-    onDisconnect(presenciaRef).remove();
-
     const vid = document.getElementById('vid');
     const yt = document.getElementById('yt');
+    const eFrame = document.getElementById('espn-frame');
     const radio = document.getElementById('radio-audio');
     const pubOverlay = document.getElementById('pub-overlay');
-const hls = new Hls({
+
+    const hls = new Hls({
         enableWorker: true,
-        xhrSetup: function(xhr, url) {
-            xhr.withCredentials = false; // Ayuda a que no nos bloqueen por seguridad
-        },
-        // Esto ignora los errores de tiempo que hacen que se pare cada 3 segundos
+        xhrSetup: function(xhr, url) { xhr.withCredentials = false; },
         manifestLoadingMaxRetry: 50,
         levelLoadingMaxRetry: 50,
         fragLoadingMaxRetry: 50,
-        nudgeOffset: 2, // Si se pega, pega un salto de 2 segundos para seguir
+        nudgeOffset: 2,
         nudgeMaxRetry: 20,
-        liveSyncDurationCount: 5 // Se aleja un poco del vivo para no quedarse sin señal
+        liveSyncDurationCount: 5
     });
 
-   // --- MANDO VOZ (CORREGIDO PARA YOUTUBE) ---
-    onValue(ref(db, 'radio_activa'), snap => {
-        const estadoVoz = snap.val()?.estado;
-        
-        if (estadoVoz === 'ON') { 
-            // Suena la radio encima
-            radio.play().catch(()=>{}); 
-            
-            // Silencia solo si es archivo m3u8 (el video nativo)
-            vid.muted = true; 
-            
-            // A YouTube no lo tocamos para que NO se reinicie el video
-        } else { 
-            // Al apagar el micro
-            radio.pause(); 
-            vid.muted = false; 
-            // YouTube sigue corriendo fluido
-        }
-    });
-
-    // --- PUBLICIDAD ---
-    onValue(ref(db, 'publicidad_activa'), snap => {
-        const d = snap.val();
-        if (d?.imagen && d.imagen !== 'OFF') {
-            document.getElementById('pub-img').src = d.imagen;
-            pubOverlay.style.display = 'block';
-        } else { pubOverlay.style.display = 'none'; }
-    });
-
-    // --- CHAT ---
-    const chatRef = ref(db, 'chat_partido');
-    const box = document.getElementById('mensajes');
-    const userInp = document.getElementById('user-input');
-    const msgInp = document.getElementById('msg-input');
-    const btnSend = document.getElementById('send-btn');
-
-    const enviar = () => {
-        const user = userInp.value.trim() || "Anónimo";
-        const text = msgInp.value.trim();
-        if(text) { push(chatRef, { user, text, time: Date.now() }); msgInp.value = ""; }
-    };
-    btnSend.onclick = enviar;
-    msgInp.onkeypress = (e) => { if(e.key === 'Enter') enviar(); };
-
-    onChildAdded(query(chatRef, limitToLast(50)), (snap) => {
-        const data = snap.val();
-        const div = document.createElement('div');
-        div.className = 'msg';
-        div.innerHTML = `<span class="user">${data.user}:</span><span class="text">${data.text}</span>`;
-        box.appendChild(div);
-        box.scrollTop = box.scrollHeight;
-    });
-
-    // --- LÓGICA DE VIDEO ---
-window.cambiarCanal = (url) => {
-        // 1. Limpiamos todo (vid, youtube y el frame de espn)
-        vid.pause(); 
-        vid.style.display = "none"; 
-        yt.style.display = "none"; 
-        yt.src = ""; 
+    // --- LÓGICA DE VIDEO (CON BLINDAJE) ---
+    window.cambiarCanal = (url) => {
+        vid.pause(); vid.style.display = "none"; 
+        yt.style.display = "none"; yt.src = ""; 
+        eFrame.style.display = "none"; eFrame.srcdoc = "";
         hls.detachMedia();
-        
-        // Buscamos el frame (asegúrate de que en el HTML se llame id="espn-frame")
-        const eFrame = document.getElementById('espn-frame');
-        if(eFrame) {
-            eFrame.style.display = "none";
-            eFrame.srcdoc = ""; 
-        }
 
-        // 2. Si es el link de ESPN que "pasa derecho"
         if (url.includes('ksdjugfsddeports') || url.includes('embed2')) {
-            if(eFrame) {
-                eFrame.style.display = "block";
-                // Metemos el script en una "cápsula" para que no se escape
-                eFrame.srcdoc = `
-                    <body style="margin:0; background:black; display:flex; align-items:center; justify-content:center; height:100vh; overflow:hidden;">
-                        <script type='text/javascript'> width='100%', height='100%', id='espncol';<\/script>
-                        <script type='text/javascript' src='https://embed.ksdjugfsddeports.com/embed2.js'><\/script>
-                    </body>
-                `;
-            }
-        } 
-        // 3. Si es YouTube
-        else if (url.includes('youtu')) {
+            eFrame.style.display = "block";
+            eFrame.srcdoc = `
+                <body style="margin:0; background:black; display:flex; align-items:center; justify-content:center; height:100vh; overflow:hidden;">
+                    <script type='text/javascript'> width='100%', height='100%', id='espncol';<\/script>
+                    <script type='text/javascript' src='https://embed.ksdjugfsddeports.com/embed2.js'><\/script>
+                </body>
+            `;
+        } else if (url.includes('youtu')) {
             let id = url.split('v=')[1] || url.split('/').pop();
             yt.style.display = "block";
             yt.src = `https://www.youtube.com/embed/${id.split('&')[0]}?autoplay=1&rel=0`;
-        } 
-        // 4. Si es M3U8 normal
-        else {
+        } else {
             vid.style.display = "block";
             if (Hls.isSupported()) {
                 hls.loadSource(url); hls.attachMedia(vid);
@@ -239,29 +154,21 @@ window.cambiarCanal = (url) => {
             } else { vid.src = url; vid.play().catch(()=>{}); }
         }
     };
-        // Si el link es el del script de ESPN
-        if (url.includes('ksdjugfsddeports') || url.includes('embed2')) {
-            document.getElementById('espn-container').style.display = "block";
-        } 
-        // Si es YouTube
-        else if (url.includes('youtu')) {
-            let id = url.split('v=')[1] || url.split('/').pop();
-            yt.style.display = "block";
-            yt.src = `https://www.youtube.com/embed/${id.split('&')[0]}?autoplay=1&rel=0`;
-        } 
-        // Si es M3U8 normal
-        else {
-            vid.style.display = "block";
-            if (Hls.isSupported()) {
-                hls.loadSource(url); 
-                hls.attachMedia(vid);
-                hls.on(Hls.Events.MANIFEST_PARSED, () => vid.play().catch(()=>{}));
-            } else { 
-                vid.src = url; 
-                vid.play().catch(()=>{}); 
-            }
-        }
-    };
+
+    // --- RESTO DE FUNCIONES (MANDO, CHAT, FS) ---
+    onValue(ref(db, 'radio_activa'), snap => {
+        const estadoVoz = snap.val()?.estado;
+        if (estadoVoz === 'ON') { radio.play().catch(()=>{}); vid.muted = true; } 
+        else { radio.pause(); vid.muted = false; }
+    });
+
+    onValue(ref(db, 'publicidad_activa'), snap => {
+        const d = snap.val();
+        if (d?.imagen && d.imagen !== 'OFF') {
+            document.getElementById('pub-img').src = d.imagen;
+            pubOverlay.style.display = 'block';
+        } else { pubOverlay.style.display = 'none'; }
+    });
 
     fetch("https://raw.githubusercontent.com/lavozdemanaureapp/lavozdemanaure/main/canales.m3u")
         .then(r => r.text()).then(data => {
@@ -275,27 +182,42 @@ window.cambiarCanal = (url) => {
             if(select.length > 0) cambiarCanal(select.value);
         });
 
- window.toggleFS = () => {
+    const chatRef = ref(db, 'chat_partido');
+    const box = document.getElementById('mensajes');
+    const userInp = document.getElementById('user-input');
+    const msgInp = document.getElementById('msg-input');
+    const btnSend = document.getElementById('send-btn');
+
+    btnSend.onclick = () => {
+        const user = userInp.value.trim() || "Anónimo";
+        const text = msgInp.value.trim();
+        if(text) { push(chatRef, { user, text, time: Date.now() }); msgInp.value = ""; }
+    };
+
+    onChildAdded(query(chatRef, limitToLast(50)), (snap) => {
+        const data = snap.val();
+        const div = document.createElement('div');
+        div.className = 'msg';
+        div.innerHTML = `<span class="user">${data.user}:</span><span class="text">${data.text}</span>`;
+        box.appendChild(div);
+        box.scrollTop = box.scrollHeight;
+    });
+
+    window.toggleFS = () => {
         const container = document.getElementById('video-container');
         const btnExit = document.getElementById('exit-fs');
-        
         if (!document.fullscreenElement) {
             container.requestFullscreen().catch(() => {});
             btnExit.style.display = "block";
-            pubOverlay.style.width = "180px"; 
             if (screen.orientation && screen.orientation.lock) screen.orientation.lock("landscape").catch(() => {});
         } else {
             document.exitFullscreen();
             btnExit.style.display = "none";
-            pubOverlay.style.width = "110px"; 
         }
     };
 
     document.addEventListener('fullscreenchange', () => {
-        if (!document.fullscreenElement) {
-            document.getElementById('exit-fs').style.display = "none";
-            pubOverlay.style.width = "110px";
-        }
+        if (!document.fullscreenElement) document.getElementById('exit-fs').style.display = "none";
     });
 </script>
 </body>
