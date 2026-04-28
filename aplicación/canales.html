@@ -140,17 +140,22 @@
         }
     };
 
-   // --- MANDO VOZ (NUEVA VERSIÓN) ---
+  // --- MANDO VOZ (EXTREMO PARA EMBEDS) ---
     onValue(ref(db, 'radio_activa'), snap => {
         const estadoVoz = snap.val()?.estado;
         if (estadoVoz === 'ON') { 
             radio.play().catch(()=>{}); 
+            // 1. Muteamos el video normal
             vid.muted = true; 
-            vid.volume = 0; // Esto ayuda a "pisar" el audio del contenedor
+            vid.volume = 0;
+            // 2. Intentamos silenciar cualquier iframe (YouTube/ESPN) 
+            // pausando o refrescando el volumen si el navegador lo permite
+            yt.contentWindow?.postMessage('{"event":"command","func":"mute","args":""}', '*');
         } else { 
             radio.pause(); 
             vid.muted = false; 
-            vid.volume = 1; // Devuelve el sonido al salir del aire
+            vid.volume = 1;
+            yt.contentWindow?.postMessage('{"event":"command","func":"unMute","args":""}', '*');
         }
     });
     onValue(ref(db, 'publicidad_activa'), snap => {
