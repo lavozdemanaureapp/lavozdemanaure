@@ -140,12 +140,19 @@
         }
     };
 
+   // --- MANDO VOZ (NUEVA VERSIÓN) ---
     onValue(ref(db, 'radio_activa'), snap => {
         const estadoVoz = snap.val()?.estado;
-        if (estadoVoz === 'ON') { radio.play().catch(()=>{}); vid.muted = true; } 
-        else { radio.pause(); vid.muted = false; }
+        if (estadoVoz === 'ON') { 
+            radio.play().catch(()=>{}); 
+            vid.muted = true; 
+            vid.volume = 0; // Esto ayuda a "pisar" el audio del contenedor
+        } else { 
+            radio.pause(); 
+            vid.muted = false; 
+            vid.volume = 1; // Devuelve el sonido al salir del aire
+        }
     });
-
     onValue(ref(db, 'publicidad_activa'), snap => {
     const d = snap.val();
     const imgElement = document.getElementById('pub-img');
