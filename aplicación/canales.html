@@ -114,19 +114,18 @@
     const yt = document.getElementById('yt');
     const radio = document.getElementById('radio-audio');
     const pubOverlay = document.getElementById('pub-overlay');
- const hls = new Hls({
+const hls = new Hls({
         enableWorker: true,
-        // Ignora errores de tiempo para que no se detenga
-        manifestLoadingMaxRetry: 20,
-        manifestLoadingRetryDelay: 500,
-        levelLoadingMaxRetry: 20,
-        levelLoadingRetryDelay: 500,
-        // Esto ayuda a saltar huecos en la señal que causan el pegado
-        nudgeOffset: 0.1,
-        nudgeMaxRetry: 10,
-        maxFragLookUpTolerance: 0.1,
-        liveSyncDurationCount: 3, // Se aleja un pelín del vivo para ganar estabilidad
-        liveMaxLatencyDurationCount: 10
+        xhrSetup: function(xhr, url) {
+            xhr.withCredentials = false; // Ayuda a que no nos bloqueen por seguridad
+        },
+        // Esto ignora los errores de tiempo que hacen que se pare cada 3 segundos
+        manifestLoadingMaxRetry: 50,
+        levelLoadingMaxRetry: 50,
+        fragLoadingMaxRetry: 50,
+        nudgeOffset: 2, // Si se pega, pega un salto de 2 segundos para seguir
+        nudgeMaxRetry: 20,
+        liveSyncDurationCount: 5 // Se aleja un poco del vivo para no quedarse sin señal
     });
 
    // --- MANDO VOZ (CORREGIDO PARA YOUTUBE) ---
