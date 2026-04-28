@@ -8,6 +8,8 @@ https://embed.ksdjugfsddeports.com/embed2.js
 #EXTINF:-1 tvg-id="Venevision" tvg-logo="" group-title="NACIONALES", Venevisión Plus
 https://vod2live.univtec.com/manifest/4c41c0d8-e2e4-43cc-bd43-79afe715e1b3.m3u8
 
+#EXTINF:-1, TÁCHIRA VS CARABOBO (LIGA FUTVE)
+https://www.youtube.com/watch?v=EkmNT6A2wcw
 
 #EXTINF:-1 tvg-id="Venevision" tvg-logo="" group-title="NACIONALES", TVFANB
 https://vcp2.myplaytv.com/tvfanb/tvfanb/playlist.m3u8?PlaylistM3UCL
@@ -23,6 +25,7 @@ https://media.streambrothers.com:19360/8158/8158.m3u8?PlaylistM3UCL
 
 #EXTINF:-1 tvg-id="TRT" tvg-logo="" group-title="NACIONALES",CANAL I
 https://streaming.canal-i.com/master.m3u8
+
 #EXTINF:-1 tvg-id="TRT" tvg-logo="" group-title="NACIONALES",LATINA
 https://streamtv.latinamedios.com:3413/live/latinatvlive.m3u8
 
