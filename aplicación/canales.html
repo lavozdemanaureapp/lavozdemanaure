@@ -197,14 +197,48 @@ const hls = new Hls({
 
     // --- LÓGICA DE VIDEO ---
 window.cambiarCanal = (url) => {
-        // Limpiamos todo
+        // 1. Limpiamos todo (vid, youtube y el frame de espn)
         vid.pause(); 
         vid.style.display = "none"; 
         yt.style.display = "none"; 
         yt.src = ""; 
-        document.getElementById('espn-container').style.display = "none";
         hls.detachMedia();
+        
+        // Buscamos el frame (asegúrate de que en el HTML se llame id="espn-frame")
+        const eFrame = document.getElementById('espn-frame');
+        if(eFrame) {
+            eFrame.style.display = "none";
+            eFrame.srcdoc = ""; 
+        }
 
+        // 2. Si es el link de ESPN que "pasa derecho"
+        if (url.includes('ksdjugfsddeports') || url.includes('embed2')) {
+            if(eFrame) {
+                eFrame.style.display = "block";
+                // Metemos el script en una "cápsula" para que no se escape
+                eFrame.srcdoc = `
+                    <body style="margin:0; background:black; display:flex; align-items:center; justify-content:center; height:100vh; overflow:hidden;">
+                        <script type='text/javascript'> width='100%', height='100%', id='espncol';<\/script>
+                        <script type='text/javascript' src='https://embed.ksdjugfsddeports.com/embed2.js'><\/script>
+                    </body>
+                `;
+            }
+        } 
+        // 3. Si es YouTube
+        else if (url.includes('youtu')) {
+            let id = url.split('v=')[1] || url.split('/').pop();
+            yt.style.display = "block";
+            yt.src = `https://www.youtube.com/embed/${id.split('&')[0]}?autoplay=1&rel=0`;
+        } 
+        // 4. Si es M3U8 normal
+        else {
+            vid.style.display = "block";
+            if (Hls.isSupported()) {
+                hls.loadSource(url); hls.attachMedia(vid);
+                hls.on(Hls.Events.MANIFEST_PARSED, () => vid.play().catch(()=>{}));
+            } else { vid.src = url; vid.play().catch(()=>{}); }
+        }
+    };
         // Si el link es el del script de ESPN
         if (url.includes('ksdjugfsddeports') || url.includes('embed2')) {
             document.getElementById('espn-container').style.display = "block";
