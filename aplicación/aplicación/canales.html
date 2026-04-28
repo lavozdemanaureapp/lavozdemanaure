@@ -131,7 +131,12 @@
     const yt = document.getElementById('yt');
     const radio = document.getElementById('radio-audio');
     const pubOverlay = document.getElementById('pub-overlay');
-    const hls = new Hls({ enableWorker: true, lowLatencyMode: true });
+    const hls = new Hls({
+        enableWorker: true,
+        initialLiveManifestSize: 3, // Espera a tener 3 segmentos antes de empezar
+        manifestLoadingMaxRetry: 10,
+        levelLoadingMaxRetry: 10
+    });
 
     // --- MANDO VOZ ---
     onValue(ref(db, 'radio_activa'), snap => {
