@@ -3,7 +3,7 @@
 #EXTM3U
 
 #EXTINF:-1, ⚽ GOLAZO TV PSG VS BAYERN 
-https://s1327.mywebtv.cloud/hls/espn/index.m3u8?token=I0tJAcT5U_12s-8urnmrKg&expires=1777415579
+https://linear-akc-sa-west-1.media.dssott.com/dvt2=exp=1777490718~url=%2Fclt1%2Fva02%2Fdisneyplus%2Fchannel%2F921e1311-bb26-43dd-84a6-9e2284959712-1773070527132%2F~psid=01d8d811-6ff2-48f4-99ce-37926216c071~aid=033ec694-4b66-43f1-a33b-f12099a04d1f~did=68bd5c4b-d0fa-45c9-973d-f3e4c0ae91fc~country=VE~kid=k02~hmac=6b4ab7f9986346d79c04ed87c7c54e166180a5eb03e176100f5c572cfc91b7a8/clt1/va02/disneyplus/channel/921e1311-bb26-43dd-84a6-9e2284959712-1773070527132/cmaf-cenc-ctr-2532K/2532_slide_alt1.m3u8
 
 #EXTINF:-1 tvg-id="Venevision" tvg-logo="" group-title="NACIONALES", Venevisión Plus
 https://vod2live.univtec.com/manifest/4c41c0d8-e2e4-43cc-bd43-79afe715e1b3.m3u8
