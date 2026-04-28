@@ -147,13 +147,24 @@
     });
 
     onValue(ref(db, 'publicidad_activa'), snap => {
-        const d = snap.val();
-        if (d?.imagen && d.imagen !== 'OFF') {
-            document.getElementById('pub-img').src = d.imagen;
+    const d = snap.val();
+    const imgElement = document.getElementById('pub-img');
+    
+    if (d && d.imagen && d.imagen !== 'OFF') {
+        // Creamos una precarga en memoria
+        const precarga = new Image();
+        precarga.src = d.imagen;
+        
+        // Solo cuando la imagen cargó al 100%, la mostramos
+        precarga.onload = () => {
+            imgElement.src = d.imagen;
             pubOverlay.style.display = 'block';
-        } else { pubOverlay.style.display = 'none'; }
-    });
-
+        };
+    } else { 
+        pubOverlay.style.display = 'none'; 
+        imgElement.src = ""; 
+    }
+});
     fetch("https://raw.githubusercontent.com/lavozdemanaureapp/lavozdemanaure/main/canales.m3u")
         .then(r => r.text()).then(data => {
             const select = document.getElementById('lista');
