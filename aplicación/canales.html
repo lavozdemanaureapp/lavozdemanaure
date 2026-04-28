@@ -114,15 +114,16 @@
     const yt = document.getElementById('yt');
     const radio = document.getElementById('radio-audio');
     const pubOverlay = document.getElementById('pub-overlay');
-   const hls = new Hls({
+  const hls = new Hls({
         enableWorker: true,
-        lowLatencyMode: false, // Desactivamos esto para dar estabilidad
-        maxBufferLength: 30,   // Carga 30 segundos de video por adelantado
-        maxMaxBufferLength: 60,
-        startLevel: -1,        // Ajusta la calidad automáticamente según el internet
-        abandonRules: {
-            maxDroppedFrames: 10 // Si cae mucho la calidad, cambia de nivel rápido
-        }
+        lowLatencyMode: false,
+        maxBufferLength: 60,         // Guarda un minuto de video para que no se corte
+        maxMaxBufferLength: 600,     // Permite un colchón extra grande
+        maxBufferSize: 90 * 1000 * 1000, // Usa más memoria para estabilizar
+        appendErrorMaxRetry: 10,     // Si hay un error, lo intenta 10 veces antes de pararse
+        nudgeOffset: 0.1,            // Si el video se traba, le da un "empujoncito"
+        nudgeMaxRetry: 5
+    });
     });
 
    // --- MANDO VOZ (CORREGIDO PARA YOUTUBE) ---
