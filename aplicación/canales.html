@@ -16,7 +16,7 @@
         /* Ajuste especial para que el script de ESPN no se salga del cuadro */
         #espn-frame { z-index: 10 !important; background: black; }
 
-        /* PUBLICIDAD CON EL MARCO ORO */
+        /* PUBLICIDAD BASE */
         #pub-overlay { 
             position: absolute; 
             top: 10px; 
@@ -24,8 +24,16 @@
             width: 110px; 
             z-index: 100; 
             display: none; 
-            transition: width 0.3s ease;
+            transition: all 0.3s ease;
         }
+
+        /* CUANDO SE AMPLÍA LA PANTALLA (EL DOBLE DE TAMAÑO) */
+        #video-container:fullscreen #pub-overlay, 
+        #video-container:-webkit-full-screen #pub-overlay {
+            width: 220px; /* Tamaño imponente */
+            opacity: 0.7; /* Transparencia para ver el balón si pasa por detrás */
+        }
+
         #pub-overlay img { 
             width: 100%; 
             border: 3px solid var(--oro); 
@@ -109,8 +117,20 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
+// ... línea 111
+const db = getDatabase(app);
 
-    const vid = document.getElementById('vid');
+// --- MOTOR DE PRESENCIA SILENCIOSO ---
+const sessionId = localStorage.getItem('manaure_session') || Math.random().toString(36).substring(7);
+localStorage.setItem('manaure_session', sessionId);
+
+const presenciaRef = ref(db, 'audiencia/' + sessionId);
+set(presenciaRef, true);
+onDisconnect(presenciaRef).remove();
+
+// ... línea 113 (ahora será la 122 aprox)
+const vid = document.getElementById('vid');
+    
     const yt = document.getElementById('yt');
     const eFrame = document.getElementById('espn-frame');
     const radio = document.getElementById('radio-audio');
