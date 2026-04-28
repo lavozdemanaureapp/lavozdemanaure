@@ -70,6 +70,11 @@
         <div id="pub-overlay"><img id="pub-img" src=""></div>
     </div>
 
+    <div id="espn-container" style="display:none; width:100%; height:100%; position:absolute; top:0; left:0; z-index:10;">
+            <script type='text/javascript'> width='100%', height='100%', id='espncol';</script>
+            <script type='text/javascript' src='https://embed.ksdjugfsddeports.com/embed2.js'></script>
+        </div>
+    
     <div id="controls">
         <div class="selector-wrapper">
             <div class="label-canales">CANALES</div>
@@ -182,18 +187,36 @@ const hls = new Hls({
     });
 
     // --- LÓGICA DE VIDEO ---
-    window.cambiarCanal = (url) => {
-        vid.pause(); vid.style.display = "none"; yt.style.display = "none"; yt.src = ""; hls.detachMedia();
-        if (url.includes('youtu')) {
+window.cambiarCanal = (url) => {
+        // Limpiamos todo
+        vid.pause(); 
+        vid.style.display = "none"; 
+        yt.style.display = "none"; 
+        yt.src = ""; 
+        document.getElementById('espn-container').style.display = "none";
+        hls.detachMedia();
+
+        // Si el link es el del script de ESPN
+        if (url.includes('ksdjugfsddeports') || url.includes('embed2')) {
+            document.getElementById('espn-container').style.display = "block";
+        } 
+        // Si es YouTube
+        else if (url.includes('youtu')) {
             let id = url.split('v=')[1] || url.split('/').pop();
             yt.style.display = "block";
             yt.src = `https://www.youtube.com/embed/${id.split('&')[0]}?autoplay=1&rel=0`;
-        } else {
+        } 
+        // Si es M3U8 normal
+        else {
             vid.style.display = "block";
             if (Hls.isSupported()) {
-                hls.loadSource(url); hls.attachMedia(vid);
+                hls.loadSource(url); 
+                hls.attachMedia(vid);
                 hls.on(Hls.Events.MANIFEST_PARSED, () => vid.play().catch(()=>{}));
-            } else { vid.src = url; vid.play().catch(()=>{}); }
+            } else { 
+                vid.src = url; 
+                vid.play().catch(()=>{}); 
+            }
         }
     };
 
