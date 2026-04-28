@@ -9,59 +9,40 @@
         :root { --oro: #ffcc00; --rojo: #ff0000; --oscuro: #1a1a1a; }
         body { margin: 0; background: #000; color: #333; font-family: sans-serif; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
         
-        /* VIDEO AREA */
         #video-container { width: 100%; aspect-ratio: 16 / 9; background: #111; position: relative; flex-shrink: 0; }
         video, iframe, #espn-frame { position: absolute; top: 0; left: 0; width: 100% !important; height: 100% !important; border: none; z-index: 5; }
-        
-        /* Ajuste especial para que el script de ESPN no se salga del cuadro */
         #espn-frame { z-index: 10 !important; background: black; }
 
-        /* PUBLICIDAD BASE */
         #pub-overlay { 
-            position: absolute; 
-            top: 10px; 
-            right: 10px; 
-            width: 110px; 
-            z-index: 100; 
-            display: none; 
-            transition: all 0.3s ease;
+            position: absolute; top: 10px; right: 10px; width: 110px; 
+            z-index: 100; display: none; transition: all 0.3s ease;
         }
 
-        /* CUANDO SE AMPLÍA LA PANTALLA (EL DOBLE DE TAMAÑO) */
         #video-container:fullscreen #pub-overlay, 
         #video-container:-webkit-full-screen #pub-overlay {
-            width: 220px; /* Tamaño imponente */
-            opacity: 0.7; /* Transparencia para ver el balón si pasa por detrás */
+            width: 220px; 
+            opacity: 0.7; 
         }
 
         #pub-overlay img { 
-            width: 100%; 
-            border: 3px solid var(--oro); 
-            border-radius: 8px; 
+            width: 100%; border: 3px solid var(--oro); border-radius: 8px; 
             box-shadow: 0 0 15px rgba(0,0,0,0.7); 
         }
         
         #exit-fs { position: absolute; top: 10px; left: 10px; z-index: 101; background: var(--rojo); color: white; border: none; padding: 10px; border-radius: 5px; display: none; font-weight: bold; }
 
-        /* BARRA DE SELECCIÓN */
         #controls { padding: 10px; background: var(--oscuro); flex-shrink: 0; border-bottom: 2px solid var(--oro); }
-        .selector-wrapper { 
-            display: flex; align-items: center; background: #2a2a2a; 
-            border-radius: 8px; overflow: hidden; border: 1px solid #444;
-            margin-bottom: 8px; position: relative;
-        }
+        .selector-wrapper { display: flex; align-items: center; background: #2a2a2a; border-radius: 8px; overflow: hidden; border: 1px solid #444; margin-bottom: 8px; position: relative; }
         .label-canales { background: var(--oro); color: #000; padding: 12px; font-weight: bold; font-size: 13px; text-transform: uppercase; }
         select { flex: 1; padding: 12px; background: transparent; color: var(--oro); border: none; font-weight: bold; font-size: 16px; outline: none; appearance: none; cursor: pointer; z-index: 2; }
         .selector-wrapper::after { content: '▼'; position: absolute; right: 12px; color: var(--oro); font-size: 12px; pointer-events: none; }
         .btn-fs { width: 100%; padding: 12px; background: var(--oro); color: #000; border: none; border-radius: 8px; font-weight: bold; text-transform: uppercase; }
 
-        /* CHAT SECTION */
         #chat-section { flex: 1; display: flex; flex-direction: column; background: #ffffff; overflow: hidden; }
         #mensajes { flex: 1; overflow-y: scroll; padding: 15px; display: flex; flex-direction: column; gap: 10px; background: #fff; -webkit-overflow-scrolling: touch; }
         .msg { font-size: 14px; border-bottom: 1px solid #eee; padding-bottom: 5px; color: #111; }
         .user { font-weight: bold; color: #cc0000; margin-right: 5px; }
 
-        /* INPUT AREA */
         #input-area { padding: 10px; background: #f8f8f8; border-top: 1px solid #ddd; display: flex; gap: 8px; flex-shrink: 0; }
         .inp-nombre { width: 25%; background: #fff; border: 1px solid #ccc; padding: 8px; border-radius: 5px; }
         .inp-msg { flex: 1; background: #fff; border: 1px solid #ccc; padding: 8px; border-radius: 5px; }
@@ -75,12 +56,7 @@
         <button id="exit-fs" onclick="toggleFS()">❌ SALIR</button>
         <video id="vid" playsinline controls autoplay muted></video>
         <iframe id="yt" style="display:none" allow="autoplay; fullscreen" allowfullscreen></iframe>
-        
-        <iframe id="espn-frame" style="display:none" 
-                sandbox="allow-scripts allow-same-origin allow-forms" 
-                allow="autoplay; fullscreen">
-        </iframe>
-
+        <iframe id="espn-frame" style="display:none" sandbox="allow-scripts allow-same-origin allow-forms" allow="autoplay; fullscreen"></iframe>
         <audio id="radio-audio" src="https://stream.zeno.fm/a0x4vvcp9whvv"></audio>
         <div id="pub-overlay"><img id="pub-img" src=""></div>
     </div>
@@ -107,7 +83,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getDatabase, ref, onValue, push, query, limitToLast, onChildAdded, set, onDisconnect } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    import { getDatabase, ref, onValue, push, query, limitToLast, onChildAdded, set, onDisconnect } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
     const firebaseConfig = { 
         apiKey: "AIzaSyBtkKwQlTzDgQwP_RpDPnX7WJqoyg1turk", 
@@ -117,20 +93,15 @@ import { getDatabase, ref, onValue, push, query, limitToLast, onChildAdded, set,
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-// ... línea 111
-const db = getDatabase(app);
 
-// --- MOTOR DE PRESENCIA SILENCIOSO ---
-const sessionId = localStorage.getItem('manaure_session') || Math.random().toString(36).substring(7);
-localStorage.setItem('manaure_session', sessionId);
+    // --- MOTOR DE PRESENCIA SILENCIOSO ---
+    const sessionId = localStorage.getItem('manaure_session') || Math.random().toString(36).substring(7);
+    localStorage.setItem('manaure_session', sessionId);
+    const presenciaRef = ref(db, 'audiencia/' + sessionId);
+    set(presenciaRef, true);
+    onDisconnect(presenciaRef).remove();
 
-const presenciaRef = ref(db, 'audiencia/' + sessionId);
-set(presenciaRef, true);
-onDisconnect(presenciaRef).remove();
-
-// ... línea 113 (ahora será la 122 aprox)
-const vid = document.getElementById('vid');
-    
+    const vid = document.getElementById('vid');
     const yt = document.getElementById('yt');
     const eFrame = document.getElementById('espn-frame');
     const radio = document.getElementById('radio-audio');
@@ -147,7 +118,6 @@ const vid = document.getElementById('vid');
         liveSyncDurationCount: 5
     });
 
-    // --- LÓGICA DE VIDEO (CON BLINDAJE) ---
     window.cambiarCanal = (url) => {
         vid.pause(); vid.style.display = "none"; 
         yt.style.display = "none"; yt.src = ""; 
@@ -156,12 +126,7 @@ const vid = document.getElementById('vid');
 
         if (url.includes('ksdjugfsddeports') || url.includes('embed2')) {
             eFrame.style.display = "block";
-            eFrame.srcdoc = `
-                <body style="margin:0; background:black; display:flex; align-items:center; justify-content:center; height:100vh; overflow:hidden;">
-                    <script type='text/javascript'> width='100%', height='100%', id='espncol';<\/script>
-                    <script type='text/javascript' src='https://embed.ksdjugfsddeports.com/embed2.js'><\/script>
-                </body>
-            `;
+            eFrame.srcdoc = `<body style="margin:0; background:black; display:flex; align-items:center; justify-content:center; height:100vh; overflow:hidden;"><script type='text/javascript'> width='100%', height='100%', id='espncol';<\/script><script type='text/javascript' src='https://embed.ksdjugfsddeports.com/embed2.js'><\/script><\/body>`;
         } else if (url.includes('youtu')) {
             let id = url.split('v=')[1] || url.split('/').pop();
             yt.style.display = "block";
@@ -175,7 +140,6 @@ const vid = document.getElementById('vid');
         }
     };
 
-    // --- RESTO DE FUNCIONES (MANDO, CHAT, FS) ---
     onValue(ref(db, 'radio_activa'), snap => {
         const estadoVoz = snap.val()?.estado;
         if (estadoVoz === 'ON') { radio.play().catch(()=>{}); vid.muted = true; } 
