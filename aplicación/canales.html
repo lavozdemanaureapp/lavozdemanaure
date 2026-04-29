@@ -118,7 +118,7 @@
         liveSyncDurationCount: 5
     });
 
-  window.cambiarCanal = (url) => {
+   window.cambiarCanal = (url) => {
     // 1. Resetear y ocultar todo antes de cargar el nuevo canal
     vid.pause(); 
     vid.style.display = "none"; 
@@ -131,15 +131,16 @@
     eFrame.src = ""; 
     eFrame.srcdoc = "";
 
-    // 2. CASO A: Iframe directo (ESPN / tdtcloud / TVTVHD)
-    if (url.includes('tdtcloud.xyz') || url.includes('ws04.php') || url.includes('tvtvhd.com')) {
+    // 2. CASO A: Iframe directo (ESPN / tdtcloud)
+    if (url.includes('tdtcloud.xyz') || url.includes('ws04.php')) {
         eFrame.style.display = "block";
         eFrame.src = url;
     } 
     
-    // 3. CASO B: Iframe por ID dinámico (ksdjugfsddeports)
-    else if (url.includes('ksdjugfsddeports')) {
+   else if (url.includes('ksdjugfsddeports')) {
+        // Extraemos el ID dinámicamente de la URL
         let canalId = url.split('/').pop(); 
+        
         eFrame.style.display = "block";
         eFrame.srcdoc = `
             <body style="margin:0; background:black; display:flex; align-items:center; justify-content:center; height:100vh; overflow:hidden;">
@@ -168,8 +169,15 @@
             vid.src = url; 
             vid.play().catch(()=>{}); 
         }
+// CASO E: Iframe de TVTVHD u otros genéricos
+else if (url.includes('tvtvhd.com')) {
+    eFrame.style.display = "block";
+    eFrame.src = url;
+}
+        
     }
 };
+
   // --- MANDO VOZ (EXTREMO PARA EMBEDS) ---
     onValue(ref(db, 'radio_activa'), snap => {
         const estadoVoz = snap.val()?.estado;
