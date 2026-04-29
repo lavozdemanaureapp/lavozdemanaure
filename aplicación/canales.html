@@ -118,27 +118,51 @@
         liveSyncDurationCount: 5
     });
 
-    window.cambiarCanal = (url) => {
-        vid.pause(); vid.style.display = "none"; 
-        yt.style.display = "none"; yt.src = ""; 
-        eFrame.style.display = "none"; eFrame.srcdoc = "";
-        hls.detachMedia();
+   window.cambiarCanal = (url) => {
+    // 1. Resetear y ocultar todo antes de cargar el nuevo canal
+    vid.pause(); 
+    vid.style.display = "none"; 
+    hls.detachMedia();
+    
+    yt.style.display = "none"; 
+    yt.src = ""; 
+    
+    eFrame.style.display = "none"; 
+    eFrame.src = ""; 
+    eFrame.srcdoc = "";
 
-        if (url.includes('ksdjugfsddeports') || url.includes('embed2')) {
-            eFrame.style.display = "block";
-            eFrame.srcdoc = `<body style="margin:0; background:black; display:flex; align-items:center; justify-content:center; height:100vh; overflow:hidden;"><script type='text/javascript'> width='100%', height='100%', id='espncol';<\/script><script type='text/javascript' src='https://embed.ksdjugfsddeports.com/embed2.js'><\/script><\/body>`;
-        } else if (url.includes('youtu')) {
-            let id = url.split('v=')[1] || url.split('/').pop();
-            yt.style.display = "block";
-            yt.src = `https://www.youtube.com/embed/${id.split('&')[0]}?autoplay=1&rel=0`;
-        } else {
-            vid.style.display = "block";
-            if (Hls.isSupported()) {
-                hls.loadSource(url); hls.attachMedia(vid);
-                hls.on(Hls.Events.MANIFEST_PARSED, () => vid.play().catch(()=>{}));
-            } else { vid.src = url; vid.play().catch(()=>{}); }
+    // 2. CASO A: Iframe directo (ESPN / tdtcloud)
+    if (url.includes('tdtcloud.xyz') || url.includes('ws04.php')) {
+        eFrame.style.display = "block";
+        eFrame.src = url;
+    } 
+    
+    // 3. CASO B: Iframe por código (ksdjugfsddeports)
+    else if (url.includes('ksdjugfsddeports') || url.includes('embed2')) {
+        eFrame.style.display = "block";
+        eFrame.srcdoc = `<body style="margin:0; background:black; display:flex; align-items:center; justify-content:center; height:100vh; overflow:hidden;"><script type='text/javascript'> width='100%', height='100%', id='espncol';<\/script><script type='text/javascript' src='https://embed.ksdjugfsddeports.com/embed2.js'><\/script><\/body>`;
+    } 
+    
+    // 4. CASO C: YouTube
+    else if (url.includes('youtu')) {
+        let id = url.split('v=')[1] || url.split('/').pop();
+        yt.style.display = "block";
+        yt.src = `https://www.youtube.com/embed/${id.split('&')[0]}?autoplay=1&rel=0`;
+    } 
+    
+    // 5. CASO D: Flujos directos (m3u8 / hls)
+    else {
+        vid.style.display = "block";
+        if (Hls.isSupported()) {
+            hls.loadSource(url); 
+            hls.attachMedia(vid);
+            hls.on(Hls.Events.MANIFEST_PARSED, () => vid.play().catch(()=>{}));
+        } else { 
+            vid.src = url; 
+            vid.play().catch(()=>{}); 
         }
-    };
+    }
+};
 
   // --- MANDO VOZ (EXTREMO PARA EMBEDS) ---
     onValue(ref(db, 'radio_activa'), snap => {
