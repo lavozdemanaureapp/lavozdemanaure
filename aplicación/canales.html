@@ -137,11 +137,19 @@
         eFrame.src = url;
     } 
     
-    // 3. CASO B: Iframe por código (ksdjugfsddeports)
-    else if (url.includes('ksdjugfsddeports') || url.includes('embed2')) {
+   else if (url.includes('ksdjugfsddeports')) {
+        // Extraemos el ID dinámicamente de la URL
+        let canalId = url.split('/').pop(); 
+        
         eFrame.style.display = "block";
-        eFrame.srcdoc = `<body style="margin:0; background:black; display:flex; align-items:center; justify-content:center; height:100vh; overflow:hidden;"><script type='text/javascript'> width='100%', height='100%', id='espncol';<\/script><script type='text/javascript' src='https://embed.ksdjugfsddeports.com/embed2.js'><\/script><\/body>`;
-    } 
+        eFrame.srcdoc = `
+            <body style="margin:0; background:black; display:flex; align-items:center; justify-content:center; height:100vh; overflow:hidden;">
+                <script type='text/javascript'> 
+                    width='100%', height='100%', id='${canalId}';
+                <\/script>
+                <script type='text/javascript' src='https://embed.ksdjugfsddeports.com/embed2.js'><\/script>
+            </body>`;
+    }
     
     // 4. CASO C: YouTube
     else if (url.includes('youtu')) {
