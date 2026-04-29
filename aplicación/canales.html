@@ -169,6 +169,12 @@
             vid.src = url; 
             vid.play().catch(()=>{}); 
         }
+// CASO E: Iframe de TVTVHD u otros genéricos
+else if (url.includes('tvtvhd.com')) {
+    eFrame.style.display = "block";
+    eFrame.src = url;
+}
+        
     }
 };
 
