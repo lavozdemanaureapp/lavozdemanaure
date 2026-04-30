@@ -118,8 +118,8 @@
         liveSyncDurationCount: 5
     });
 
-  window.cambiarCanal = (url) => {
-    // ... (mantén tus limpiezas iniciales de vid, yt y eFrame) ...
+ window.cambiarCanal = (url) => {
+    // 1. Limpieza total
     vid.pause(); 
     vid.style.display = "none"; 
     hls.detachMedia();
@@ -129,44 +129,12 @@
     eFrame.src = ""; 
     eFrame.srcdoc = "";
 
-    // NUEVA CONDICIÓN PARA WSDEPORTES
-    if (url.includes('wsdeportes.net')) {
-        eFrame.style.display = "block";
-        // Usamos la URL directamente. 
-        // Nota: Si el sitio bloquea el iframe por protección de origen, 
-        // podrías necesitar usar srcdoc con un script similar al de ksdjugfsddeports.
-        eFrame.src = url; 
-    } 
-    // CASO A: Otros Iframes (TDTCloud, etc)
-    else if (url.includes('tdtcloud.xyz') || url.includes('ws04.php')) {
-        eFrame.style.display = "block";
-        eFrame.src = url;
-    }
-    // ... (resto de tus condiciones: ksdjugfsddeports, youtu, m3u8) ...
-   else if (url.includes('ksdjugfsddeports')) {
-        // Extraemos el ID dinámicamente de la URL
-        let canalId = url.split('/').pop(); 
-        
-        eFrame.style.display = "block";
-        eFrame.srcdoc = `
-            <body style="margin:0; background:black; display:flex; align-items:center; justify-content:center; height:100vh; overflow:hidden;">
-                <script type='text/javascript'> 
-                    width='100%', height='100%', id='${canalId}';
-                <\/script>
-                <script type='text/javascript' src='https://embed.ksdjugfsddeports.com/embed2.js'><\/script>
-            </body>`;
-    }
-    
-    // 4. CASO C: YouTube
-    else if (url.includes('youtu')) {
-        let id = url.split('v=')[1] || url.split('/').pop();
-        yt.style.display = "block";
-        yt.src = `https://www.youtube.com/embed/${id.split('&')[0]}?autoplay=1&rel=0`;
-    } 
-    
-    // 5. CASO D: Flujos directos (m3u8 / hls)
-    else {
+    // --- PRIORIDAD 1: SI ES UN FLUJO DIRECTO (.m3u8) ---
+    // Si la URL termina en m3u8 o contiene tdtcloud pero es un archivo index, va al video directo
+    if (url.includes('.m3u8') || url.includes('index.m3u8')) {
         vid.style.display = "block";
+        vid.setAttribute('referrerpolicy', 'no-referrer'); // Para saltar bloqueos básicos
+
         if (Hls.isSupported()) {
             hls.loadSource(url); 
             hls.attachMedia(vid);
@@ -176,8 +144,47 @@
             vid.play().catch(()=>{}); 
         }
     }
-};
 
+    // --- PRIORIDAD 2: IFRAMES Y SCRIPTS ---
+    else if (url.includes('wsdeportes.net')) {
+        eFrame.style.display = "block";
+        eFrame.src = url; 
+    } 
+    else if (url.includes('ws04.php')) { // Quitamos tdtcloud de aquí si es solo para video
+        eFrame.style.display = "block";
+        eFrame.src = url;
+    }
+    else if (url.includes('ksdjugfsddeports')) {
+        let canalId = url.split('/').pop(); 
+        eFrame.style.display = "block";
+        eFrame.srcdoc = `
+            <body style="margin:0; background:black; display:flex; align-items:center; justify-content:center; height:100vh; overflow:hidden;">
+                <script type='text/javascript'> 
+                    width='100%', height='100%', id='${canalId}';
+                <\/script>
+                <script type='text/javascript' src='https://embed.ksdjugfsddeports.com/embed2.js'><\/script>
+            </body>`;
+    }
+    else if (url.includes('youtu')) {
+        let id = url.split('v=')[1] || url.split('/').pop();
+        yt.style.display = "block";
+        yt.src = `https://www.youtube.com/embed/${id.split('&')[0]}?autoplay=1&rel=0`;
+    } 
+    
+    // --- CASO POR DEFECTO ---
+    else {
+        // Si no detecta nada especial, intenta cargarlo como video
+        vid.style.display = "block";
+        if (Hls.isSupported()) {
+            hls.loadSource(url); 
+            hls.attachMedia(vid);
+            hls.on(Hls.Events.MANIFEST_PARSED, () => vid.play().catch(()=>{}));
+        } else {
+            vid.src = url;
+            vid.play().catch(()=>{});
+        }
+    }
+};
   // --- MANDO VOZ (EXTREMO PARA EMBEDS) ---
     onValue(ref(db, 'radio_activa'), snap => {
         const estadoVoz = snap.val()?.estado;
