@@ -6,7 +6,8 @@
 https://embed.ksdjugfsddeports.com/espn
 
 #EXTINF:-1, ⚽ ESPN (OPCIÓN 1 - ESTABLE)
-https://s1327.mywebtv.cloud/hls/espn/index.m3u8?token=PkqoItV3LATZxypaFXGBOA&expires=1777504519
+#EXTINF:-1, ESPN (WS DEPORTES)
+https://wsdeportes.net/?v=espn
 
 #EXTINF:-1, ESPN 2
 https://embed.ksdjugfsddeports.com/espn2
