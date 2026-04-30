@@ -2,11 +2,11 @@
 # --- CATEGORÍA: NACIONALES ---
 #EXTM3U
 
-#EXTINF:-1, ⚽ ESPN COLOMBIA
+#XEXTINF:-1, ⚽ ESPN 
 https://embed.ksdjugfsddeports.com/espn
 
 
-#EXTINF:-1, ESPN (DIRECTO)
+#EXTINF:-1, ESPN 3
 https://embed.ksdjugfsddeports.com/espn3
 
 #EXTINF:-1, ESPN 2
@@ -18,10 +18,10 @@ https://vod2live.univtec.com/manifest/4c41c0d8-e2e4-43cc-bd43-79afe715e1b3.m3u8
 #EXTINF:-1, TÁCHIRA VS CARABOBO (LIGA FUTVE)
 https://www.youtube.com/watch?v=EkmNT6A2wcw
 
-#EXTINF:-1, ⚽ DSPORTS
+#XEXTINF:-1, ⚽ DSPORTS
 https://embed.ksdjugfsddeports.com/directvsports
 
-#EXTINF:-1, ⚽ CARACOL 
+#XEXTINF:-1, ⚽ CARACOL 
 https://hls.tdtcloud.xyz/hls/CarSD1/index.m3u8?token=a1X2YTsPV5rQEe3XO1ArnQ&expires=1777600367
 
 #EXTINF:-1 tvg-id="Venevision" tvg-logo="" group-title="NACIONALES", TVFANB
