@@ -118,25 +118,31 @@
         liveSyncDurationCount: 5
     });
 
-   window.cambiarCanal = (url) => {
-    // 1. Resetear y ocultar todo antes de cargar el nuevo canal
+  window.cambiarCanal = (url) => {
+    // ... (mantén tus limpiezas iniciales de vid, yt y eFrame) ...
     vid.pause(); 
     vid.style.display = "none"; 
     hls.detachMedia();
-    
     yt.style.display = "none"; 
     yt.src = ""; 
-    
     eFrame.style.display = "none"; 
     eFrame.src = ""; 
     eFrame.srcdoc = "";
 
-    // 2. CASO A: Iframe directo (ESPN / tdtcloud)
-    if (url.includes('tdtcloud.xyz') || url.includes('ws04.php')) {
+    // NUEVA CONDICIÓN PARA WSDEPORTES
+    if (url.includes('wsdeportes.net')) {
+        eFrame.style.display = "block";
+        // Usamos la URL directamente. 
+        // Nota: Si el sitio bloquea el iframe por protección de origen, 
+        // podrías necesitar usar srcdoc con un script similar al de ksdjugfsddeports.
+        eFrame.src = url; 
+    } 
+    // CASO A: Otros Iframes (TDTCloud, etc)
+    else if (url.includes('tdtcloud.xyz') || url.includes('ws04.php')) {
         eFrame.style.display = "block";
         eFrame.src = url;
-    } 
-    
+    }
+    // ... (resto de tus condiciones: ksdjugfsddeports, youtu, m3u8) ...
    else if (url.includes('ksdjugfsddeports')) {
         // Extraemos el ID dinámicamente de la URL
         let canalId = url.split('/').pop(); 
