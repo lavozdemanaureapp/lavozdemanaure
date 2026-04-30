@@ -19,7 +19,7 @@ https://vod2live.univtec.com/manifest/4c41c0d8-e2e4-43cc-bd43-79afe715e1b3.m3u8
 https://www.youtube.com/watch?v=EkmNT6A2wcw
 
 #EXTINF:-1, ⚽ DSPORTS
-https://deportes.ksdjugfsddeports.com:9092/MTkwLjk3LjI0OS40/3_.m3u8?token=C6w4sPry9Tf2yD4JBw4ZGA&expires=1777616297
+https://embed.ksdjugfsddeports.com/directvsports
 
 #EXTINF:-1 tvg-id="Venevision" tvg-logo="" group-title="NACIONALES", TVFANB
 https://vcp2.myplaytv.com/tvfanb/tvfanb/playlist.m3u8?PlaylistM3UCL
