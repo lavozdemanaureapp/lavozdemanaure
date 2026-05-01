@@ -56,16 +56,20 @@
             max-height: 100vh !important;
         }
 
+        /* AJUSTE: Cámara más grande en horizontal */
         .modo-cine #camara-overlay {
             display: block !important;
             position: fixed !important; 
-            width: 180px !important;    
+            width: 35vw !important; /* Aumentado de 180px a 35% del ancho de pantalla */
+            max-width: 320px !important;
+            min-width: 240px !important;
             aspect-ratio: 16 / 9;
-            bottom: 15px !important;   
-            right: 15px !important;    
+            bottom: 20px !important;   
+            right: 20px !important;    
             top: auto !important;      
             z-index: 999999 !important;
-            border: 2px solid var(--oro);
+            border: 3px solid var(--oro); /* Borde más grueso para resaltar */
+            box-shadow: 0 0 25px rgba(0,0,0,0.8);
         }
 
         #exit-fs { position: absolute; top: 10px; left: 10px; z-index: 101; background: var(--rojo); color: white; border: none; padding: 10px; border-radius: 5px; display: none; font-weight: bold; }
@@ -93,19 +97,15 @@
 <body>
 
     <div id="video-container">
-        <!-- Botón de salir -->
         <button id="exit-fs" onclick="toggleFS()">❌ SALIR</button>
         
-        <!-- Elementos de Video -->
         <video id="vid" playsinline controls autoplay muted></video>
         <iframe id="yt" style="display:none" allow="autoplay; fullscreen" allowfullscreen></iframe>
         <iframe id="espn-frame" style="display:none" sandbox="allow-scripts allow-same-origin allow-forms allow-presentation" allow="autoplay; fullscreen"></iframe>
         <audio id="radio-audio" src="https://stream.zeno.fm/a0x4vvcp9whvv"></audio>
         
-        <!-- Publicidad sobre video -->
         <div id="pub-overlay"><img id="pub-img" src=""></div>
 
-        <!-- CÁMARA ÚNICA -->
         <div id="camara-overlay">
             <iframe id="iframe-camara" width="100%" height="100%" frameborder="0" allow="autoplay; encrypted-media"></iframe>
         </div>
