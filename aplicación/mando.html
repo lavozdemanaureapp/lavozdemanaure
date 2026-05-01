@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mando Manaure Final</title>
+    <title>Mando Manaure Pro</title>
     <style>
         body { background: #0b0b0b; color: white; font-family: sans-serif; text-align: center; padding: 15px; margin: 0; }
         .audiencia-card { 
@@ -14,55 +14,51 @@
         #audiencia-total { font-size: 85px; font-weight: bold; color: #ff0000; line-height: 1; }
         .card { background: #1a1a1a; padding: 15px; border-radius: 15px; margin-bottom: 15px; border: 1px solid #333; }
         .flex-voz { display: flex; gap: 10px; }
-        .btn-voz { flex: 1; height: 70px; font-size: 18px; border-radius: 12px; border: none; font-weight: bold; color: white; }
+        .btn-voz { flex: 1; height: 70px; font-size: 18px; border-radius: 12px; border: none; font-weight: bold; color: white; cursor: pointer; }
         .on { background: #1e7e34; border-bottom: 5px solid #114d1f; }
         .off { background: #bd2130; border-bottom: 5px solid #7d1620; }
+        .cam { background: #0056b3; border-bottom: 5px solid #002d5e; }
         .grid-pub { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
-        .btn-pub { background: #2a2a2a; color: #fff; padding: 15px; border-radius: 10px; border: 1px solid #444; font-weight: bold; }
-        .btn-quitar { background: #444; color: white; width: 100%; margin-top: 15px; padding: 15px; border-radius: 10px; font-weight: bold; }
+        .btn-pub { background: #2a2a2a; color: #fff; padding: 15px; border-radius: 10px; border: 1px solid #444; font-weight: bold; cursor: pointer; }
+        .btn-quitar { background: #444; color: white; width: 100%; margin-top: 15px; padding: 15px; border-radius: 10px; font-weight: bold; cursor: pointer; border: none; }
+        h3 { color: #ffcc00; font-size: 0.9rem; margin-top: 0; text-transform: uppercase; letter-spacing: 1px; }
     </style>
 </head>
 <body>
 
     <div class="audiencia-card">
-        <div style="font-size: 14px; color: #ff4d4d; font-weight: bold;">OYENTES EN VIVO</div>
+        <div style="font-size: 14px; color: #ff4d4d; font-weight: bold; letter-spacing: 2px;">AUDIENCIA EN VIVO</div>
         <div id="audiencia-total">0</div>
     </div>
 
     <!-- CONTROL DE VOZ -->
     <div class="card">
-        <h3 style="color: #ffcc00; font-size: 0.8rem;">VOZ / MICRÓFONO</h3>
+        <h3>Voz / Micrófono</h3>
         <div class="flex-voz">
-            <button class="on" onclick="setRadio('ON')">🎤 ENTRAR</button>
-            <button class="off" onclick="setRadio('OFF')">🔇 SALIR</button>
+            <button class="btn-voz on" onclick="setRadio('ON')">🎤 ENTRAR</button>
+            <button class="btn-voz off" onclick="setRadio('OFF')">🔇 SALIR</button>
         </div>
     </div>
 
-    <!-- NUEVO: CONTROL DE CÁMARA FLOTANTE -->
+    <!-- CONTROL DE CÁMARA -->
     <div class="card">
-        <h3 style="color: #ffcc00; font-size: 0.8rem;">CÁMARA EN VIVO (YouTube)</h3>
+        <h3>Cámara en Vivo</h3>
         <div class="flex-voz">
-            <button class="on" style="background: #0056b3; border-bottom: 5px solid #002d5e;" onclick="setCamara('Ynxg-EGb-5A')">🎥 MOSTRAR</button>
-            <button class="off" onclick="setCamara('OFF')">❌ OCULTAR</button>
+            <button class="btn-voz cam" onclick="setCamara('Ynxg-EGb-5A')">🎥 MOSTRAR</button>
+            <button class="btn-voz off" onclick="setCamara('OFF')">❌ OCULTAR</button>
         </div>
     </div>
 
     <!-- CONTROL DE PUBLICIDAD -->
     <div class="card">
-        <h3 style="color: #ffcc00; font-size: 0.8rem;">PUBLICIDAD 1-10</h3>
+        <h3>Publicidad en Pantalla</h3>
         <div class="grid-pub">
-            <button class="btn-pub" onclick="setPub('publicidad1.png')">PUB 1</button>
-            <button class="btn-pub" onclick="setPub('publicidad2.png')">PUB 2</button>
-            <button class="btn-pub" onclick="setPub('publicidad3.png')">PUB 3</button>
-            <button class="btn-pub" onclick="setPub('publicidad4.png')">PUB 4</button>
-            <button class="btn-pub" onclick="setPub('publicidad5.png')">PUB 5</button>
-            <button class="btn-pub" onclick="setPub('publicidad6.png')">PUB 6</button>
-            <button class="btn-pub" onclick="setPub('publicidad7.png')">PUB 7</button>
-            <button class="btn-pub" onclick="setPub('publicidad8.png')">PUB 8</button>
-            <button class="btn-pub" onclick="setPub('publicidad9.png')">PUB 9</button>
-            <button class="btn-pub" onclick="setPub('publicidad10.png')">PUB 10</button>
+            <button class="btn-pub" onclick="setPub('https://i.imgur.com/URL_DE_TU_IMAGEN_1.png')">PUB 1</button>
+            <button class="btn-pub" onclick="setPub('https://i.imgur.com/URL_DE_TU_IMAGEN_2.png')">PUB 2</button>
+            <button class="btn-pub" onclick="setPub('https://i.imgur.com/URL_DE_TU_IMAGEN_3.png')">PUB 3</button>
+            <button class="btn-pub" onclick="setPub('https://i.imgur.com/URL_DE_TU_IMAGEN_4.png')">PUB 4</button>
         </div>
-        <button class="btn-quitar" onclick="setPub('OFF')">QUITAR PUB</button>
+        <button class="btn-quitar" onclick="setPub('OFF')">QUITAR PUBLICIDAD</button>
     </div>
 
     <script type="module">
@@ -78,24 +74,22 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // Funciones de control
+        // Funciones de control global
         window.setRadio = (est) => set(ref(db, 'radio_activa'), { estado: est });
         window.setPub = (img) => set(ref(db, 'publicidad_activa'), { imagen: img });
-        
-        // Nueva función para controlar la cámara flotante
         window.setCamara = (id) => set(ref(db, 'camara_activa'), { youtubeId: id });
 
-        // Contador de Audiencia
-        onValue(ref(db, 'audiencia'), (snapshot) => {
+        // Lógica de Estadísticas Corregida
+        const audienciaRef = ref(db, 'audiencia');
+        onValue(audienciaRef, (snapshot) => {
             if (snapshot.exists()) {
-                const data = snapshot.val();
-                const cantidad = Object.keys(data).length;
-                document.getElementById('audiencia-total').innerText = cantidad;
+                const usuarios = snapshot.val();
+                // Contamos las llaves únicas (IDs de sesión) que hay en el nodo
+                const total = Object.keys(usuarios).length;
+                document.getElementById('audiencia-total').innerText = total;
             } else {
                 document.getElementById('audiencia-total').innerText = "0";
             }
-        }, (error) => {
-            console.error("Error de Firebase:", error);
         });
     </script>
 </body>
