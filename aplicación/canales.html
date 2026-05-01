@@ -31,19 +31,20 @@
         }
 
         #camara-overlay {
-            position: absolute;
-            bottom: 10px;
-            right: 10px;
-            width: 140px; 
-            aspect-ratio: 16 / 9;
-            z-index: 150; 
-            border: 2px solid var(--oro);
-            border-radius: 8px;
-            overflow: hidden;
-            display: none; 
-            background: black;
-            box-shadow: 0 0 15px rgba(0,0,0,0.8);
-        }
+    position: absolute;
+    top: 10px; /* Cambiado a la parte superior para que no tape el chat */
+    right: 10px;
+    width: 160px; /* Un poco más grande para que se vea bien */
+    aspect-ratio: 16 / 9;
+    z-index: 200; /* Prioridad máxima sobre cualquier otro elemento */
+    border: 2px solid var(--oro);
+    border-radius: 8px;
+    overflow: hidden;
+    display: none; 
+    background: black;
+    box-shadow: 0 0 20px rgba(0,0,0,0.9);
+    pointer-events: none; /* Para que no estorbe si alguien intenta hacer clic detrás */
+}
         #exit-fs { position: absolute; top: 10px; left: 10px; z-index: 101; background: var(--rojo); color: white; border: none; padding: 10px; border-radius: 5px; display: none; font-weight: bold; }
 
         #controls { padding: 10px; background: var(--oscuro); flex-shrink: 0; border-bottom: 2px solid var(--oro); }
@@ -80,6 +81,10 @@
         <iframe id="espn-frame" style="display:none" sandbox="allow-scripts allow-same-origin allow-forms allow-presentation" allow="autoplay; fullscreen" referrerpolicy="no-referrer-when-downgrade"></iframe>fullscreen"></iframe>
         <audio id="radio-audio" src="https://stream.zeno.fm/a0x4vvcp9whvv"></audio>
         <div id="pub-overlay"><img id="pub-img" src=""></div>
+<div id="camara-overlay">
+        <iframe id="iframe-camara" ...></iframe>
+    </div>
+        
     </div>
 
     <div id="controls">
@@ -244,7 +249,7 @@
     }
 });
 
-    // --- ESCUCHA DE CÁMARA EN VIVO (Audio desde YouTube/OBS) ---
+   // --- ESCUCHA DE CÁMARA EN VIVO CON RETORNO DE AUDIO ---
     onValue(ref(db, 'camara_activa'), snap => {
         const d = snap.val();
         const overlay = document.getElementById('camara-overlay');
@@ -252,21 +257,25 @@
         const radioAudio = document.getElementById('radio-audio');
 
         if (d && d.youtubeId && d.youtubeId !== 'OFF') {
-            // Cargamos YouTube CON SONIDO (sin el comando mute)
+            // 1. Mostrar cámara con audio de YouTube (OBS)
             iframeCam.src = `https://www.youtube.com/embed/${d.youtubeId}?autoplay=1&controls=0&modestbranding=1`;
             overlay.style.display = 'block';
             
-            // Pausamos la radio de Zeno para que no se cruce con tu voz del OBS
+            // 2. Pausar radio y silenciar el video del partido
             if(radioAudio) radioAudio.pause();
-            
-            // También silenciamos el video del partido para que solo se escuche tu narración
             vid.muted = true;
+            vid.volume = 0;
         } else {
+            // 3. Al ocultar: Limpiar y cerrar
             overlay.style.display = 'none';
             iframeCam.src = "";
             
-            // Al apagar la cámara, podrías reactivar el sonido del partido si quisieras
-            // vid.muted = false;
+            // 4. EL RETORNO: Devolvemos el sonido al partido automáticamente
+            vid.muted = false;
+            vid.volume = 1;
+            
+            // Opcional: Si quieres que vuelva la radio de Zeno al quitar la cámara, descomenta abajo:
+            // if(radioAudio) radioAudio.play().catch(()=>{});
         }
     });
     
