@@ -95,13 +95,14 @@
         <button id="exit-fs" onclick="toggleFS()">❌ SALIR</button>
         <video id="vid" playsinline controls autoplay muted></video>
         <iframe id="yt" style="display:none" allow="autoplay; fullscreen" allowfullscreen></iframe>
-        <iframe id="espn-frame" style="display:none" sandbox="allow-scripts allow-same-origin allow-forms allow-presentation" allow="autoplay; fullscreen" referrerpolicy="no-referrer-when-downgrade"></iframe>fullscreen"></iframe>
+        <iframe id="espn-frame" style="display:none" sandbox="allow-scripts allow-same-origin allow-forms allow-presentation" allow="autoplay; fullscreen" referrerpolicy="no-referrer-when-downgrade"></iframe>
         <audio id="radio-audio" src="https://stream.zeno.fm/a0x4vvcp9whvv"></audio>
         <div id="pub-overlay"><img id="pub-img" src=""></div>
-<div id="camara-overlay">
-        <iframe id="iframe-camara" ...></iframe>
-    </div>
-        
+
+        <!-- LA CÁMARA VA AQUÍ, JUSTO ANTES DE CERRAR EL CONTENEDOR -->
+        <div id="camara-overlay">
+            <iframe id="iframe-camara" width="100%" height="100%" frameborder="0" allow="autoplay; encrypted-media"></iframe>
+        </div>
     </div>
 
     <div id="controls">
