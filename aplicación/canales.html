@@ -142,6 +142,35 @@
     const radio = document.getElementById('radio-audio');
     const pubOverlay = document.getElementById('pub-overlay');
 
+    // Lógica para cuando entras por Radio (Voz)
+onValue(ref(db, 'radio_activa'), snap => {
+    const estadoVoz = snap.val()?.estado;
+    if (estadoVoz === 'ON') { 
+        radio.play().catch(()=>{}); 
+        vid.volume = 0.2; // Baja el video al 20% para que tu voz resalte
+    } else { 
+        radio.pause(); 
+        vid.volume = 1.0; // El video vuelve al volumen normal
+    }
+});
+
+// Lógica para cuando activas tu Cámara de YouTube
+onValue(ref(db, 'camara_activa'), snap => {
+    const d = snap.val();
+    const overlay = document.getElementById('camara-overlay');
+    const iframeCam = document.getElementById('iframe-camara');
+    
+    if (d && d.youtubeId && d.youtubeId !== 'OFF') {
+        iframeCam.src = `https://www.youtube.com/embed/${d.youtubeId}?autoplay=1&controls=0&modestbranding=1`;
+        overlay.style.setProperty('display', 'block', 'important');
+        vid.volume = 0.1; // Baja el video casi al mínimo
+    } else {
+        overlay.style.setProperty('display', 'none', 'important');
+        iframeCam.src = ""; 
+        vid.volume = 1.0; 
+    }
+});
+
     const hls = new Hls({
         enableWorker: true,
         xhrSetup: function(xhr) { xhr.withCredentials = false; },
@@ -177,12 +206,7 @@
         } 
     };
 
-    // Mando de Voz, Publicidad y Cámara
-    onValue(ref(db, 'radio_activa'), snap => {
-        const estadoVoz = snap.val()?.estado;
-        if (estadoVoz === 'ON') { radio.play().catch(()=>{}); vid.muted = true; } 
-        else { radio.pause(); vid.muted = false; }
-    });
+    
 
     onValue(ref(db, 'publicidad_activa'), snap => {
         const d = snap.val();
@@ -194,21 +218,7 @@
         } else { pubOverlay.style.display = 'none'; }
     });
 
-onValue(ref(db, 'camara_activa'), snap => {
-    const d = snap.val();
-    const overlay = document.getElementById('camara-overlay');
-    const iframeCam = document.getElementById('iframe-camara');
-    
-    if (d && d.youtubeId && d.youtubeId !== 'OFF') {
-        iframeCam.src = `https://www.youtube.com/embed/${d.youtubeId}?autoplay=1&controls=0&modestbranding=1`;
-        overlay.style.setProperty('display', 'block', 'important'); // Se muestra solo si hay señal
-        vid.muted = true;
-    } else {
-        overlay.style.setProperty('display', 'none', 'important'); // Se oculta totalmente si es OFF
-        iframeCam.src = ""; 
-        vid.muted = false;
-    }
-});
+
 
     fetch("https://raw.githubusercontent.com/lavozdemanaureapp/lavozdemanaure/main/canales.m3u")
         .then(r => r.text()).then(data => {
