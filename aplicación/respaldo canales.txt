@@ -1,4 +1,3 @@
-/*OJO QUE ESTE CODIGO ESTA CASI PERFECTO
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -24,11 +23,44 @@
             width: 220px; 
             opacity: 0.7; 
         }
+        
 
         #pub-overlay img { 
             width: 100%; border: 3px solid var(--oro); border-radius: 8px; 
             box-shadow: 0 0 15px rgba(0,0,0,0.7); 
         }
+
+        #camara-overlay {
+    position: absolute;
+    top: 10px; /* Cambiado a la parte superior para que no tape el chat */
+    right: 10px;
+    width: 160px; /* Un poco más grande para que se vea bien */
+    aspect-ratio: 16 / 9;
+    z-index: 200; /* Prioridad máxima sobre cualquier otro elemento */
+    border: 2px solid var(--oro);
+    border-radius: 8px;
+    overflow: hidden;
+    display: none; 
+    background: black;
+    box-shadow: 0 0 20px rgba(0,0,0,0.9);
+    pointer-events: none; /* Para que no estorbe si alguien intenta hacer clic detrás */
+}
+
+        /* ... línea 47 cierra el bloque anterior ... */
+}
+
+/* PEGA AQUÍ DESDE LA LÍNEA 48 */
+#video-container:fullscreen #camara-overlay,
+#video-container:-webkit-full-screen #camara-overlay {
+    display: block !important;
+    z-index: 2147483647 !important;
+    width: 250px; 
+    top: auto; /* Anulamos el top para usar bottom en pantalla completa */
+    bottom: 20px;
+    right: 20px;
+}
+
+#exit-fs { position: absolute; ... } /* Esta es tu línea 49 original */
         
         #exit-fs { position: absolute; top: 10px; left: 10px; z-index: 101; background: var(--rojo); color: white; border: none; padding: 10px; border-radius: 5px; display: none; font-weight: bold; }
 
@@ -53,13 +85,24 @@
 </head>
 <body>
 
+    <div id="pub-overlay"><img id="pub-img" src=""></div>
+        <!-- PEGAR AQUÍ -->
+        <div id="camara-overlay">
+            <iframe id="iframe-camara" width="100%" height="100%" frameborder="0" allow="autoplay; encrypted-media"></iframe>
+        </div>
+
     <div id="video-container">
         <button id="exit-fs" onclick="toggleFS()">❌ SALIR</button>
         <video id="vid" playsinline controls autoplay muted></video>
         <iframe id="yt" style="display:none" allow="autoplay; fullscreen" allowfullscreen></iframe>
-        <iframe id="espn-frame" style="display:none" sandbox="allow-scripts allow-same-origin allow-forms" allow="autoplay; fullscreen"></iframe>
+        <iframe id="espn-frame" style="display:none" sandbox="allow-scripts allow-same-origin allow-forms allow-presentation" allow="autoplay; fullscreen" referrerpolicy="no-referrer-when-downgrade"></iframe>
         <audio id="radio-audio" src="https://stream.zeno.fm/a0x4vvcp9whvv"></audio>
         <div id="pub-overlay"><img id="pub-img" src=""></div>
+
+        <!-- LA CÁMARA VA AQUÍ, JUSTO ANTES DE CERRAR EL CONTENEDOR -->
+        <div id="camara-overlay">
+            <iframe id="iframe-camara" width="100%" height="100%" frameborder="0" allow="autoplay; encrypted-media"></iframe>
+        </div>
     </div>
 
     <div id="controls">
@@ -119,34 +162,91 @@
         liveSyncDurationCount: 5
     });
 
-    window.cambiarCanal = (url) => {
-        vid.pause(); vid.style.display = "none"; 
-        yt.style.display = "none"; yt.src = ""; 
-        eFrame.style.display = "none"; eFrame.srcdoc = "";
-        hls.detachMedia();
+ window.cambiarCanal = (url) => {
+    // 1. Limpieza total
+    vid.pause(); 
+    vid.style.display = "none"; 
+    hls.detachMedia();
+    yt.style.display = "none"; 
+    yt.src = ""; 
+    eFrame.style.display = "none"; 
+    eFrame.src = ""; 
+    eFrame.srcdoc = "";
 
-        if (url.includes('ksdjugfsddeports') || url.includes('embed2')) {
-            eFrame.style.display = "block";
-            eFrame.srcdoc = `<body style="margin:0; background:black; display:flex; align-items:center; justify-content:center; height:100vh; overflow:hidden;"><script type='text/javascript'> width='100%', height='100%', id='espncol';<\/script><script type='text/javascript' src='https://embed.ksdjugfsddeports.com/embed2.js'><\/script><\/body>`;
-        } else if (url.includes('youtu')) {
-            let id = url.split('v=')[1] || url.split('/').pop();
-            yt.style.display = "block";
-            yt.src = `https://www.youtube.com/embed/${id.split('&')[0]}?autoplay=1&rel=0`;
-        } else {
-            vid.style.display = "block";
-            if (Hls.isSupported()) {
-                hls.loadSource(url); hls.attachMedia(vid);
-                hls.on(Hls.Events.MANIFEST_PARSED, () => vid.play().catch(()=>{}));
-            } else { vid.src = url; vid.play().catch(()=>{}); }
+    // --- PRIORIDAD 1: SI ES UN FLUJO DIRECTO (.m3u8) ---
+    // Si la URL termina en m3u8 o contiene tdtcloud pero es un archivo index, va al video directo
+    if (url.includes('.m3u8') || url.includes('index.m3u8')) {
+        vid.style.display = "block";
+        vid.setAttribute('referrerpolicy', 'no-referrer'); // Para saltar bloqueos básicos
+
+        if (Hls.isSupported()) {
+            hls.loadSource(url); 
+            hls.attachMedia(vid);
+            hls.on(Hls.Events.MANIFEST_PARSED, () => vid.play().catch(()=>{}));
+        } else { 
+            vid.src = url; 
+            vid.play().catch(()=>{}); 
         }
-    };
+    }
 
+    // --- PRIORIDAD 2: IFRAMES Y SCRIPTS ---
+    else if (url.includes('wsdeportes.net')) {
+        eFrame.style.display = "block";
+        eFrame.src = url; 
+    } 
+    else if (url.includes('ws04.php')) { // Quitamos tdtcloud de aquí si es solo para video
+        eFrame.style.display = "block";
+        eFrame.src = url;
+    }
+    else if (url.includes('ksdjugfsddeports')) {
+        let canalId = url.split('/').pop(); 
+        eFrame.style.display = "block";
+        eFrame.srcdoc = `
+            <body style="margin:0; background:black; display:flex; align-items:center; justify-content:center; height:100vh; overflow:hidden;">
+                <script type='text/javascript'> 
+                    width='100%', height='100%', id='${canalId}';
+                <\/script>
+                <script type='text/javascript' src='https://embed.ksdjugfsddeports.com/embed2.js'><\/script>
+            </body>`;
+    }
+    else if (url.includes('youtu')) {
+        let id = url.split('v=')[1] || url.split('/').pop();
+        yt.style.display = "block";
+        yt.src = `https://www.youtube.com/embed/${id.split('&')[0]}?autoplay=1&rel=0`;
+    } 
+    
+    // --- CASO POR DEFECTO ---
+    else {
+        // Si no detecta nada especial, intenta cargarlo como video
+        vid.style.display = "block";
+        if (Hls.isSupported()) {
+            hls.loadSource(url); 
+            hls.attachMedia(vid);
+            hls.on(Hls.Events.MANIFEST_PARSED, () => vid.play().catch(()=>{}));
+        } else {
+            vid.src = url;
+            vid.play().catch(()=>{});
+        }
+    }
+};
+  // --- MANDO VOZ (EXTREMO PARA EMBEDS) ---
     onValue(ref(db, 'radio_activa'), snap => {
         const estadoVoz = snap.val()?.estado;
-        if (estadoVoz === 'ON') { radio.play().catch(()=>{}); vid.muted = true; } 
-        else { radio.pause(); vid.muted = false; }
+        if (estadoVoz === 'ON') { 
+            radio.play().catch(()=>{}); 
+            // 1. Muteamos el video normal
+            vid.muted = true; 
+            vid.volume = 0;
+            // 2. Intentamos silenciar cualquier iframe (YouTube/ESPN) 
+            // pausando o refrescando el volumen si el navegador lo permite
+            yt.contentWindow?.postMessage('{"event":"command","func":"mute","args":""}', '*');
+        } else { 
+            radio.pause(); 
+            vid.muted = false; 
+            vid.volume = 1;
+            yt.contentWindow?.postMessage('{"event":"command","func":"unMute","args":""}', '*');
+        }
     });
-
     onValue(ref(db, 'publicidad_activa'), snap => {
     const d = snap.val();
     const imgElement = document.getElementById('pub-img');
@@ -166,6 +266,37 @@
         imgElement.src = ""; 
     }
 });
+
+   // --- ESCUCHA DE CÁMARA EN VIVO CON RETORNO DE AUDIO ---
+    onValue(ref(db, 'camara_activa'), snap => {
+        const d = snap.val();
+        const overlay = document.getElementById('camara-overlay');
+        const iframeCam = document.getElementById('iframe-camara');
+        const radioAudio = document.getElementById('radio-audio');
+
+        if (d && d.youtubeId && d.youtubeId !== 'OFF') {
+            // 1. Mostrar cámara con audio de YouTube (OBS)
+            iframeCam.src = `https://www.youtube.com/embed/${d.youtubeId}?autoplay=1&controls=0&modestbranding=1`;
+            overlay.style.display = 'block';
+            
+            // 2. Pausar radio y silenciar el video del partido
+            if(radioAudio) radioAudio.pause();
+            vid.muted = true;
+            vid.volume = 0;
+        } else {
+            // 3. Al ocultar: Limpiar y cerrar
+            overlay.style.display = 'none';
+            iframeCam.src = "";
+            
+            // 4. EL RETORNO: Devolvemos el sonido al partido automáticamente
+            vid.muted = false;
+            vid.volume = 1;
+            
+            // Opcional: Si quieres que vuelva la radio de Zeno al quitar la cámara, descomenta abajo:
+            // if(radioAudio) radioAudio.play().catch(()=>{});
+        }
+    });
+    
     fetch("https://raw.githubusercontent.com/lavozdemanaureapp/lavozdemanaure/main/canales.m3u")
         .then(r => r.text()).then(data => {
             const select = document.getElementById('lista');
@@ -199,13 +330,23 @@
         box.scrollTop = box.scrollHeight;
     });
 
-    window.toggleFS = () => {
+   window.toggleFS = () => {
         const container = document.getElementById('video-container');
         const btnExit = document.getElementById('exit-fs');
+        const camara = document.getElementById('camara-overlay');
+
         if (!document.fullscreenElement) {
             container.requestFullscreen().catch(() => {});
             btnExit.style.display = "block";
-            if (screen.orientation && screen.orientation.lock) screen.orientation.lock("landscape").catch(() => {});
+            
+            // Forzamos que la cámara esté al frente si está activa
+            if (camara) {
+                camara.style.zIndex = "2147483647";
+            }
+
+            if (screen.orientation && screen.orientation.lock) {
+                screen.orientation.lock("landscape").catch(() => {});
+            }
         } else {
             document.exitFullscreen();
             btnExit.style.display = "none";
@@ -213,7 +354,9 @@
     };
 
     document.addEventListener('fullscreenchange', () => {
-        if (!document.fullscreenElement) document.getElementById('exit-fs').style.display = "none";
+        if (!document.fullscreenElement) {
+            document.getElementById('exit-fs').style.display = "none";
+        }
     });
 </script>
 </body>
