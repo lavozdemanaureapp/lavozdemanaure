@@ -45,27 +45,24 @@
     box-shadow: 0 0 20px rgba(0,0,0,0.9);
     pointer-events: none; /* Para que no estorbe si alguien intenta hacer clic detrás */
 }
-/* --- INICIO MODO CINE --- */
-.modo-cine {
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
+/* Esto obliga al video a estirarse horizontalmente */
+.modo-cine video, 
+.modo-cine iframe {
     width: 100vw !important;
     height: 100vh !important;
-    z-index: 99998 !important;
-    background: black !important;
+    object-fit: cover !important;
 }
 
+/* Refuerzo para que la cámara no desaparezca */
 .modo-cine #camara-overlay {
     display: block !important;
-    position: absolute !important;
-    width: 200px !important;
-    bottom: 20px !important;
-    right: 20px !important;
-    top: auto !important;
-    z-index: 99999 !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    z-index: 999999 !important;
+    position: fixed !important; 
+    width: 35% !important;
+    max-width: 250px;
 }
-/* --- FIN MODO CINE --- */
 #exit-fs { position: absolute; ... } /* Esta es tu línea 49 original */
         
         #exit-fs { position: absolute; top: 10px; left: 10px; z-index: 101; background: var(--rojo); color: white; border: none; padding: 10px; border-radius: 5px; display: none; font-weight: bold; }
