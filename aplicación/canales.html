@@ -45,6 +45,23 @@
     box-shadow: 0 0 20px rgba(0,0,0,0.9);
     pointer-events: none; /* Para que no estorbe si alguien intenta hacer clic detrás */
 }
+
+        /* ... línea 47 cierra el bloque anterior ... */
+}
+
+/* PEGA AQUÍ DESDE LA LÍNEA 48 */
+#video-container:fullscreen #camara-overlay,
+#video-container:-webkit-full-screen #camara-overlay {
+    display: block !important;
+    z-index: 2147483647 !important;
+    width: 250px; 
+    top: auto; /* Anulamos el top para usar bottom en pantalla completa */
+    bottom: 20px;
+    right: 20px;
+}
+
+#exit-fs { position: absolute; ... } /* Esta es tu línea 49 original */
+        
         #exit-fs { position: absolute; top: 10px; left: 10px; z-index: 101; background: var(--rojo); color: white; border: none; padding: 10px; border-radius: 5px; display: none; font-weight: bold; }
 
         #controls { padding: 10px; background: var(--oscuro); flex-shrink: 0; border-bottom: 2px solid var(--oro); }
