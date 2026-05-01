@@ -45,21 +45,27 @@
     box-shadow: 0 0 20px rgba(0,0,0,0.9);
     pointer-events: none; /* Para que no estorbe si alguien intenta hacer clic detrás */
 }
-
-        /* ... línea 47 cierra el bloque anterior ... */
+/* --- INICIO MODO CINE --- */
+.modo-cine {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    z-index: 99998 !important;
+    background: black !important;
 }
 
-/* PEGA AQUÍ DESDE LA LÍNEA 48 */
-#video-container:fullscreen #camara-overlay,
-#video-container:-webkit-full-screen #camara-overlay {
+.modo-cine #camara-overlay {
     display: block !important;
-    z-index: 2147483647 !important;
-    width: 250px; 
-    top: auto; /* Anulamos el top para usar bottom en pantalla completa */
-    bottom: 20px;
-    right: 20px;
+    position: absolute !important;
+    width: 200px !important;
+    bottom: 20px !important;
+    right: 20px !important;
+    top: auto !important;
+    z-index: 99999 !important;
 }
-
+/* --- FIN MODO CINE --- */
 #exit-fs { position: absolute; ... } /* Esta es tu línea 49 original */
         
         #exit-fs { position: absolute; top: 10px; left: 10px; z-index: 101; background: var(--rojo); color: white; border: none; padding: 10px; border-radius: 5px; display: none; font-weight: bold; }
@@ -330,29 +336,29 @@
         box.scrollTop = box.scrollHeight;
     });
 
-   window.toggleFS = () => {
+ window.toggleFS = () => {
         const container = document.getElementById('video-container');
         const btnExit = document.getElementById('exit-fs');
-        const camara = document.getElementById('camara-overlay');
 
-        if (!document.fullscreenElement) {
-            container.requestFullscreen().catch(() => {});
+        // Si NO tiene la clase modo-cine, la ponemos (entramos)
+        if (!container.classList.contains('modo-cine')) {
+            container.classList.add('modo-cine');
             btnExit.style.display = "block";
             
-            // Forzamos que la cámara esté al frente si está activa
-            if (camara) {
-                camara.style.zIndex = "2147483647";
-            }
-
+            // Forzamos rotación a horizontal
             if (screen.orientation && screen.orientation.lock) {
                 screen.orientation.lock("landscape").catch(() => {});
             }
         } else {
-            document.exitFullscreen();
+            // Si ya la tiene, la quitamos (salimos)
+            container.classList.remove('modo-cine');
             btnExit.style.display = "none";
+            
+            if (screen.orientation && screen.orientation.unlock) {
+                screen.orientation.unlock();
+            }
         }
     };
-
     document.addEventListener('fullscreenchange', () => {
         if (!document.fullscreenElement) {
             document.getElementById('exit-fs').style.display = "none";
