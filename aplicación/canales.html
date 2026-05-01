@@ -44,16 +44,17 @@
         }
 
         /* Ajuste de Cámara en Pantalla Completa (Agrandada) */
-        #video-container:fullscreen #camara-overlay,
-        #video-container:-webkit-full-screen #camara-overlay {
-            display: block !important;
-            width: 320px; /* Cámara más grande en modo extendido */
-            top: auto; 
-            bottom: 20px;
-            right: 20px;
-            z-index: 2147483647 !important;
-            border-width: 3px;
-        }
+      /* Ajuste de Cámara en Pantalla Completa (Solo si está activa) */
+#video-container:fullscreen #camara-overlay,
+#video-container:-webkit-full-screen #camara-overlay {
+    width: 320px; 
+    top: auto; 
+    bottom: 20px;
+    right: 20px;
+    z-index: 2147483647 !important;
+    border-width: 3px;
+    /* Eliminamos el display: block !important de aquí */
+}
 
         #exit-fs { position: absolute; top: 10px; left: 10px; z-index: 101; background: var(--rojo); color: white; border: none; padding: 10px; border-radius: 5px; display: none; font-weight: bold; }
 
@@ -193,16 +194,21 @@
         } else { pubOverlay.style.display = 'none'; }
     });
 
-    onValue(ref(db, 'camara_activa'), snap => {
-        const d = snap.val();
-        const overlay = document.getElementById('camara-overlay');
-        const iframeCam = document.getElementById('iframe-camara');
-        if (d && d.youtubeId && d.youtubeId !== 'OFF') {
-            iframeCam.src = `https://www.youtube.com/embed/${d.youtubeId}?autoplay=1&controls=0&modestbranding=1`;
-            overlay.style.display = 'block';
-            vid.muted = true;
-        } else { overlay.style.display = 'none'; iframeCam.src = ""; vid.muted = false; }
-    });
+onValue(ref(db, 'camara_activa'), snap => {
+    const d = snap.val();
+    const overlay = document.getElementById('camara-overlay');
+    const iframeCam = document.getElementById('iframe-camara');
+    
+    if (d && d.youtubeId && d.youtubeId !== 'OFF') {
+        iframeCam.src = `https://www.youtube.com/embed/${d.youtubeId}?autoplay=1&controls=0&modestbranding=1`;
+        overlay.style.setProperty('display', 'block', 'important'); // Se muestra solo si hay señal
+        vid.muted = true;
+    } else {
+        overlay.style.setProperty('display', 'none', 'important'); // Se oculta totalmente si es OFF
+        iframeCam.src = ""; 
+        vid.muted = false;
+    }
+});
 
     fetch("https://raw.githubusercontent.com/lavozdemanaureapp/lavozdemanaure/main/canales.m3u")
         .then(r => r.text()).then(data => {
