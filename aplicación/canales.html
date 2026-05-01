@@ -147,10 +147,11 @@ onValue(ref(db, 'radio_activa'), snap => {
     const estadoVoz = snap.val()?.estado;
     if (estadoVoz === 'ON') { 
         radio.play().catch(()=>{}); 
-        vid.volume = 0.2; // Baja el video al 20% para que tu voz resalte
+        vid.muted = false; // Asegura que el audio esté activo para poder bajarle
+        vid.volume = 0.2;  
     } else { 
         radio.pause(); 
-        vid.volume = 1.0; // El video vuelve al volumen normal
+        vid.volume = 1.0; 
     }
 });
 
