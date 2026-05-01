@@ -45,23 +45,36 @@
     box-shadow: 0 0 20px rgba(0,0,0,0.9);
     pointer-events: none; /* Para que no estorbe si alguien intenta hacer clic detrás */
 }
-/* Esto obliga al video a estirarse horizontalmente */
-.modo-cine video, 
-.modo-cine iframe {
+.modo-cine {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
     width: 100vw !important;
     height: 100vh !important;
-    object-fit: cover !important;
+    z-index: 99998 !important;
+    background: black !important;
+    display: flex !important;
+    align-items: center !important; /* Centra el video verticalmente si el móvil está parado */
+    justify-content: center !important;
 }
 
-/* Refuerzo para que la cámara no desaparezca */
+.modo-cine video, 
+.modo-cine iframe:not(#iframe-camara) {
+    width: 100% !important;   /* Se estira a lo ancho */
+    height: auto !important;  /* Mantiene la proporción original, no se estira hacia arriba */
+    max-height: 100vh !important;
+}
+
 .modo-cine #camara-overlay {
     display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    z-index: 999999 !important;
     position: fixed !important; 
-    width: 35% !important;
-    max-width: 250px;
+    width: 180px !important;    /* Tamaño de la cámara en pantalla completa */
+    aspect-ratio: 16 / 9;
+    bottom: 15px !important;   /* La movemos abajo */
+    right: 15px !important;    /* A la derecha */
+    top: auto !important;      /* Anulamos el top anterior */
+    z-index: 999999 !important;
+    border: 2px solid #ffcc00; /* Borde color oro */
 }
 #exit-fs { position: absolute; ... } /* Esta es tu línea 49 original */
         
