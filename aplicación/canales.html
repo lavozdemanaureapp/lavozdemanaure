@@ -9,77 +9,68 @@
         :root { --oro: #ffcc00; --rojo: #ff0000; --oscuro: #1a1a1a; }
         body { margin: 0; background: #000; color: #333; font-family: sans-serif; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
         
+        /* Contenedor Principal */
         #video-container { width: 100%; aspect-ratio: 16 / 9; background: #111; position: relative; flex-shrink: 0; }
         video, iframe, #espn-frame { position: absolute; top: 0; left: 0; width: 100% !important; height: 100% !important; border: none; z-index: 5; }
         #espn-frame { z-index: 10 !important; background: black; }
 
-        #pub-overlay { 
-            position: absolute; top: 10px; right: 10px; width: 110px; 
-            z-index: 100; display: none; transition: all 0.3s ease;
-        }
+        /* Publicidad */
+        #pub-overlay { position: absolute; top: 10px; right: 10px; width: 110px; z-index: 100; display: none; transition: all 0.3s ease; }
+        #video-container:fullscreen #pub-overlay, #video-container:-webkit-full-screen #pub-overlay { width: 220px; opacity: 0.7; }
+        #pub-overlay img { width: 100%; border: 3px solid var(--oro); border-radius: 8px; box-shadow: 0 0 15px rgba(0,0,0,0.7); }
 
-        #video-container:fullscreen #pub-overlay, 
-        #video-container:-webkit-full-screen #pub-overlay {
-            width: 220px; 
-            opacity: 0.7; 
-        }
-        
-
-        #pub-overlay img { 
-            width: 100%; border: 3px solid var(--oro); border-radius: 8px; 
-            box-shadow: 0 0 15px rgba(0,0,0,0.7); 
-        }
-
+        /* Cámara Overlay (Normal) */
         #camara-overlay {
-    position: absolute;
-    top: 10px; /* Cambiado a la parte superior para que no tape el chat */
-    right: 10px;
-    width: 160px; /* Un poco más grande para que se vea bien */
-    aspect-ratio: 16 / 9;
-    z-index: 200; /* Prioridad máxima sobre cualquier otro elemento */
-    border: 2px solid var(--oro);
-    border-radius: 8px;
-    overflow: hidden;
-    display: none; 
-    background: black;
-    box-shadow: 0 0 20px rgba(0,0,0,0.9);
-    pointer-events: none; /* Para que no estorbe si alguien intenta hacer clic detrás */
-}
-.modo-cine {
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    width: 100vw !important;
-    height: 100vh !important;
-    z-index: 99998 !important;
-    background: black !important;
-    display: flex !important;
-    align-items: center !important; /* Centra el video verticalmente si el móvil está parado */
-    justify-content: center !important;
-}
+            position: absolute;
+            top: 10px; 
+            right: 10px;
+            width: 160px; 
+            aspect-ratio: 16 / 9;
+            z-index: 200; 
+            border: 2px solid var(--oro);
+            border-radius: 8px;
+            overflow: hidden;
+            display: none; 
+            background: black;
+            box-shadow: 0 0 20px rgba(0,0,0,0.9);
+            pointer-events: none;
+        }
 
-.modo-cine video, 
-.modo-cine iframe:not(#iframe-camara) {
-    width: 100% !important;   /* Se estira a lo ancho */
-    height: auto !important;  /* Mantiene la proporción original, no se estira hacia arriba */
-    max-height: 100vh !important;
-}
+        /* --- MODO CINE / PANTALLA COMPLETA --- */
+        .modo-cine {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            z-index: 99998 !important;
+            background: black !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+        }
 
-.modo-cine #camara-overlay {
-    display: block !important;
-    position: fixed !important; 
-    width: 180px !important;    /* Tamaño de la cámara en pantalla completa */
-    aspect-ratio: 16 / 9;
-    bottom: 15px !important;   /* La movemos abajo */
-    right: 15px !important;    /* A la derecha */
-    top: auto !important;      /* Anulamos el top anterior */
-    z-index: 999999 !important;
-    border: 2px solid #ffcc00; /* Borde color oro */
-}
-#exit-fs { position: absolute; ... } /* Esta es tu línea 49 original */
-        
+        .modo-cine video, .modo-cine iframe:not(#iframe-camara) {
+            width: 100% !important;   
+            height: auto !important;  
+            max-height: 100vh !important;
+        }
+
+        .modo-cine #camara-overlay {
+            display: block !important;
+            position: fixed !important; 
+            width: 180px !important;    
+            aspect-ratio: 16 / 9;
+            bottom: 15px !important;   
+            right: 15px !important;    
+            top: auto !important;      
+            z-index: 999999 !important;
+            border: 2px solid var(--oro);
+        }
+
         #exit-fs { position: absolute; top: 10px; left: 10px; z-index: 101; background: var(--rojo); color: white; border: none; padding: 10px; border-radius: 5px; display: none; font-weight: bold; }
 
+        /* Controles y Chat */
         #controls { padding: 10px; background: var(--oscuro); flex-shrink: 0; border-bottom: 2px solid var(--oro); }
         .selector-wrapper { display: flex; align-items: center; background: #2a2a2a; border-radius: 8px; overflow: hidden; border: 1px solid #444; margin-bottom: 8px; position: relative; }
         .label-canales { background: var(--oro); color: #000; padding: 12px; font-weight: bold; font-size: 13px; text-transform: uppercase; }
@@ -101,27 +92,24 @@
 </head>
 <body>
 
-    <div id="pub-overlay"><img id="pub-img" src=""></div>
-        <!-- PEGAR AQUÍ -->
+    <div id="video-container">
+        <!-- Botón de salir -->
+        <button id="exit-fs" onclick="toggleFS()">❌ SALIR</button>
+        
+        <!-- Elementos de Video -->
+        <video id="vid" playsinline controls autoplay muted></video>
+        <iframe id="yt" style="display:none" allow="autoplay; fullscreen" allowfullscreen></iframe>
+        <iframe id="espn-frame" style="display:none" sandbox="allow-scripts allow-same-origin allow-forms allow-presentation" allow="autoplay; fullscreen"></iframe>
+        <audio id="radio-audio" src="https://stream.zeno.fm/a0x4vvcp9whvv"></audio>
+        
+        <!-- Publicidad sobre video -->
+        <div id="pub-overlay"><img id="pub-img" src=""></div>
+
+        <!-- CÁMARA ÚNICA -->
         <div id="camara-overlay">
             <iframe id="iframe-camara" width="100%" height="100%" frameborder="0" allow="autoplay; encrypted-media"></iframe>
         </div>
-
-    <div id="video-container">
-    <!-- Botón de salir arriba a la izquierda -->
-    <button id="exit-fs" onclick="toggleFS()">❌ SALIR</button>
-    
-    <!-- El video/canal -->
-    <video id="vid" playsinline controls autoplay muted></video>
-    <iframe id="yt" style="display:none" allow="autoplay; fullscreen" allowfullscreen></iframe>
-    <iframe id="espn-frame" style="display:none" sandbox="allow-scripts allow-same-origin allow-forms allow-presentation" allow="autoplay; fullscreen"></iframe>
-    <audio id="radio-audio" src="https://stream.zeno.fm/a0x4vvcp9whvv"></audio>
-    
-    <!-- UNA SOLA CÁMARA: La ponemos abajo para que no tape el botón de salir -->
-    <div id="camara-overlay">
-        <iframe id="iframe-camara" width="100%" height="100%" frameborder="0" allow="autoplay; encrypted-media"></iframe>
     </div>
-</div>
     
     <div id="controls">
         <div class="selector-wrapper">
@@ -156,7 +144,7 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    // --- MOTOR DE PRESENCIA SILENCIOSO ---
+    // Presencia
     const sessionId = localStorage.getItem('manaure_session') || Math.random().toString(36).substring(7);
     localStorage.setItem('manaure_session', sessionId);
     const presenciaRef = ref(db, 'audiencia/' + sessionId);
@@ -171,150 +159,79 @@
 
     const hls = new Hls({
         enableWorker: true,
-        xhrSetup: function(xhr, url) { xhr.withCredentials = false; },
-        manifestLoadingMaxRetry: 50,
-        levelLoadingMaxRetry: 50,
-        fragLoadingMaxRetry: 50,
-        nudgeOffset: 2,
-        nudgeMaxRetry: 20,
-        liveSyncDurationCount: 5
+        xhrSetup: (xhr) => { xhr.withCredentials = false; }
     });
 
- window.cambiarCanal = (url) => {
-    // 1. Limpieza total
-    vid.pause(); 
-    vid.style.display = "none"; 
-    hls.detachMedia();
-    yt.style.display = "none"; 
-    yt.src = ""; 
-    eFrame.style.display = "none"; 
-    eFrame.src = ""; 
-    eFrame.srcdoc = "";
+    window.cambiarCanal = (url) => {
+        vid.pause(); vid.style.display = "none"; 
+        hls.detachMedia();
+        yt.style.display = "none"; yt.src = ""; 
+        eFrame.style.display = "none"; eFrame.src = ""; eFrame.srcdoc = "";
 
-    // --- PRIORIDAD 1: SI ES UN FLUJO DIRECTO (.m3u8) ---
-    // Si la URL termina en m3u8 o contiene tdtcloud pero es un archivo index, va al video directo
-    if (url.includes('.m3u8') || url.includes('index.m3u8')) {
-        vid.style.display = "block";
-        vid.setAttribute('referrerpolicy', 'no-referrer'); // Para saltar bloqueos básicos
-
-        if (Hls.isSupported()) {
-            hls.loadSource(url); 
-            hls.attachMedia(vid);
-            hls.on(Hls.Events.MANIFEST_PARSED, () => vid.play().catch(()=>{}));
-        } else { 
-            vid.src = url; 
-            vid.play().catch(()=>{}); 
+        if (url.includes('.m3u8') || url.includes('index.m3u8')) {
+            vid.style.display = "block";
+            if (Hls.isSupported()) {
+                hls.loadSource(url); hls.attachMedia(vid);
+                hls.on(Hls.Events.MANIFEST_PARSED, () => vid.play().catch(()=>{}));
+            } else { vid.src = url; vid.play().catch(()=>{}); }
         }
-    }
-
-    // --- PRIORIDAD 2: IFRAMES Y SCRIPTS ---
-    else if (url.includes('wsdeportes.net')) {
-        eFrame.style.display = "block";
-        eFrame.src = url; 
-    } 
-    else if (url.includes('ws04.php')) { // Quitamos tdtcloud de aquí si es solo para video
-        eFrame.style.display = "block";
-        eFrame.src = url;
-    }
-    else if (url.includes('ksdjugfsddeports')) {
-        let canalId = url.split('/').pop(); 
-        eFrame.style.display = "block";
-        eFrame.srcdoc = `
-            <body style="margin:0; background:black; display:flex; align-items:center; justify-content:center; height:100vh; overflow:hidden;">
-                <script type='text/javascript'> 
-                    width='100%', height='100%', id='${canalId}';
-                <\/script>
-                <script type='text/javascript' src='https://embed.ksdjugfsddeports.com/embed2.js'><\/script>
-            </body>`;
-    }
-    else if (url.includes('youtu')) {
-        let id = url.split('v=')[1] || url.split('/').pop();
-        yt.style.display = "block";
-        yt.src = `https://www.youtube.com/embed/${id.split('&')[0]}?autoplay=1&rel=0`;
-    } 
-    
-    // --- CASO POR DEFECTO ---
-    else {
-        // Si no detecta nada especial, intenta cargarlo como video
-        vid.style.display = "block";
-        if (Hls.isSupported()) {
-            hls.loadSource(url); 
-            hls.attachMedia(vid);
-            hls.on(Hls.Events.MANIFEST_PARSED, () => vid.play().catch(()=>{}));
-        } else {
-            vid.src = url;
-            vid.play().catch(()=>{});
+        else if (url.includes('wsdeportes.net') || url.includes('ws04.php')) {
+            eFrame.style.display = "block"; eFrame.src = url; 
+        } 
+        else if (url.includes('ksdjugfsddeports')) {
+            let canalId = url.split('/').pop(); 
+            eFrame.style.display = "block";
+            eFrame.srcdoc = `<body style="margin:0; background:black; display:flex; align-items:center; justify-content:center; height:100vh; overflow:hidden;">
+                <script>width='100%', height='100%', id='${canalId}';<\/script>
+                <script src='https://embed.ksdjugfsddeports.com/embed2.js'><\/script></body>`;
         }
-    }
-};
-  // --- MANDO VOZ (EXTREMO PARA EMBEDS) ---
+        else if (url.includes('youtu')) {
+            let id = url.split('v=')[1] || url.split('/').pop();
+            yt.style.display = "block";
+            yt.src = `https://www.youtube.com/embed/${id.split('&')[0]}?autoplay=1&rel=0`;
+        } 
+    };
+
+    // Mando de Voz
     onValue(ref(db, 'radio_activa'), snap => {
         const estadoVoz = snap.val()?.estado;
         if (estadoVoz === 'ON') { 
             radio.play().catch(()=>{}); 
-            // 1. Muteamos el video normal
-            vid.muted = true; 
-            vid.volume = 0;
-            // 2. Intentamos silenciar cualquier iframe (YouTube/ESPN) 
-            // pausando o refrescando el volumen si el navegador lo permite
+            vid.muted = true; vid.volume = 0;
             yt.contentWindow?.postMessage('{"event":"command","func":"mute","args":""}', '*');
         } else { 
-            radio.pause(); 
-            vid.muted = false; 
-            vid.volume = 1;
+            radio.pause(); vid.muted = false; vid.volume = 1;
             yt.contentWindow?.postMessage('{"event":"command","func":"unMute","args":""}', '*');
         }
     });
+
+    // Publicidad
     onValue(ref(db, 'publicidad_activa'), snap => {
-    const d = snap.val();
-    const imgElement = document.getElementById('pub-img');
-    
-    if (d && d.imagen && d.imagen !== 'OFF') {
-        // Creamos una precarga en memoria
-        const precarga = new Image();
-        precarga.src = d.imagen;
-        
-        // Solo cuando la imagen cargó al 100%, la mostramos
-        precarga.onload = () => {
+        const d = snap.val();
+        const imgElement = document.getElementById('pub-img');
+        if (d && d.imagen && d.imagen !== 'OFF') {
             imgElement.src = d.imagen;
             pubOverlay.style.display = 'block';
-        };
-    } else { 
-        pubOverlay.style.display = 'none'; 
-        imgElement.src = ""; 
-    }
-});
+        } else { pubOverlay.style.display = 'none'; }
+    });
 
-   // --- ESCUCHA DE CÁMARA EN VIVO CON RETORNO DE AUDIO ---
+    // Cámara en Vivo
     onValue(ref(db, 'camara_activa'), snap => {
         const d = snap.val();
         const overlay = document.getElementById('camara-overlay');
         const iframeCam = document.getElementById('iframe-camara');
-        const radioAudio = document.getElementById('radio-audio');
-
         if (d && d.youtubeId && d.youtubeId !== 'OFF') {
-            // 1. Mostrar cámara con audio de YouTube (OBS)
             iframeCam.src = `https://www.youtube.com/embed/${d.youtubeId}?autoplay=1&controls=0&modestbranding=1`;
             overlay.style.display = 'block';
-            
-            // 2. Pausar radio y silenciar el video del partido
-            if(radioAudio) radioAudio.pause();
             vid.muted = true;
-            vid.volume = 0;
         } else {
-            // 3. Al ocultar: Limpiar y cerrar
             overlay.style.display = 'none';
             iframeCam.src = "";
-            
-            // 4. EL RETORNO: Devolvemos el sonido al partido automáticamente
             vid.muted = false;
-            vid.volume = 1;
-            
-            // Opcional: Si quieres que vuelva la radio de Zeno al quitar la cámara, descomenta abajo:
-            // if(radioAudio) radioAudio.play().catch(()=>{});
         }
     });
     
+    // Lista de Canales
     fetch("https://raw.githubusercontent.com/lavozdemanaureapp/lavozdemanaure/main/canales.m3u")
         .then(r => r.text()).then(data => {
             const select = document.getElementById('lista');
@@ -327,6 +244,7 @@
             if(select.length > 0) cambiarCanal(select.value);
         });
 
+    // Chat
     const chatRef = ref(db, 'chat_partido');
     const box = document.getElementById('mensajes');
     const userInp = document.getElementById('user-input');
@@ -348,37 +266,25 @@
         box.scrollTop = box.scrollHeight;
     });
 
- window.toggleFS = () => {
+    // Función ToggleFS Consolidada
+    window.toggleFS = () => {
         const container = document.getElementById('video-container');
         const btnExit = document.getElementById('exit-fs');
-        const vid = document.getElementById('vid');
 
         if (!container.classList.contains('modo-cine')) {
             container.classList.add('modo-cine');
             btnExit.style.display = "block";
-            
-            // Intentamos forzar el tamaño del video manualmente
-            if(vid) vid.style.width = "100%";
-
             if (screen.orientation && screen.orientation.lock) {
-                screen.orientation.lock("landscape").catch(err => {
-                    console.log("La rotación automática no es compatible, por favor gire el móvil.");
-                });
+                screen.orientation.lock("landscape").catch(() => {});
             }
         } else {
             container.classList.remove('modo-cine');
             btnExit.style.display = "none";
-            if(vid) vid.style.width = "";
             if (screen.orientation && screen.orientation.unlock) {
                 screen.orientation.unlock();
             }
         }
     };
-    document.addEventListener('fullscreenchange', () => {
-        if (!document.fullscreenElement) {
-            document.getElementById('exit-fs').style.display = "none";
-        }
-    });
 </script>
 </body>
 </html>
