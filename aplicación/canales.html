@@ -23,12 +23,27 @@
             width: 220px; 
             opacity: 0.7; 
         }
+        
 
         #pub-overlay img { 
             width: 100%; border: 3px solid var(--oro); border-radius: 8px; 
             box-shadow: 0 0 15px rgba(0,0,0,0.7); 
         }
-        
+
+        #camara-overlay {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            width: 140px; 
+            aspect-ratio: 16 / 9;
+            z-index: 150; 
+            border: 2px solid var(--oro);
+            border-radius: 8px;
+            overflow: hidden;
+            display: none; 
+            background: black;
+            box-shadow: 0 0 15px rgba(0,0,0,0.8);
+        }
         #exit-fs { position: absolute; top: 10px; left: 10px; z-index: 101; background: var(--rojo); color: white; border: none; padding: 10px; border-radius: 5px; display: none; font-weight: bold; }
 
         #controls { padding: 10px; background: var(--oscuro); flex-shrink: 0; border-bottom: 2px solid var(--oro); }
@@ -51,6 +66,12 @@
     </style>
 </head>
 <body>
+
+    <div id="pub-overlay"><img id="pub-img" src=""></div>
+        <!-- PEGAR AQUÍ -->
+        <div id="camara-overlay">
+            <iframe id="iframe-camara" width="100%" height="100%" frameborder="0" allow="autoplay; encrypted-media"></iframe>
+        </div>
 
     <div id="video-container">
         <button id="exit-fs" onclick="toggleFS()">❌ SALIR</button>
@@ -222,6 +243,33 @@
         imgElement.src = ""; 
     }
 });
+
+    // --- ESCUCHA DE CÁMARA EN VIVO (Audio desde YouTube/OBS) ---
+    onValue(ref(db, 'camara_activa'), snap => {
+        const d = snap.val();
+        const overlay = document.getElementById('camara-overlay');
+        const iframeCam = document.getElementById('iframe-camara');
+        const radioAudio = document.getElementById('radio-audio');
+
+        if (d && d.youtubeId && d.youtubeId !== 'OFF') {
+            // Cargamos YouTube CON SONIDO (sin el comando mute)
+            iframeCam.src = `https://www.youtube.com/embed/${d.youtubeId}?autoplay=1&controls=0&modestbranding=1`;
+            overlay.style.display = 'block';
+            
+            // Pausamos la radio de Zeno para que no se cruce con tu voz del OBS
+            if(radioAudio) radioAudio.pause();
+            
+            // También silenciamos el video del partido para que solo se escuche tu narración
+            vid.muted = true;
+        } else {
+            overlay.style.display = 'none';
+            iframeCam.src = "";
+            
+            // Al apagar la cámara, podrías reactivar el sonido del partido si quisieras
+            // vid.muted = false;
+        }
+    });
+    
     fetch("https://raw.githubusercontent.com/lavozdemanaureapp/lavozdemanaure/main/canales.m3u")
         .then(r => r.text()).then(data => {
             const select = document.getElementById('lista');
