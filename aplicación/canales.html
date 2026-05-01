@@ -16,7 +16,6 @@
 
         /* Publicidad */
         #pub-overlay { position: absolute; top: 10px; right: 10px; width: 110px; z-index: 100; display: none; transition: all 0.3s ease; }
-        #video-container:fullscreen #pub-overlay, #video-container:-webkit-full-screen #pub-overlay { width: 220px; opacity: 0.7; }
         #pub-overlay img { width: 100%; border: 3px solid var(--oro); border-radius: 8px; box-shadow: 0 0 15px rgba(0,0,0,0.7); }
 
         /* Cámara Overlay (Normal) */
@@ -36,7 +35,7 @@
             pointer-events: none;
         }
 
-        /* --- MODO CINE / PANTALLA COMPLETA --- */
+        /* --- MODO CINE MEJORADO --- */
         .modo-cine {
             position: fixed !important;
             top: 0 !important;
@@ -50,25 +49,25 @@
             justify-content: center !important;
         }
 
-        .modo-cine video, .modo-cine iframe:not(#iframe-camara) {
-            width: 100% !important;   
-            height: auto !important;  
-            max-height: 100vh !important;
+        .modo-cine video, 
+        .modo-cine iframe:not(#iframe-camara) {
+            width: 100vw !important;   
+            height: 100vh !important;  
+            object-fit: contain !important;
         }
 
-        /* AJUSTE: Cámara más grande en horizontal */
         .modo-cine #camara-overlay {
             display: block !important;
             position: fixed !important; 
-            width: 35vw !important; /* Aumentado de 180px a 35% del ancho de pantalla */
-            max-width: 320px !important;
-            min-width: 240px !important;
+            width: 30vw !important; 
+            max-width: 350px !important;
+            min-width: 220px !important;
             aspect-ratio: 16 / 9;
             bottom: 20px !important;   
             right: 20px !important;    
             top: auto !important;      
             z-index: 999999 !important;
-            border: 3px solid var(--oro); /* Borde más grueso para resaltar */
+            border: 3px solid var(--oro);
             box-shadow: 0 0 25px rgba(0,0,0,0.8);
         }
 
@@ -98,14 +97,11 @@
 
     <div id="video-container">
         <button id="exit-fs" onclick="toggleFS()">❌ SALIR</button>
-        
         <video id="vid" playsinline controls autoplay muted></video>
         <iframe id="yt" style="display:none" allow="autoplay; fullscreen" allowfullscreen></iframe>
         <iframe id="espn-frame" style="display:none" sandbox="allow-scripts allow-same-origin allow-forms allow-presentation" allow="autoplay; fullscreen"></iframe>
         <audio id="radio-audio" src="https://stream.zeno.fm/a0x4vvcp9whvv"></audio>
-        
         <div id="pub-overlay"><img id="pub-img" src=""></div>
-
         <div id="camara-overlay">
             <iframe id="iframe-camara" width="100%" height="100%" frameborder="0" allow="autoplay; encrypted-media"></iframe>
         </div>
@@ -144,23 +140,13 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    // Presencia
-    const sessionId = localStorage.getItem('manaure_session') || Math.random().toString(36).substring(7);
-    localStorage.setItem('manaure_session', sessionId);
-    const presenciaRef = ref(db, 'audiencia/' + sessionId);
-    set(presenciaRef, true);
-    onDisconnect(presenciaRef).remove();
-
     const vid = document.getElementById('vid');
     const yt = document.getElementById('yt');
     const eFrame = document.getElementById('espn-frame');
     const radio = document.getElementById('radio-audio');
     const pubOverlay = document.getElementById('pub-overlay');
 
-    const hls = new Hls({
-        enableWorker: true,
-        xhrSetup: (xhr) => { xhr.withCredentials = false; }
-    });
+    const hls = new Hls({ enableWorker: true, xhrSetup: (xhr) => { xhr.withCredentials = false; } });
 
     window.cambiarCanal = (url) => {
         vid.pause(); vid.style.display = "none"; 
@@ -181,9 +167,7 @@
         else if (url.includes('ksdjugfsddeports')) {
             let canalId = url.split('/').pop(); 
             eFrame.style.display = "block";
-            eFrame.srcdoc = `<body style="margin:0; background:black; display:flex; align-items:center; justify-content:center; height:100vh; overflow:hidden;">
-                <script>width='100%', height='100%', id='${canalId}';<\/script>
-                <script src='https://embed.ksdjugfsddeports.com/embed2.js'><\/script></body>`;
+            eFrame.srcdoc = `<body style="margin:0; background:black; display:flex; align-items:center; justify-content:center; height:100vh; overflow:hidden;"><script>width='100%', height='100%', id='${canalId}';<\/script><script src='https://embed.ksdjugfsddeports.com/embed2.js'><\/script></body>`;
         }
         else if (url.includes('youtu')) {
             let id = url.split('v=')[1] || url.split('/').pop();
@@ -192,30 +176,19 @@
         } 
     };
 
-    // Mando de Voz
+    // Mando de Voz, Publicidad y Cámara
     onValue(ref(db, 'radio_activa'), snap => {
         const estadoVoz = snap.val()?.estado;
-        if (estadoVoz === 'ON') { 
-            radio.play().catch(()=>{}); 
-            vid.muted = true; vid.volume = 0;
-            yt.contentWindow?.postMessage('{"event":"command","func":"mute","args":""}', '*');
-        } else { 
-            radio.pause(); vid.muted = false; vid.volume = 1;
-            yt.contentWindow?.postMessage('{"event":"command","func":"unMute","args":""}', '*');
-        }
+        if (estadoVoz === 'ON') { radio.play().catch(()=>{}); vid.muted = true; } 
+        else { radio.pause(); vid.muted = false; }
     });
 
-    // Publicidad
     onValue(ref(db, 'publicidad_activa'), snap => {
         const d = snap.val();
-        const imgElement = document.getElementById('pub-img');
-        if (d && d.imagen && d.imagen !== 'OFF') {
-            imgElement.src = d.imagen;
-            pubOverlay.style.display = 'block';
-        } else { pubOverlay.style.display = 'none'; }
+        if (d && d.imagen && d.imagen !== 'OFF') { document.getElementById('pub-img').src = d.imagen; pubOverlay.style.display = 'block'; } 
+        else { pubOverlay.style.display = 'none'; }
     });
 
-    // Cámara en Vivo
     onValue(ref(db, 'camara_activa'), snap => {
         const d = snap.val();
         const overlay = document.getElementById('camara-overlay');
@@ -224,49 +197,31 @@
             iframeCam.src = `https://www.youtube.com/embed/${d.youtubeId}?autoplay=1&controls=0&modestbranding=1`;
             overlay.style.display = 'block';
             vid.muted = true;
-        } else {
-            overlay.style.display = 'none';
-            iframeCam.src = "";
-            vid.muted = false;
-        }
+        } else { overlay.style.display = 'none'; iframeCam.src = ""; vid.muted = false; }
     });
-    
-    // Lista de Canales
+
     fetch("https://raw.githubusercontent.com/lavozdemanaureapp/lavozdemanaure/main/canales.m3u")
         .then(r => r.text()).then(data => {
-            const select = document.getElementById('lista');
-            select.innerHTML = "";
-            data.split('\n').forEach((line, i, arr) => {
-                if (line.includes('#EXTINF')) {
-                    select.add(new Option(line.split(',')[1].trim().toUpperCase(), arr[i+1].trim()));
-                }
-            });
+            const select = document.getElementById('lista'); select.innerHTML = "";
+            data.split('\n').forEach((line, i, arr) => { if (line.includes('#EXTINF')) select.add(new Option(line.split(',')[1].trim().toUpperCase(), arr[i+1].trim())); });
             if(select.length > 0) cambiarCanal(select.value);
         });
 
-    // Chat
     const chatRef = ref(db, 'chat_partido');
-    const box = document.getElementById('mensajes');
-    const userInp = document.getElementById('user-input');
-    const msgInp = document.getElementById('msg-input');
-    const btnSend = document.getElementById('send-btn');
-
-    btnSend.onclick = () => {
-        const user = userInp.value.trim() || "Anónimo";
-        const text = msgInp.value.trim();
-        if(text) { push(chatRef, { user, text, time: Date.now() }); msgInp.value = ""; }
+    document.getElementById('send-btn').onclick = () => {
+        const user = document.getElementById('user-input').value.trim() || "Anónimo";
+        const text = document.getElementById('msg-input').value.trim();
+        if(text) { push(chatRef, { user, text, time: Date.now() }); document.getElementById('msg-input').value = ""; }
     };
-
     onChildAdded(query(chatRef, limitToLast(50)), (snap) => {
         const data = snap.val();
-        const div = document.createElement('div');
-        div.className = 'msg';
+        const div = document.createElement('div'); div.className = 'msg';
         div.innerHTML = `<span class="user">${data.user}:</span><span class="text">${data.text}</span>`;
-        box.appendChild(div);
-        box.scrollTop = box.scrollHeight;
+        document.getElementById('mensajes').appendChild(div);
+        document.getElementById('mensajes').scrollTop = document.getElementById('mensajes').scrollHeight;
     });
 
-    // Función ToggleFS Consolidada
+    // Función Ampliar Consolidada con Fullscreen Nativo
     window.toggleFS = () => {
         const container = document.getElementById('video-container');
         const btnExit = document.getElementById('exit-fs');
@@ -274,15 +229,15 @@
         if (!container.classList.contains('modo-cine')) {
             container.classList.add('modo-cine');
             btnExit.style.display = "block";
-            if (screen.orientation && screen.orientation.lock) {
-                screen.orientation.lock("landscape").catch(() => {});
-            }
+            if (container.requestFullscreen) container.requestFullscreen();
+            else if (container.webkitRequestFullscreen) container.webkitRequestFullscreen();
+            if (screen.orientation && screen.orientation.lock) screen.orientation.lock("landscape").catch(()=>{});
         } else {
             container.classList.remove('modo-cine');
             btnExit.style.display = "none";
-            if (screen.orientation && screen.orientation.unlock) {
-                screen.orientation.unlock();
-            }
+            if (document.exitFullscreen) document.exitFullscreen().catch(()=>{});
+            else if (document.webkitExitFullscreen) document.webkitExitFullscreen().catch(()=>{});
+            if (screen.orientation && screen.orientation.unlock) screen.orientation.unlock();
         }
     };
 </script>
