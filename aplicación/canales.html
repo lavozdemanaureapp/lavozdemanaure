@@ -336,21 +336,24 @@
  window.toggleFS = () => {
         const container = document.getElementById('video-container');
         const btnExit = document.getElementById('exit-fs');
+        const vid = document.getElementById('vid');
 
-        // Si NO tiene la clase modo-cine, la ponemos (entramos)
         if (!container.classList.contains('modo-cine')) {
             container.classList.add('modo-cine');
             btnExit.style.display = "block";
             
-            // Forzamos rotación a horizontal
+            // Intentamos forzar el tamaño del video manualmente
+            if(vid) vid.style.width = "100%";
+
             if (screen.orientation && screen.orientation.lock) {
-                screen.orientation.lock("landscape").catch(() => {});
+                screen.orientation.lock("landscape").catch(err => {
+                    console.log("La rotación automática no es compatible, por favor gire el móvil.");
+                });
             }
         } else {
-            // Si ya la tiene, la quitamos (salimos)
             container.classList.remove('modo-cine');
             btnExit.style.display = "none";
-            
+            if(vid) vid.style.width = "";
             if (screen.orientation && screen.orientation.unlock) {
                 screen.orientation.unlock();
             }
