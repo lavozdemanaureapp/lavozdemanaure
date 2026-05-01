@@ -29,6 +29,7 @@
         <div id="audiencia-total">0</div>
     </div>
 
+    <!-- CONTROL DE VOZ -->
     <div class="card">
         <h3 style="color: #ffcc00; font-size: 0.8rem;">VOZ / MICRÓFONO</h3>
         <div class="flex-voz">
@@ -37,6 +38,16 @@
         </div>
     </div>
 
+    <!-- NUEVO: CONTROL DE CÁMARA FLOTANTE -->
+    <div class="card">
+        <h3 style="color: #ffcc00; font-size: 0.8rem;">CÁMARA EN VIVO (YouTube)</h3>
+        <div class="flex-voz">
+            <button class="on" style="background: #0056b3; border-bottom: 5px solid #002d5e;" onclick="setCamara('Ynxg-EGb-5A')">🎥 MOSTRAR</button>
+            <button class="off" onclick="setCamara('OFF')">❌ OCULTAR</button>
+        </div>
+    </div>
+
+    <!-- CONTROL DE PUBLICIDAD -->
     <div class="card">
         <h3 style="color: #ffcc00; font-size: 0.8rem;">PUBLICIDAD 1-10</h3>
         <div class="grid-pub">
@@ -67,18 +78,19 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
+        // Funciones de control
         window.setRadio = (est) => set(ref(db, 'radio_activa'), { estado: est });
         window.setPub = (img) => set(ref(db, 'publicidad_activa'), { imagen: img });
+        
+        // Nueva función para controlar la cámara flotante
+        window.setCamara = (id) => set(ref(db, 'camara_activa'), { youtubeId: id });
 
-        // --- EL CONTADOR DE LA VERDAD ---
-        // Escuchamos la rama 'audiencia' y forzamos el conteo
+        // Contador de Audiencia
         onValue(ref(db, 'audiencia'), (snapshot) => {
             if (snapshot.exists()) {
                 const data = snapshot.val();
-                // Contamos cuántas personas hay realmente en la lista
                 const cantidad = Object.keys(data).length;
                 document.getElementById('audiencia-total').innerText = cantidad;
-                console.log("Audiencia actualizada:", cantidad);
             } else {
                 document.getElementById('audiencia-total').innerText = "0";
             }
