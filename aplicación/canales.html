@@ -329,13 +329,23 @@
         box.scrollTop = box.scrollHeight;
     });
 
-    window.toggleFS = () => {
+   window.toggleFS = () => {
         const container = document.getElementById('video-container');
         const btnExit = document.getElementById('exit-fs');
+        const camara = document.getElementById('camara-overlay');
+
         if (!document.fullscreenElement) {
             container.requestFullscreen().catch(() => {});
             btnExit.style.display = "block";
-            if (screen.orientation && screen.orientation.lock) screen.orientation.lock("landscape").catch(() => {});
+            
+            // Forzamos que la cámara esté al frente si está activa
+            if (camara) {
+                camara.style.zIndex = "2147483647";
+            }
+
+            if (screen.orientation && screen.orientation.lock) {
+                screen.orientation.lock("landscape").catch(() => {});
+            }
         } else {
             document.exitFullscreen();
             btnExit.style.display = "none";
@@ -343,7 +353,9 @@
     };
 
     document.addEventListener('fullscreenchange', () => {
-        if (!document.fullscreenElement) document.getElementById('exit-fs').style.display = "none";
+        if (!document.fullscreenElement) {
+            document.getElementById('exit-fs').style.display = "none";
+        }
     });
 </script>
 </body>
