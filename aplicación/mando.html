@@ -6,29 +6,46 @@
     <title>Mando Manaure Pro</title>
     <style>
         body { background: #0b0b0b; color: white; font-family: sans-serif; text-align: center; padding: 15px; margin: 0; }
+        
+        /* Tarjeta de Audiencia Dual */
         .audiencia-card { 
             background: linear-gradient(145deg, #000, #1a0000); 
             border: 2px solid #ff0000; padding: 20px; border-radius: 20px; 
             margin-bottom: 20px; box-shadow: 0 0 25px rgba(255,0,0,0.5);
+            display: flex; justify-content: space-around; align-items: center;
         }
-        #audiencia-total { font-size: 85px; font-weight: bold; color: #ff0000; line-height: 1; }
+        .stat-box { flex: 1; }
+        .stat-label { font-size: 12px; font-weight: bold; letter-spacing: 1px; margin-bottom: 5px; }
+        .stat-value { font-size: 55px; font-weight: bold; line-height: 1; }
+        .divider { width: 2px; height: 50px; background: #333; margin: 0 10px; }
+        
         .card { background: #1a1a1a; padding: 15px; border-radius: 15px; margin-bottom: 15px; border: 1px solid #333; }
         .flex-voz { display: flex; gap: 10px; }
         .btn-voz { flex: 1; height: 70px; font-size: 18px; border-radius: 12px; border: none; font-weight: bold; color: white; cursor: pointer; }
         .on { background: #1e7e34; border-bottom: 5px solid #114d1f; }
         .off { background: #bd2130; border-bottom: 5px solid #7d1620; }
         .cam { background: #0056b3; border-bottom: 5px solid #002d5e; }
-        .grid-pub { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
-        .btn-pub { background: #2a2a2a; color: #fff; padding: 15px; border-radius: 10px; border: 1px solid #444; font-weight: bold; cursor: pointer; }
+        
+        .grid-pub { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        .btn-pub { background: #2a2a2a; color: #fff; padding: 12px 5px; border-radius: 10px; border: 1px solid #444; font-weight: bold; cursor: pointer; font-size: 11px; }
         .btn-quitar { background: #444; color: white; width: 100%; margin-top: 15px; padding: 15px; border-radius: 10px; font-weight: bold; cursor: pointer; border: none; }
+        
         h3 { color: #ffcc00; font-size: 0.9rem; margin-top: 0; text-transform: uppercase; letter-spacing: 1px; }
     </style>
 </head>
 <body>
 
+    <!-- TARJETA DE ESTADÍSTICAS CONSOLIDADA -->
     <div class="audiencia-card">
-        <div style="font-size: 14px; color: #ff4d4d; font-weight: bold; letter-spacing: 2px;">AUDIENCIA EN VIVO</div>
-        <div id="audiencia-total">0</div>
+        <div class="stat-box">
+            <div class="stat-label" style="color: #ff4d4d;">EN VIVO</div>
+            <div id="audiencia-total" class="stat-value" style="color: #ff0000;">0</div>
+        </div>
+        <div class="divider"></div>
+        <div class="stat-box">
+            <div class="stat-label" style="color: #ffcc00;">HISTÓRICO</div>
+            <div id="total-historico" class="stat-value" style="color: #ffcc00;">0</div>
+        </div>
     </div>
 
     <!-- CONTROL DE VOZ -->
@@ -42,7 +59,7 @@
 
     <!-- CONTROL DE CÁMARA -->
     <div class="card">
-        <h3>Cámara en Vivo</h3>
+        <h3>Cámara en Vivo (YouTube ID)</h3>
         <div class="flex-voz">
             <button class="btn-voz cam" onclick="setCamara('Ynxg-EGb-5A')">🎥 MOSTRAR</button>
             <button class="btn-voz off" onclick="setCamara('OFF')">❌ OCULTAR</button>
@@ -52,24 +69,14 @@
     <!-- CONTROL DE PUBLICIDAD -->
     <div class="card">
         <h3>Publicidad en Pantalla</h3>
-       <!-- Busca esta parte en tu código y reemplázala -->
-<div class="grid-pub">
-    <button class="btn-pub" onclick="setPub('https://raw.githubusercontent.com/lavozdemanaureapp/lavozdemanaure/main/aplicación/publicidad1.png')">PUB 1</button>
-    <button class="btn-pub" onclick="setPub('https://raw.githubusercontent.com/lavozdemanaureapp/lavozdemanaure/main/aplicación/publicidad2.png')">PUB 2</button>
-    <button class="btn-pub" onclick="setPub('https://raw.githubusercontent.com/lavozdemanaureapp/lavozdemanaure/main/aplicación/publicidad3.png')">PUB 3</button>
-    <button class="btn-pub" onclick="setPub('https://raw.githubusercontent.com/lavozdemanaureapp/lavozdemanaure/main/aplicación/publicidad4.png')">PUB 4</button>
-    <button class="btn-pub" onclick="setPub('https://raw.githubusercontent.com/lavozdemanaureapp/lavozdemanaure/main/aplicación/publicidad5.png')">PUB 5</button>
-    <button class="btn-pub" onclick="setPub('https://raw.githubusercontent.com/lavozdemanaureapp/lavozdemanaure/main/aplicación/publicidad6.png')">PUB 6</button>
-    <button class="btn-pub" onclick="setPub('https://raw.githubusercontent.com/lavozdemanaureapp/lavozdemanaure/main/aplicación/publicidad7.png')">PUB 7</button>
-    <button class="btn-pub" onclick="setPub('https://raw.githubusercontent.com/lavozdemanaureapp/lavozdemanaure/main/aplicación/publicidad8.png')">PUB 8</button>
-    <button class="btn-pub" onclick="setPub('https://raw.githubusercontent.com/lavozdemanaureapp/lavozdemanaure/main/aplicación/publicidad9.png')">PUB 9</button>
-    <button class="btn-pub" onclick="setPub('https://raw.githubusercontent.com/lavozdemanaureapp/lavozdemanaure/main/aplicación/publicidad10.png')">PUB 10</button>
-    <button class="btn-pub" onclick="setPub('https://raw.githubusercontent.com/lavozdemanaureapp/lavozdemanaure/main/aplicación/publicidad11.png')">PUB 11</button>
-    <button class="btn-pub" onclick="setPub('https://raw.githubusercontent.com/lavozdemanaureapp/lavozdemanaure/main/aplicación/publicidad12.png')">PUB 12</button>
-    <button class="btn-pub" onclick="setPub('https://raw.githubusercontent.com/lavozdemanaureapp/lavozdemanaure/main/aplicación/publicidad13.png')">PUB 13</button>
-    <button class="btn-pub" onclick="setPub('https://raw.githubusercontent.com/lavozdemanaureapp/lavozdemanaure/main/aplicación/publicidad14.png')">PUB 14</button>
-    <button class="btn-pub" onclick="setPub('https://raw.githubusercontent.com/lavozdemanaureapp/lavozdemanaure/main/aplicación/publicidad15.png')">PUB 15</button>
-</div>
+        <div class="grid-pub">
+            <!-- Generación de botones de publicidad -->
+            <script>
+                for(let i=1; i<=15; i++) {
+                    document.write(`<button class="btn-pub" onclick="setPub('https://raw.githubusercontent.com/lavozdemanaureapp/lavozdemanaure/main/aplicación/publicidad${i}.png')">PUB ${i}</button>`);
+                }
+            </script>
+        </div>
         <button class="btn-quitar" onclick="setPub('OFF')">QUITAR PUBLICIDAD</button>
     </div>
 
@@ -91,17 +98,17 @@
         window.setPub = (img) => set(ref(db, 'publicidad_activa'), { imagen: img });
         window.setCamara = (id) => set(ref(db, 'camara_activa'), { youtubeId: id });
 
-        // Lógica de Estadísticas Corregida
+        // Lógica de Audiencia EN VIVO
         const audienciaRef = ref(db, 'audiencia');
         onValue(audienciaRef, (snapshot) => {
-            if (snapshot.exists()) {
-                const usuarios = snapshot.val();
-                // Contamos las llaves únicas (IDs de sesión) que hay en el nodo
-                const total = Object.keys(usuarios).length;
-                document.getElementById('audiencia-total').innerText = total;
-            } else {
-                document.getElementById('audiencia-total').innerText = "0";
-            }
+            const total = snapshot.exists() ? Object.keys(snapshot.val()).length : 0;
+            document.getElementById('audiencia-total').innerText = total;
+        });
+
+        // Lógica de Audiencia HISTÓRICA TOTAL
+        const totalHistoricoRef = ref(db, 'estadisticas/total_historico');
+        onValue(totalHistoricoRef, (snapshot) => {
+            document.getElementById('total-historico').innerText = snapshot.val() || 0;
         });
     </script>
 </body>
