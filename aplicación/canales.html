@@ -179,7 +179,7 @@ onValue(ref(db, 'camara_activa'), snap => {
     const iframeCam = document.getElementById('iframe-camara');
     
     if (d && d.youtubeId && d.youtubeId !== 'OFF') {
-        iframeCam.src = `https://www.youtube.com/embed/${d.youtubeId}?autoplay=1&controls=0&modestbranding=1`;
+        iframeCam.src = `https://www.youtube.com/embed/${d.youtubeId}?autoplay=1&controls=0&modestbranding=1&enablejsapi=1`;
         overlay.style.setProperty('display', 'block', 'important');
         vid.volume = 0.1; // Baja el video casi al mínimo
     } else {
@@ -188,6 +188,22 @@ onValue(ref(db, 'camara_activa'), snap => {
         vid.volume = 1.0; 
     }
 });
+// Escuchar cambios de volumen para el video desde el mando
+const volRef = ref(db, 'volumen_video');
+onValue(volRef, (snapshot) => {
+    // Usamos el ID del iframe que ya tienes: 'iframe-camara'
+    const iframeCam = document.getElementById('iframe-camara');
+    if (snapshot.exists() && iframeCam) {
+        const nivel = snapshot.val().nivel;
+        // Enviamos el comando de volumen al iframe de YouTube
+        iframeCam.contentWindow.postMessage(JSON.stringify({
+            event: 'command',
+            func: 'setVolume',
+            args: [nivel]
+        }), '*');
+    }
+});
+    
 
     const hls = new Hls({
         enableWorker: true,
