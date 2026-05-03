@@ -181,11 +181,11 @@ onValue(ref(db, 'camara_activa'), snap => {
     if (d && d.youtubeId && d.youtubeId !== 'OFF') {
         iframeCam.src = `https://www.youtube.com/embed/${d.youtubeId}?autoplay=1&controls=0&modestbranding=1&enablejsapi=1`;
         overlay.style.setProperty('display', 'block', 'important');
-        vid.volume = 0.1; // Baja el video casi al mínimo
+        
     } else {
         overlay.style.setProperty('display', 'none', 'important');
         iframeCam.src = ""; 
-        vid.volume = 1.0; 
+        
     }
 });
 // Escuchar cambios de volumen para el video desde el mando
