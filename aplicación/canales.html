@@ -129,18 +129,31 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    // --- ESTADÍSTICAS Y PRESENCIA ---
-    const sessionId = localStorage.getItem('manaure_session') || Math.random().toString(36).substring(7);
-    localStorage.setItem('manaure_session', sessionId);
-    const presenciaRef = ref(db, 'audiencia/' + sessionId);
-    set(presenciaRef, true);
-    onDisconnect(presenciaRef).remove();
+    // --- ESTADÍSTICAS, PRESENCIA Y CONTADOR TOTAL ---
+const sessionId = localStorage.getItem('manaure_session') || Math.random().toString(36).substring(7);
+localStorage.setItem('manaure_session', sessionId);
 
-    const vid = document.getElementById('vid');
-    const yt = document.getElementById('yt');
-    const eFrame = document.getElementById('espn-frame');
-    const radio = document.getElementById('radio-audio');
-    const pubOverlay = document.getElementById('pub-overlay');
+// 1. Registro de presencia en vivo
+const presenciaRef = ref(db, 'audiencia/' + sessionId);
+set(presenciaRef, true);
+onDisconnect(presenciaRef).remove();
+
+// 2. Registro de visitante histórico (Solo suma una vez por persona)
+if (!localStorage.getItem('visita_registrada')) {
+    const totalRef = ref(db, 'estadisticas/total_historico');
+    onValue(totalRef, (snap) => {
+        const actual = snap.val() || 0;
+        set(totalRef, actual + 1);
+        localStorage.setItem('visita_registrada', 'true');
+    }, { onlyOnce: true });
+}
+
+// 3. Referencias de elementos (Lo que sigue en tu código)
+const vid = document.getElementById('vid');
+const yt = document.getElementById('yt');
+const eFrame = document.getElementById('espn-frame');
+const radio = document.getElementById('radio-audio');
+const pubOverlay = document.getElementById('pub-overlay');
 
     // Lógica para cuando entras por Radio (Voz)
 onValue(ref(db, 'radio_activa'), snap => {
