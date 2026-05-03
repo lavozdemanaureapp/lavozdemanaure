@@ -70,7 +70,6 @@
     <div class="card">
         <h3>Publicidad en Pantalla</h3>
         <div class="grid-pub">
-            <!-- Generación de botones de publicidad -->
             <script>
                 for(let i=1; i<=15; i++) {
                     document.write(`<button class="btn-pub" onclick="setPub('https://raw.githubusercontent.com/lavozdemanaureapp/lavozdemanaure/main/aplicación/publicidad${i}.png')">PUB ${i}</button>`);
@@ -81,8 +80,8 @@
     </div>
 
     <script type="module">
-        iimport { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getDatabase, ref, set, onValue, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, set, onValue, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
         const firebaseConfig = { 
             apiKey: "AIzaSyBtkKwQlTzDgQwP_RpDPnX7WJqoyg1turk", 
@@ -105,10 +104,17 @@ import { getDatabase, ref, set, onValue, get } from "https://www.gstatic.com/fir
             document.getElementById('audiencia-total').innerText = total;
         });
 
-        // Lógica de Audiencia HISTÓRICA TOTAL
+        // Lógica de Audiencia HISTÓRICA TOTAL (Corregida para evitar reseteos)
         const totalHistoricoRef = ref(db, 'estadisticas/total_historico');
         onValue(totalHistoricoRef, (snapshot) => {
-            document.getElementById('total-historico').innerText = snapshot.val() || 0;
+            if (snapshot.exists()) {
+                document.getElementById('total-historico').innerText = snapshot.val();
+            } else {
+                // Si el nodo no existe en Firebase, lo inicializamos solo la primera vez
+                get(totalHistoricoRef).then((snap) => {
+                    if (!snap.exists()) set(totalHistoricoRef, 0);
+                });
+            }
         });
     </script>
 </body>
