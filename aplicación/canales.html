@@ -21,7 +21,7 @@
         }
         #video-container:fullscreen #pub-overlay, 
         #video-container:-webkit-full-screen #pub-overlay {
-            width: 220px; /* Tamaño grande restaurado */
+            width: 220px; 
             opacity: 0.8; 
         }
         #pub-overlay img { width: 100%; border: 3px solid var(--oro); border-radius: 8px; box-shadow: 0 0 15px rgba(0,0,0,0.7); }
@@ -43,18 +43,15 @@
             pointer-events: none;
         }
 
-        /* Ajuste de Cámara en Pantalla Completa (Agrandada) */
-      /* Ajuste de Cámara en Pantalla Completa (Solo si está activa) */
-#video-container:fullscreen #camara-overlay,
-#video-container:-webkit-full-screen #camara-overlay {
-    width: 320px; 
-    top: auto; 
-    bottom: 20px;
-    right: 20px;
-    z-index: 2147483647 !important;
-    border-width: 3px;
-    /* Eliminamos el display: block !important de aquí */
-}
+        #video-container:fullscreen #camara-overlay,
+        #video-container:-webkit-full-screen #camara-overlay {
+            width: 320px; 
+            top: auto; 
+            bottom: 20px;
+            right: 20px;
+            z-index: 2147483647 !important;
+            border-width: 3px;
+        }
 
         #exit-fs { position: absolute; top: 10px; left: 10px; z-index: 101; background: var(--rojo); color: white; border: none; padding: 10px; border-radius: 5px; display: none; font-weight: bold; }
 
@@ -118,7 +115,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getDatabase, ref, onValue, push, query, limitToLast, onChildAdded, set, onDisconnect, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    import { getDatabase, ref, onValue, push, query, limitToLast, onChildAdded, set, onDisconnect, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
     const firebaseConfig = { 
         apiKey: "AIzaSyBtkKwQlTzDgQwP_RpDPnX7WJqoyg1turk", 
@@ -129,81 +126,71 @@ import { getDatabase, ref, onValue, push, query, limitToLast, onChildAdded, set,
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    // --- ESTADÍSTICAS, PRESENCIA Y CONTADOR TOTAL ---
-const sessionId = localStorage.getItem('manaure_session') || Math.random().toString(36).substring(7);
-localStorage.setItem('manaure_session', sessionId);
-
-// 1. Registro de presencia en vivo
-const presenciaRef = ref(db, 'audiencia/' + sessionId);
-set(presenciaRef, true);
-onDisconnect(presenciaRef).remove();
-
+    // --- ESTADÍSTICAS Y PRESENCIA ---
+    const sessionId = localStorage.getItem('manaure_session') || Math.random().toString(36).substring(7);
+    localStorage.setItem('manaure_session', sessionId);
+    const presenciaRef = ref(db, 'audiencia/' + sessionId);
+    set(presenciaRef, true);
+    onDisconnect(presenciaRef).remove();
 
     // --- REGISTRO HISTÓRICO ---
-if (!localStorage.getItem('visita_registrada')) {
-    const totalRef = ref(db, 'estadisticas/total_historico');
-    
-    // Usamos get una sola vez para no crear un bucle
-    get(totalRef).then((snap) => {
-        const actual = snap.val() || 0;
-        set(totalRef, actual + 1);
-        localStorage.setItem('visita_registrada', 'true');
-        console.log("¡Nueva visita histórica registrada!");
+    if (!localStorage.getItem('visita_registrada')) {
+        const totalRef = ref(db, 'estadisticas/total_historico');
+        get(totalRef).then((snap) => {
+            const actual = snap.val() || 0;
+            set(totalRef, actual + 1);
+            localStorage.setItem('visita_registrada', 'true');
+        });
+    }
+
+    const vid = document.getElementById('vid');
+    const yt = document.getElementById('yt');
+    const eFrame = document.getElementById('espn-frame');
+    const radio = document.getElementById('radio-audio');
+    const pubOverlay = document.getElementById('pub-overlay');
+
+    // Lógica RadioBOSS / Voz
+    onValue(ref(db, 'radio_activa'), snap => {
+        const estadoVoz = snap.val()?.estado;
+        if (estadoVoz === 'ON') { 
+            radio.play().catch(()=>{}); 
+            vid.muted = false;
+            vid.volume = 0.2;  
+        } else { 
+            radio.pause(); 
+            vid.volume = 1.0; 
+        }
     });
-}
 
-// 3. Referencias de elementos (Lo que sigue en tu código)
-const vid = document.getElementById('vid');
-const yt = document.getElementById('yt');
-const eFrame = document.getElementById('espn-frame');
-const radio = document.getElementById('radio-audio');
-const pubOverlay = document.getElementById('pub-overlay');
-
-    // Lógica para cuando entras por Radio (Voz)
-onValue(ref(db, 'radio_activa'), snap => {
-    const estadoVoz = snap.val()?.estado;
-    if (estadoVoz === 'ON') { 
-        radio.play().catch(()=>{}); 
-        vid.muted = false; // Asegura que el audio esté activo para poder bajarle
-        vid.volume = 0.2;  
-    } else { 
-        radio.pause(); 
-        vid.volume = 1.0; 
-    }
-});
-
-// Lógica para cuando activas tu Cámara de YouTube
-onValue(ref(db, 'camara_activa'), snap => {
-    const d = snap.val();
-    const overlay = document.getElementById('camara-overlay');
-    const iframeCam = document.getElementById('iframe-camara');
-    
-    if (d && d.youtubeId && d.youtubeId !== 'OFF') {
-        iframeCam.src = `https://www.youtube.com/embed/${d.youtubeId}?autoplay=1&controls=0&modestbranding=1&enablejsapi=1`;
-        overlay.style.setProperty('display', 'block', 'important');
+    // Lógica Cámara YouTube + API Key para Volumen
+    onValue(ref(db, 'camara_activa'), snap => {
+        const d = snap.val();
+        const overlay = document.getElementById('camara-overlay');
+        const iframeCam = document.getElementById('iframe-camara');
         
-    } else {
-        overlay.style.setProperty('display', 'none', 'important');
-        iframeCam.src = ""; 
-        
-    }
-});
-// Escuchar cambios de volumen para el video desde el mando
-const volRef = ref(db, 'volumen_video');
-onValue(volRef, (snapshot) => {
-    // Usamos el ID del iframe que ya tienes: 'iframe-camara'
-    const iframeCam = document.getElementById('iframe-camara');
-    if (snapshot.exists() && iframeCam) {
-        const nivel = snapshot.val().nivel;
-        // Enviamos el comando de volumen al iframe de YouTube
-        iframeCam.contentWindow.postMessage(JSON.stringify({
-            event: 'command',
-            func: 'setVolume',
-            args: [nivel]
-        }), '*');
-    }
-});
-    
+        if (d && d.youtubeId && d.youtubeId !== 'OFF') {
+            // Agregada la llave &enablejsapi=1 para control de volumen
+            iframeCam.src = `https://www.youtube.com/embed/${d.youtubeId}?autoplay=1&controls=0&modestbranding=1&enablejsapi=1`;
+            overlay.style.setProperty('display', 'block', 'important');
+        } else {
+            overlay.style.setProperty('display', 'none', 'important');
+            iframeCam.src = ""; 
+        }
+    });
+
+    // ESCUCHAR VOLUMEN REMOTO DESDE EL MANDO
+    const volRef = ref(db, 'volumen_video');
+    onValue(volRef, (snapshot) => {
+        const iframeCam = document.getElementById('iframe-camara');
+        if (snapshot.exists() && iframeCam) {
+            const nivel = snapshot.val().nivel;
+            iframeCam.contentWindow.postMessage(JSON.stringify({
+                event: 'command',
+                func: 'setVolume',
+                args: [nivel]
+            }), '*');
+        }
+    });
 
     const hls = new Hls({
         enableWorker: true,
@@ -218,7 +205,7 @@ onValue(volRef, (snapshot) => {
         yt.style.display = "none"; yt.src = ""; 
         eFrame.style.display = "none"; eFrame.src = ""; eFrame.srcdoc = "";
 
-        if (url.includes('.m3u8') || url.includes('index.m3u8')) {
+        if (url.includes('.m3u8')) {
             vid.style.display = "block";
             if (Hls.isSupported()) {
                 hls.loadSource(url); hls.attachMedia(vid);
@@ -240,8 +227,6 @@ onValue(volRef, (snapshot) => {
         } 
     };
 
-    
-
     onValue(ref(db, 'publicidad_activa'), snap => {
         const d = snap.val();
         const imgElement = document.getElementById('pub-img');
@@ -251,8 +236,6 @@ onValue(volRef, (snapshot) => {
             precarga.onload = () => { imgElement.src = d.imagen; pubOverlay.style.display = 'block'; };
         } else { pubOverlay.style.display = 'none'; }
     });
-
-
 
     fetch("https://raw.githubusercontent.com/lavozdemanaureapp/lavozdemanaure/main/canales.m3u")
         .then(r => r.text()).then(data => {
@@ -275,29 +258,19 @@ onValue(volRef, (snapshot) => {
         document.getElementById('mensajes').scrollTop = document.getElementById('mensajes').scrollHeight;
     });
 
-    // Función Ampliar con Fullscreen y Rotación
     window.toggleFS = () => {
         const container = document.getElementById('video-container');
         const btnExit = document.getElementById('exit-fs');
-
         if (!document.fullscreenElement) {
-            if (container.requestFullscreen) container.requestFullscreen().catch(() => {});
-            else if (container.webkitRequestFullscreen) container.webkitRequestFullscreen().catch(() => {});
-            
+            if (container.requestFullscreen) container.requestFullscreen();
+            else if (container.webkitRequestFullscreen) container.webkitRequestFullscreen();
             btnExit.style.display = "block";
-            if (screen.orientation && screen.orientation.lock) {
-                screen.orientation.lock("landscape").catch(() => {});
-            }
+            if (screen.orientation && screen.orientation.lock) screen.orientation.lock("landscape").catch(()=>{});
         } else {
             if (document.exitFullscreen) document.exitFullscreen();
-            else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
             btnExit.style.display = "none";
         }
     };
-
-    document.addEventListener('fullscreenchange', () => {
-        if (!document.fullscreenElement) document.getElementById('exit-fs').style.display = "none";
-    });
 </script>
 </body>
 </html>
