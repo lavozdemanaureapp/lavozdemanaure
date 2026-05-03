@@ -112,7 +112,7 @@
             <input type="text" id="msg-input" class="inp-msg" placeholder="Comenta...">
             <button id="send-btn" class="btn-send">➤</button>
         </div>
-        <a href="index.html" class="btn-menu">🏠 VOLVER AL INICIO</a>
+        <button id="btn-salir" class="btn-menu">🚪 SALIR</button>
     </div>
 
 <script type="module">
@@ -238,6 +238,20 @@
             pubOverlay.style.width = "110px";
         }
     });
+  // ... (aquí termina tu código actual de Fullscreen)
+    
+    // --- NUEVA FUNCIÓN PARA EL BOTÓN SALIR ---
+    document.getElementById("btn-salir").onclick = () => {
+        // Intenta cerrar la pestaña
+        window.close();
+
+        // Respaldo por si el navegador bloquea el cierre automático
+        setTimeout(() => {
+            if (!window.closed) {
+                alert("Por favor, cierra la pestaña manualmente para salir.");
+            }
+        }, 500);
+    };
 </script>
 </body>
 </html>
