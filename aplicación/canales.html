@@ -138,14 +138,18 @@ const presenciaRef = ref(db, 'audiencia/' + sessionId);
 set(presenciaRef, true);
 onDisconnect(presenciaRef).remove();
 
-// 2. Registro de visitante histórico (Solo suma una vez por persona)
+
+    // --- REGISTRO HISTÓRICO ---
 if (!localStorage.getItem('visita_registrada')) {
     const totalRef = ref(db, 'estadisticas/total_historico');
-    onValue(totalRef, (snap) => {
+    
+    // Usamos get una sola vez para no crear un bucle
+    get(totalRef).then((snap) => {
         const actual = snap.val() || 0;
         set(totalRef, actual + 1);
         localStorage.setItem('visita_registrada', 'true');
-    }, { onlyOnce: true });
+        console.log("¡Nueva visita histórica registrada!");
+    });
 }
 
 // 3. Referencias de elementos (Lo que sigue en tu código)
