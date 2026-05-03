@@ -35,7 +35,7 @@
 </head>
 <body>
 
-    <!-- TARJETA DE ESTADÍSTICAS CONSOLIDADA -->
+    <!-- ESTADÍSTICAS -->
     <div class="audiencia-card">
         <div class="stat-box">
             <div class="stat-label" style="color: #ff4d4d;">EN VIVO</div>
@@ -63,6 +63,15 @@
         <div class="flex-voz">
             <button class="btn-voz cam" onclick="setCamara('Ynxg-EGb-5A')">🎥 MOSTRAR</button>
             <button class="btn-voz off" onclick="setCamara('OFF')">❌ OCULTAR</button>
+        </div>
+    </div>
+
+    <!-- CONTROL DE VOLUMEN (NUEVO) -->
+    <div class="card">
+        <h3>Volumen de YouTube (Remoto)</h3>
+        <div class="flex-voz">
+            <button class="btn-voz off" style="height: 50px;" onclick="setVolumenVideo(20)">📉 HABLAR (20%)</button>
+            <button class="btn-voz on" style="height: 50px;" onclick="setVolumenVideo(100)">🔊 MÚSICA (100%)</button>
         </div>
     </div>
 
@@ -96,6 +105,7 @@
         window.setRadio = (est) => set(ref(db, 'radio_activa'), { estado: est });
         window.setPub = (img) => set(ref(db, 'publicidad_activa'), { imagen: img });
         window.setCamara = (id) => set(ref(db, 'camara_activa'), { youtubeId: id });
+        window.setVolumenVideo = (nivel) => set(ref(db, 'volumen_video'), { nivel: nivel });
 
         // Lógica de Audiencia EN VIVO
         const audienciaRef = ref(db, 'audiencia');
@@ -104,16 +114,11 @@
             document.getElementById('audiencia-total').innerText = total;
         });
 
-        // Lógica de Audiencia HISTÓRICA TOTAL (Corregida para evitar reseteos)
+        // Lógica de Audiencia HISTÓRICA
         const totalHistoricoRef = ref(db, 'estadisticas/total_historico');
         onValue(totalHistoricoRef, (snapshot) => {
             if (snapshot.exists()) {
                 document.getElementById('total-historico').innerText = snapshot.val();
-            } else {
-                // Si el nodo no existe en Firebase, lo inicializamos solo la primera vez
-                get(totalHistoricoRef).then((snap) => {
-                    if (!snap.exists()) set(totalHistoricoRef, 0);
-                });
             }
         });
     </script>
