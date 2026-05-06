@@ -199,33 +199,49 @@
         levelLoadingMaxRetry: 50
     });
 
-    window.cambiarCanal = (url) => {
-        vid.pause(); vid.style.display = "none"; 
-        hls.detachMedia();
-        yt.style.display = "none"; yt.src = ""; 
-        eFrame.style.display = "none"; eFrame.src = ""; eFrame.srcdoc = "";
+   // ... busca esta parte dentro de tu <script type="module"> ...
 
-        if (url.includes('.m3u8')) {
-            vid.style.display = "block";
-            if (Hls.isSupported()) {
-                hls.loadSource(url); hls.attachMedia(vid);
-                hls.on(Hls.Events.MANIFEST_PARSED, () => vid.play().catch(()=>{}));
-            } else { vid.src = url; vid.play().catch(()=>{}); }
+window.cambiarCanal = (url) => {
+    // 1. Limpiamos todo antes de cargar el nuevo canal
+    vid.pause(); 
+    vid.style.display = "none"; 
+    hls.detachMedia();
+    yt.style.display = "none"; 
+    yt.src = ""; 
+    eFrame.style.display = "none"; 
+    eFrame.src = ""; 
+    eFrame.srcdoc = "";
+
+    // 2. Lógica para archivos directos .m3u8
+    if (url.includes('.m3u8')) {
+        vid.style.display = "block";
+        if (Hls.isSupported()) {
+            hls.loadSource(url); 
+            hls.attachMedia(vid);
+            hls.on(Hls.Events.MANIFEST_PARSED, () => vid.play().catch(()=>{}));
+        } else { 
+            vid.src = url; 
+            vid.play().catch(()=>{}); 
         }
-        else if (url.includes('wsdeportes.net') || url.includes('ws04.php')) {
-            eFrame.style.display = "block"; eFrame.src = url; 
-        } 
-        else if (url.includes('ksdjugfsddeports')) {
-            let canalId = url.split('/').pop(); 
-            eFrame.style.display = "block";
-            eFrame.srcdoc = `<body style="margin:0; background:black; display:flex; align-items:center; justify-content:center; height:100vh; overflow:hidden;"><script>width='100%', height='100%', id='${canalId}';<\/script><script src='https://embed.ksdjugfsddeports.com/embed2.js'><\/script></body>`;
-        }
-        else if (url.includes('youtu')) {
-            let id = url.split('v=')[1] || url.split('/').pop();
-            yt.style.display = "block";
-            yt.src = `https://www.youtube.com/embed/${id.split('&')[0]}?autoplay=1&rel=0`;
-        } 
-    };
+    }
+    // 3. NUEVA LÓGICA PARA WSDEPORTES (Carga la web directa)
+    else if (url.includes('wsdeportes.net') || url.includes('ws04.php')) {
+        eFrame.style.display = "block"; 
+        eFrame.src = url; // <--- Aquí usamos src en lugar de srcdoc
+    } 
+    // 4. Lógica para KSDJUGFS (Usa su script de embed)
+    else if (url.includes('ksdjugfsddeports')) {
+        let canalId = url.split('/').pop(); 
+        eFrame.style.display = "block";
+        eFrame.srcdoc = `<body style="margin:0; background:black; display:flex; align-items:center; justify-content:center; height:100vh; overflow:hidden;"><script>width='100%', height='100%', id='${canalId}';<\/script><script src='https://embed.ksdjugfsddeports.com/embed2.js'><\/script></body>`;
+    }
+    // 5. Lógica para YouTube
+    else if (url.includes('youtu')) {
+        let id = url.split('v=')[1] || url.split('/').pop();
+        yt.style.display = "block";
+        yt.src = `https://www.youtube.com/embed/${id.split('&')[0]}?autoplay=1&rel=0`;
+    } 
+};
 
     onValue(ref(db, 'publicidad_activa'), snap => {
         const d = snap.val();
