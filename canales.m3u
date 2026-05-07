@@ -2,37 +2,37 @@
 # --- CATEGORÍA: NACIONALES ---
 #EXTM3U
 
-#EXTINF:-1, BAYERN VS PSG
+#XEXTINF:-1, BAYERN VS PSG
 https://s1327.mywebtv.cloud/hls/espn/index.m3u8?token=T3r2W2KUSm39w9Y1464vWw&expires=1778102555
 
-#EXTINF:-1, ESTUDIANTES VS TACHIRA 
+#XEXTINF:-1, ESTUDIANTES VS TACHIRA 
 https://www.youtube.com/watch?v=M2Mg4qQ7Bm0
 
-#EXTINF:-1, ⚽ ESPN 
+#XEXTINF:-1, ⚽ ESPN 
 https://embed.ksdjugfsddeports.com/espn
 
-#EXTINF:-1, ESPN PREMIUM (WS)
+#XEXTINF:-1, ESPN PREMIUM (WS)
 https://wsdeportes.net/?v=espn
 
-#EXTINF:-1, ⚽ SKY SPORTS 
+#XEXTINF:-1, ⚽ SKY SPORTS 
 https://embed.ksdjugfsddeports.com/directvsportsmexico
 
-#EXTINF:-1, ESPN 3
+#XEXTINF:-1, ESPN 3
 https://embed.ksdjugfsddeports.com/espn3
 
-#EXTINF:-1, ESPN 2
+#XEXTINF:-1, ESPN 2
 https://embed.ksdjugfsddeports.com/espn2
 
 #EXTINF:-1 tvg-id="Venevision" tvg-logo="" group-title="NACIONALES", Venevisión Plus
 https://vod2live.univtec.com/manifest/4c41c0d8-e2e4-43cc-bd43-79afe715e1b3.m3u8
 
-#EXTINF:-1, ⚽ DSPORTS
+#XEXTINF:-1, ⚽ DSPORTS
 https://embed.ksdjugfsddeports.com/directvsports
 
-#EXTINF:-1, ⚽ CARACOL 
+#XEXTINF:-1, ⚽ CARACOL 
 https://embed.ksdjugfsddeports.com/caracol
 
-#EXTINF:-1, ⚽ RCN
+#XEXTINF:-1, ⚽ RCN
 https://embed.ksdjugfsddeports.com/rcn
 
 #EXTINF:-1 tvg-id="Venevision" tvg-logo="" group-title="NACIONALES", TVFANB
