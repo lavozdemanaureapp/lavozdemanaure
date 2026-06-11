@@ -2,37 +2,37 @@
 # --- CATEGORÍA: NACIONALES ---
 #EXTM3U
 
-#EXTINF:-1,METROPOLITANOS VS TÁCHIRA
+#XEXTINF:-1,METROPOLITANOS VS TÁCHIRA
 https://www.youtube.com/live/QcQ38nqgk-E?si=3e24g22haCFebBo8
 
 #XEXTINF:-1, ESTUDIANTES VS TACHIRA 
 https://www.youtube.com/watch?v=M2Mg4qQ7Bm0
 
-#XEXTINF:-1, ⚽ ESPN 
+#EXTINF:-1, ⚽ ESPN 
 https://embed.ksdjugfsddeports.com/espn
 
-#XEXTINF:-1, ESPN PREMIUM (WS)
+#EXTINF:-1, ESPN PREMIUM (WS)
 https://wsdeportes.net/?v=espn
 
-#XEXTINF:-1, ⚽ SKY SPORTS 
+#EXTINF:-1, ⚽ SKY SPORTS 
 https://embed.ksdjugfsddeports.com/directvsportsmexico
 
-#XEXTINF:-1, ESPN 3
+#EXTINF:-1, ESPN 3
 https://embed.ksdjugfsddeports.com/espn3
 
-#XEXTINF:-1, ESPN 2
+#EXTINF:-1, ESPN 2
 https://embed.ksdjugfsddeports.com/espn2
 
 #EXTINF:-1 tvg-id="Venevision" tvg-logo="" group-title="NACIONALES", Venevisión Plus
 https://vod2live.univtec.com/manifest/4c41c0d8-e2e4-43cc-bd43-79afe715e1b3.m3u8
 
-#XEXTINF:-1, ⚽ DSPORTS
+#EXTINF:-1, ⚽ DSPORTS
 https://embed.ksdjugfsddeports.com/directvsports
 
-#XEXTINF:-1, ⚽ CARACOL 
+#EXTINF:-1, ⚽ CARACOL 
 https://embed.ksdjugfsddeports.com/caracol
 
-#XEXTINF:-1, ⚽ RCN
+#EXTINF:-1, ⚽ RCN
 https://embed.ksdjugfsddeports.com/rcn
 
 #EXTINF:-1 tvg-id="Venevision" tvg-logo="" group-title="NACIONALES", TVFANB
