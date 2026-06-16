@@ -13,7 +13,7 @@
         #video-container { width: 100%; aspect-ratio: 16 / 9; background: #111; position: relative; flex-shrink: 0; }
         video, iframe { position: absolute; top: 0; left: 0; width: 100% !important; height: 100% !important; border: none; z-index: 5; }
         
-        /* PUBLICIDAD DINÁMICA (Aumenta en Fullscreen vía JS) */
+        /* PUBLICIDAD DINÁMICA */
         #pub-overlay { 
             position: absolute; top: 10px; right: 10px; width: 110px; 
             z-index: 100; display: none; transition: width 0.3s ease;
@@ -47,19 +47,18 @@
 
         select { 
             flex: 1; 
-            padding: 12px 35px 12px 12px; /* Espacio a la derecha para la flecha */
+            padding: 12px 35px 12px 12px; 
             background: transparent; 
             color: var(--oro); 
             border: none; 
             font-weight: bold; 
             font-size: 16px;
             outline: none;
-            appearance: none; /* Quitamos flecha nativa fea */
+            appearance: none; 
             cursor: pointer;
             z-index: 2;
         }
 
-        /* Flecha personalizada */
         .selector-wrapper::after {
             content: '▼';
             position: absolute;
@@ -133,7 +132,7 @@
     const pubOverlay = document.getElementById('pub-overlay');
     const hls = new Hls({
         enableWorker: true,
-        initialLiveManifestSize: 3, // Espera a tener 3 segmentos antes de empezar
+        initialLiveManifestSize: 3,
         manifestLoadingMaxRetry: 10,
         levelLoadingMaxRetry: 10
     });
@@ -181,22 +180,41 @@
         box.appendChild(div);
     });
 
-    // --- VIDEO ---
+    // --- VIDEO (MÉTODO TRIPLE CORREGIDO) ---
     window.cambiarCanal = (url) => {
-        vid.pause(); vid.style.display = "none"; yt.style.display = "none"; yt.src = ""; hls.detachMedia();
+        // Pausamos y ocultamos todo antes de cambiar
+        vid.pause(); 
+        vid.style.display = "none"; 
+        yt.style.display = "none"; 
+        yt.src = ""; 
+        hls.detachMedia();
+
         if (url.includes('youtu')) {
+            // CAMINO 1: YOUTUBE
             let id = url.split('v=')[1] || url.split('/').pop();
             yt.style.display = "block";
             yt.src = `https://www.youtube.com/embed/${id.split('&')[0]}?autoplay=1&rel=0`;
-        } else {
+        } 
+        else if (url.includes('embed') || !url.includes('.m3u8')) {
+            // CAMINO 2: EMBEDS EXTERNOS (Como tu link de deportes)
+            yt.style.display = "block";
+            yt.src = url;
+        } 
+        else {
+            // CAMINO 3: TRANSMISIONES HLS NORMALES (.M3U8)
             vid.style.display = "block";
             if (Hls.isSupported()) {
-                hls.loadSource(url); hls.attachMedia(vid);
+                hls.loadSource(url); 
+                hls.attachMedia(vid);
                 hls.on(Hls.Events.MANIFEST_PARSED, () => vid.play().catch(()=>{}));
-            } else { vid.src = url; vid.play().catch(()=>{}); }
+            } else { 
+                vid.src = url; 
+                vid.play().catch(()=>{}); 
+            }
         }
     };
 
+    // Carga desde GitHub
     fetch("https://raw.githubusercontent.com/lavozdemanaureapp/lavozdemanaure/main/canales.m3u")
         .then(r => r.text()).then(data => {
             const select = document.getElementById('lista');
@@ -209,7 +227,7 @@
             if(select.length > 0) cambiarCanal(select.value);
         });
 
-    // --- PANTALLA COMPLETA CON PUB AGRANDADA ---
+    // --- PANTALLA COMPLETA ---
     window.toggleFS = () => {
         const container = document.getElementById('video-container');
         const btnExit = document.getElementById('exit-fs');
@@ -217,35 +235,25 @@
         if (!document.fullscreenElement) {
             container.requestFullscreen().catch(() => {});
             btnExit.style.display = "block";
-            
-            // Volvemos al tamaño que te gustaba
             pubOverlay.style.width = "180px"; 
-            
             if (screen.orientation && screen.orientation.lock) screen.orientation.lock("landscape").catch(() => {});
         } else {
             document.exitFullscreen();
             btnExit.style.display = "none";
-            
-            // Tamaño normal fuera de pantalla completa
             pubOverlay.style.width = "110px"; 
         }
     };
 
-    // Resetear tamaño si salen con el botón nativo del cel
     document.addEventListener('fullscreenchange', () => {
         if (!document.fullscreenElement) {
             document.getElementById('exit-fs').style.display = "none";
             pubOverlay.style.width = "110px";
         }
     });
-  // ... (aquí termina tu código actual de Fullscreen)
     
-    // --- NUEVA FUNCIÓN PARA EL BOTÓN SALIR ---
+    // --- BOTÓN SALIR ---
     document.getElementById("btn-salir").onclick = () => {
-        // Intenta cerrar la pestaña
         window.close();
-
-        // Respaldo por si el navegador bloquea el cierre automático
         setTimeout(() => {
             if (!window.closed) {
                 alert("Por favor, cierra la pestaña manualmente para salir.");
