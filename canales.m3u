@@ -27,13 +27,16 @@ https://embed.ksdjugfsddeports.com/espn2
 https://vod2live.univtec.com/manifest/4c41c0d8-e2e4-43cc-bd43-79afe715e1b3.m3u8
 
 #EXTINF:-1, directv sports
-https://embed.ksdjugfsddeports.com/directvsports
+https://embed.saohgdasregions.fun/embed2.php?id=directvsports
 
 #EXTINF:-1, ⚽ CARACOL 
 https://embed.ksdjugfsddeports.com/caracol
 
 #EXTINF:-1, ⚽ RCN
 https://embed.ksdjugfsddeports.com/rcn
+
+#EXTINF:-1, ⚽ win sports
+https://embed.ksdjugfsddeports.com/winsports
 
 #EXTINF:-1 tvg-id="Venevision" tvg-logo="" group-title="NACIONALES", TVFANB
 https://vcp2.myplaytv.com/tvfanb/tvfanb/playlist.m3u8?PlaylistM3UCL
