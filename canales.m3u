@@ -29,6 +29,9 @@ https://vod2live.univtec.com/manifest/4c41c0d8-e2e4-43cc-bd43-79afe715e1b3.m3u8
 #EXTINF:-1, directv sports
 https://embed.ksdjugfsddeports.com/dsports
 
+#EXTINF:-1, directv sports OP 2
+https://w1327.mywebtv.cloud/hls/dsportsplus/index.m3u8?token=3GgBQ1cz8rhNxm0u3XaEvQ&expires=1781654037
+
 #EXTINF:-1, ⚽ CARACOL 
 https://embed.ksdjugfsddeports.com/caracol
 
